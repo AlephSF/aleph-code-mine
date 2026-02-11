@@ -1,0 +1,50 @@
+rules:
+  - id: warn-type-assertion-no-validation
+    patterns:
+      - pattern: $VAR as $TYPE
+      - pattern-not-inside: |
+          // $COMMENT
+          ...
+          $VAR as $TYPE
+      - pattern-not-inside: |
+          if ($VALIDATION) {
+            ...
+          }
+      - pattern-not: $VAR as const
+      - pattern-not: $VAR as unknown
+      - metavariable-pattern:
+          metavariable: $TYPE
+          patterns:
+            - pattern-not: React.FC<...>
+            - pattern-not: NextPage<...>
+    message: |
+      Type assertion without apparent validation or comment explanation.
+      Type assertions bypass TypeScript's type checking and can cause runtime errors.
+
+      Prefer:
+      1. Type guards: function isUser(v: unknown): v is User { ... }
+      2. Runtime validation: Zod, Yup, or custom validation
+      3. Add a comment explaining why the assertion is safe
+
+      Only use assertions when you have runtime guarantees TypeScript cannot infer.
+    severity: INFO
+    languages: [typescript, tsx]
+    metadata:
+      category: typescript-conventions
+      subcategory: type-safety
+      confidence: MEDIUM
+      likelihood: HIGH
+      impact: MEDIUM
+      description: Type assertions should have runtime validation or comments
+      references:
+        - https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#type-assertions
+    paths:
+      include:
+        - "*.ts"
+        - "*.tsx"
+      exclude:
+        - "*.test.ts"
+        - "*.test.tsx"
+        - "*.spec.ts"
+        - "*.spec.tsx"
+        - node_modules/

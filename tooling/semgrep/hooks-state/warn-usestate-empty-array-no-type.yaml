@@ -1,0 +1,24 @@
+rules:
+  - id: warn-usestate-empty-array-no-type
+    patterns:
+      - pattern: useState([])
+      - pattern-not: useState<$TYPE>([])
+    message: |
+      useState with empty array needs explicit type parameter.
+
+      Without a type parameter, TypeScript infers never[] which prevents adding elements.
+
+      Fix: Add explicit type parameter
+      const [items, setItems] = useState<string[]>([])
+      const [data, setData] = useState<Item[]>([])
+    severity: WARNING
+    languages: [typescript, tsx]
+    metadata:
+      category: hooks-state
+      subcategory: type-safety
+      confidence: HIGH
+      likelihood: HIGH
+      impact: MEDIUM
+      description: Empty array useState requires explicit type annotation
+      references:
+        - https://react.dev/reference/react/useState

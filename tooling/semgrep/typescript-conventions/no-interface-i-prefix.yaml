@@ -1,0 +1,30 @@
+rules:
+  - id: no-interface-i-prefix
+    pattern: interface I$NAME { ... }
+    message: |
+      Avoid Hungarian notation I prefix on interfaces.
+      Use descriptive names that communicate purpose, not implementation.
+      Example: Use 'PressRelease' instead of 'IPressRelease'.
+    severity: WARNING
+    languages: [typescript, tsx]
+    metadata:
+      category: typescript-conventions
+      subcategory: naming-patterns
+      confidence: HIGH
+      likelihood: MEDIUM
+      impact: LOW
+      description: Interface names should not use I prefix
+      references:
+        - https://google.github.io/styleguide/tsguide.html#naming
+      cwe:
+        - "CWE-1099: Inconsistent Naming Conventions"
+    paths:
+      include:
+        - "*.ts"
+        - "*.tsx"
+      exclude:
+        - "*.test.ts"
+        - "*.test.tsx"
+        - "*.spec.ts"
+        - "*.spec.tsx"
+        - node_modules/

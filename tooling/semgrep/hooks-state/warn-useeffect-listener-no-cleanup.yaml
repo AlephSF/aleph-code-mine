@@ -1,0 +1,46 @@
+rules:
+  - id: warn-useeffect-listener-no-cleanup
+    patterns:
+      - pattern-either:
+          - pattern: |
+              useEffect(() => {
+                ...
+                window.addEventListener($EVENT, $HANDLER)
+                ...
+              }, ...)
+          - pattern: |
+              useEffect(() => {
+                ...
+                document.addEventListener($EVENT, $HANDLER)
+                ...
+              }, ...)
+      - pattern-not: |
+          useEffect(() => {
+            ...
+            return () => ...removeEventListener...
+          }, ...)
+    message: |
+      useEffect with addEventListener must return cleanup function.
+
+      Event listeners on window/document persist after component unmount,
+      causing memory leaks if not removed.
+
+      Fix: Add cleanup function
+      useEffect(() => {
+        const handler = (e) => { /* ... */ }
+        window.addEventListener('resize', handler)
+        return () => window.removeEventListener('resize', handler)
+      }, [])
+    severity: WARNING
+    languages: [typescript, tsx]
+    metadata:
+      category: hooks-state
+      subcategory: memory-leaks
+      confidence: HIGH
+      likelihood: MEDIUM
+      impact: HIGH
+      description: Event listeners in useEffect need cleanup to prevent memory leaks
+      references:
+        - https://react.dev/reference/react/useEffect#connecting-to-an-external-system
+      cwe:
+        - "CWE-401: Missing Release of Memory after Effective Lifetime"

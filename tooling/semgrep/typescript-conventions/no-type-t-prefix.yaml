@@ -1,0 +1,30 @@
+rules:
+  - id: no-type-t-prefix
+    pattern: type T$NAME = ...
+    message: |
+      Avoid Hungarian notation T prefix on type aliases.
+      Use descriptive names that communicate purpose, not implementation.
+      Example: Use 'PressReleaseList' instead of 'TPressReleaseDocs'.
+    severity: WARNING
+    languages: [typescript, tsx]
+    metadata:
+      category: typescript-conventions
+      subcategory: naming-patterns
+      confidence: HIGH
+      likelihood: MEDIUM
+      impact: LOW
+      description: Type aliases should not use T prefix
+      references:
+        - https://google.github.io/styleguide/tsguide.html#naming
+      cwe:
+        - "CWE-1099: Inconsistent Naming Conventions"
+    paths:
+      include:
+        - "*.ts"
+        - "*.tsx"
+      exclude:
+        - "*.test.ts"
+        - "*.test.tsx"
+        - "*.spec.ts"
+        - "*.spec.tsx"
+        - node_modules/

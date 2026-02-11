@@ -2,7 +2,7 @@
 
 **Last Updated:** February 11, 2026
 **Current Phase:** Phase 2 - Domain-Targeted Deep Dives (In Progress)
-**Current Domain:** Data Fetching (Next.js) ✅ COMPLETE
+**Current Domain:** Hooks & State (Next.js) ✅ COMPLETE
 
 ---
 
@@ -126,6 +126,88 @@
 - Zero server actions: No 'use server' adoption observed
 - Zero SWR: No client-side data fetching libraries used
 - GraphQL batching: policy-node optimizes build with request batching (800+ pages)
+
+### Domain 3: TypeScript Conventions ✅ COMPLETE
+
+**Duration:** ~3 hours
+**Deliverables:**
+- 8 RAG-optimized documentation files in `docs/js-nextjs/typescript-conventions/`
+- 4 Semgrep rules in `tooling/semgrep/typescript-conventions/`
+- 1 cross-project comparison analysis
+
+**Documentation Files:**
+1. ✅ props-naming-convention.md (100% confidence)
+2. ✅ optional-vs-nullable-properties.md (100% confidence)
+3. ✅ no-hungarian-notation.md (91% confidence)
+4. ✅ type-vs-interface-decision-tree.md (54% confidence)
+5. ✅ union-type-patterns.md (100% confidence)
+6. ✅ record-type-for-dictionaries.md (33% confidence)
+7. ✅ type-assertions-sparingly.md (33% confidence)
+8. ✅ type-guards-for-runtime-safety.md (0% confidence - gap pattern)
+
+**Semgrep Rules:**
+1. ✅ no-interface-i-prefix.yaml - Disallow I prefix on interfaces
+2. ✅ no-type-t-prefix.yaml - Disallow T prefix on type aliases
+3. ✅ warn-type-assertion-no-validation.yaml - Warn on assertions without validation
+4. ✅ prefer-string-union-over-enum.yaml - Prefer string unions over enums
+
+**Analysis Files:**
+1. ✅ typescript-conventions-comparison.md - Cross-project quantitative analysis
+
+**Validation:**
+- ✅ All sections under 1,500 characters
+- ✅ No pronoun-leading sentences
+- ✅ All required frontmatter fields present
+- ✅ Source confidence calculated from actual pattern counts
+- ⏳ Semgrep rules validation pending
+
+**Key Findings:**
+- Universal patterns: Props suffix (168 instances), optional properties (2213), export keyword
+- Divergent patterns: Type vs interface (54% type overall, but kariusdx 71% interface)
+- Policy-node sophistication: Heavy utility type usage (152 Record instances), type assertions (70 vs 5-7 in others)
+- Hungarian notation: 91% no-prefix adoption (kariusdx legacy has I/T prefixes)
+- Avoided patterns: Type guards (0 usage), enums (3 total), readonly (10 total), const assertions (14 total)
+- Critical gap: Zero type guard implementations despite extensive API parsing
+
+### Domain 4: Hooks & State ✅ COMPLETE
+
+**Duration:** ~2.5 hours
+**Deliverables:**
+- 8 RAG-optimized documentation files in `docs/js-nextjs/hooks-state/`
+- 3 Semgrep rules in `tooling/semgrep/hooks-state/`
+- 1 cross-project comparison analysis
+
+**Documentation Files:**
+1. ✅ multiple-usestate-pattern.md (100% confidence)
+2. ✅ useeffect-cleanup-pattern.md (100% confidence)
+3. ✅ ssr-safe-custom-hooks.md (100% confidence)
+4. ✅ usestate-type-annotations.md (100% confidence)
+5. ✅ when-to-use-usereducer.md (0% confidence - gap pattern)
+6. ✅ context-vs-props-drilling.md (1% confidence - gap pattern)
+7. ✅ usememo-usecallback-guidelines.md (minimal usage)
+8. ✅ useeffect-dependency-patterns.md (100% confidence)
+
+**Semgrep Rules:**
+1. ✅ warn-usestate-empty-array-no-type.yaml - Require types for empty arrays
+2. ✅ warn-useeffect-listener-no-cleanup.yaml - Require cleanup for event listeners
+3. ✅ warn-context-provider-no-usememo.yaml - Require useMemo for context values
+
+**Analysis Files:**
+1. ✅ hooks-state-comparison.md - Cross-project hook usage analysis
+
+**Validation:**
+- ✅ All sections under 1,500 characters
+- ✅ No pronoun-leading sentences
+- ✅ All required frontmatter fields present
+- ✅ Source confidence calculated from actual usage counts
+- ⏳ Semgrep rules validation pending
+
+**Key Findings:**
+- Universal patterns: useState + useEffect (100%), multiple useState over single object (100%), event listener cleanup (100%)
+- SSR-safe custom hooks: All 4 custom hooks follow same pattern (window checks, mount tracking, tuple return)
+- Minimal patterns: Custom hooks (4 total), useMemo (20), useCallback (13), useContext (2)
+- Zero usage: useReducer (0 instances), external state libraries (0), type guards in hooks (0)
+- Critical gaps: No custom hooks for data fetching/forms, no useReducer despite complex state (11 useState in one component)
 
 ### Priority Order (Based on Findings)
 
@@ -285,15 +367,17 @@ aleph-code-mine/
 | Phase | Status | Time Estimate |
 |-------|--------|---------------|
 | Phase 1: Structural Recon | ✅ Complete | 2 hours (done) |
-| Phase 2: Next.js Domains (9) | 🎯 In Progress (2/9 complete) | 18-27 hours |
+| Phase 2: Next.js Domains (9) | 🎯 In Progress (4/9 complete) | 18-27 hours |
 | - Domain 1: Component Patterns | ✅ Complete | 2.5 hours (done) |
 | - Domain 2: Data Fetching | ✅ Complete | 4 hours (done) |
-| - Domain 3-9: Remaining domains | ⏳ Pending | 9.5-17.5 hours |
+| - Domain 3: TypeScript Conventions | ✅ Complete | 3 hours (done) |
+| - Domain 4: Hooks & State | ✅ Complete | 2.5 hours (done) |
+| - Domain 5-9: Remaining domains | ⏳ Pending | 4-12 hours |
 | Phase 3: Sanity Domains (4) | ⏳ Pending | 8-12 hours |
 | Phase 4: WordPress Domains (8) | ⏳ Pending | 16-24 hours |
 | Phase 5: Cross-Stack (4) | ⏳ Pending | 8-12 hours |
 | Phase 6: Tooling Outputs | ⏳ Pending | 8-12 hours |
-| **TOTAL** | **31% Complete** | **54-83 hours** |
+| **TOTAL** | **44% Complete** | **54-83 hours** |
 
 ---
 
@@ -309,9 +393,11 @@ ls analysis/  # See all structural analyses
 ```
 
 Then tell Claude:
-> "Continue the codebase mining project. Start Phase 2, Domain 3: [Next Domain]"
+> "Continue the codebase mining project. Start Phase 2, Domain 4: [Next Domain]"
 
 **Completed Domains:**
 - ✅ Phase 1: Structural Reconnaissance (all 8 repos)
 - ✅ Phase 2, Domain 1: Component Patterns (Next.js) - 8 docs + 4 Semgrep rules
 - ✅ Phase 2, Domain 2: Data Fetching (Next.js) - 8 docs + 4 Semgrep rules
+- ✅ Phase 2, Domain 3: TypeScript Conventions (Next.js) - 8 docs + 4 Semgrep rules
+- ✅ Phase 2, Domain 4: Hooks & State (Next.js) - 8 docs + 3 Semgrep rules

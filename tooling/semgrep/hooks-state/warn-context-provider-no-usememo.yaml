@@ -1,0 +1,40 @@
+rules:
+  - id: warn-context-provider-no-usememo
+    patterns:
+      - pattern: |
+          <$CONTEXT.Provider value={{...}}>
+            $CHILDREN
+          </$CONTEXT.Provider>
+      - pattern-not-inside: |
+          const $VALUE = useMemo(...)
+          ...
+          <$CONTEXT.Provider value={$VALUE}>
+            ...
+          </$CONTEXT.Provider>
+    message: |
+      Context Provider value should be wrapped in useMemo to prevent unnecessary re-renders.
+
+      Object literals in value prop create new references on every render,
+      causing all context consumers to re-render even when values haven't changed.
+
+      Fix: Wrap value in useMemo
+      const value = useMemo(
+        () => ({ state, setState }),
+        [state]
+      )
+      return (
+        <MyContext.Provider value={value}>
+          {children}
+        </MyContext.Provider>
+      )
+    severity: INFO
+    languages: [typescript, tsx]
+    metadata:
+      category: hooks-state
+      subcategory: performance
+      confidence: HIGH
+      likelihood: MEDIUM
+      impact: MEDIUM
+      description: Context provider values should be memoized
+      references:
+        - https://react.dev/reference/react/useContext#optimizing-re-renders-when-passing-objects-and-functions

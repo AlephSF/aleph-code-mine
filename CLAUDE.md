@@ -34,13 +34,15 @@ aleph-code-mine/
 ## Current Status
 
 **Phase:** Phase 2 - Domain-Targeted Deep Dives (In Progress)
-**Progress:** 31% complete
+**Progress:** 44% complete
 **Completed:**
 - ✅ Phase 1: Structural Reconnaissance (8/8 repos)
 - ✅ Phase 2, Domain 1: Component Patterns (Next.js) - 8 docs + 4 Semgrep rules
 - ✅ Phase 2, Domain 2: Data Fetching (Next.js) - 8 docs + 4 Semgrep rules
+- ✅ Phase 2, Domain 3: TypeScript Conventions (Next.js) - 8 docs + 4 Semgrep rules
+- ✅ Phase 2, Domain 4: Hooks & State (Next.js) - 8 docs + 3 Semgrep rules
 
-**Next Domain:** TypeScript Conventions / Hooks & State / Project Structure (Next.js)
+**Next Domain:** Styling / Project Structure / Testing (Next.js)
 
 **To Resume:** Read `PROGRESS.md` for detailed status and next steps.
 
@@ -166,20 +168,56 @@ ls analysis/                       # Phase 1 outputs
 - Route handlers (67% confidence - NextRequest/Response, webhooks)
 - GraphQL batching (33% confidence - performance optimization)
 
+### Phase 2, Domain 3: TypeScript Conventions ✅
+**Location:** `docs/js-nextjs/typescript-conventions/`
+**Deliverables:**
+- 8 RAG-optimized documentation files (~2,000 lines)
+- 4 Semgrep enforcement rules in `tooling/semgrep/typescript-conventions/`
+- 1 cross-project comparison analysis
+
+**Key Patterns Documented:**
+- Props naming (Props suffix - 100% confidence, 168 instances)
+- Optional vs nullable (100% confidence - 2,213 optional properties)
+- No Hungarian notation (91% confidence - avoid I/T prefixes)
+- Type vs interface (54% type preference, decision tree provided)
+- Union types (100% confidence - 329 instances)
+- Record for dictionaries (33% confidence - policy-node only)
+- Type assertions sparingly (33% confidence - policy-node heavy usage)
+- Type guards for runtime safety (0% confidence - gap pattern)
+
+### Phase 2, Domain 4: Hooks & State ✅
+**Location:** `docs/js-nextjs/hooks-state/`
+**Deliverables:**
+- 8 RAG-optimized documentation files (~2,700 lines)
+- 3 Semgrep enforcement rules in `tooling/semgrep/hooks-state/`
+- 1 cross-project comparison analysis
+
+**Key Patterns Documented:**
+- Multiple useState (100% confidence - 0 single state objects)
+- useEffect cleanup (100% confidence - all event listeners cleaned up)
+- SSR-safe custom hooks (100% confidence - 4/4 follow pattern)
+- useState type annotations (100% confidence - 27% typed, 73% inferred)
+- When to use useReducer (0% confidence - gap pattern)
+- Context vs props drilling (1% confidence - 99% use props)
+- useMemo/useCallback guidelines (minimal usage - helix: 0 useMemo)
+- useEffect dependencies (100% confidence - separated by concern)
+
 ## Next Session
 
-Start with: "Continue the codebase mining project. Start Phase 2, Domain 3: [Next Domain]"
+Start with: "Continue the codebase mining project. Start Phase 2, Domain 5: [Next Domain]"
 
 **Recommended next domains:**
-- TypeScript conventions (type vs interface usage patterns)
-- Hooks & state (custom hooks, state management)
+- Styling (SCSS + CSS Modules patterns, design system structure)
 - Project structure (App Router vs Pages Router organization)
+- Testing (document the gap and provide guidance)
 
 **Files to Review Before Starting:**
 ```bash
 cd /Users/oppodeldoc/code/aleph-code-mine
-cat PROGRESS.md                           # Current status & detailed findings
-cat analysis/PHASE1-SUMMARY.md          # Phase 1 insights
-ls docs/js-nextjs/component-patterns/   # Domain 1 deliverables
-ls docs/js-nextjs/data-fetching/        # Domain 2 deliverables
+cat PROGRESS.md                              # Current status & detailed findings
+cat analysis/PHASE1-SUMMARY.md             # Phase 1 insights
+ls docs/js-nextjs/component-patterns/      # Domain 1 deliverables
+ls docs/js-nextjs/data-fetching/           # Domain 2 deliverables
+ls docs/js-nextjs/typescript-conventions/  # Domain 3 deliverables
+ls docs/js-nextjs/hooks-state/             # Domain 4 deliverables
 ```

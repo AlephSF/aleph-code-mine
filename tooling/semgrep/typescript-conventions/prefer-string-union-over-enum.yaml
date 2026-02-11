@@ -1,0 +1,38 @@
+rules:
+  - id: prefer-string-union-over-enum
+    pattern: enum $NAME { ... }
+    message: |
+      Prefer string literal union types over enums for better tree-shaking and simpler output.
+
+      Instead of:
+        enum Status { Active = 'active', Inactive = 'inactive' }
+
+      Use:
+        type Status = 'active' | 'inactive'
+
+      String literal unions:
+      - Compile to nothing (zero runtime overhead)
+      - Work naturally with JSON and API responses
+      - Better IDE autocomplete
+      - No reverse mapping complexity
+    severity: WARNING
+    languages: [typescript, tsx]
+    metadata:
+      category: typescript-conventions
+      subcategory: type-definitions
+      confidence: HIGH
+      likelihood: LOW
+      impact: LOW
+      description: String literal unions are preferred over enums
+      references:
+        - https://www.typescriptlang.org/docs/handbook/enums.html#objects-vs-enums
+    paths:
+      include:
+        - "*.ts"
+        - "*.tsx"
+      exclude:
+        - "*.test.ts"
+        - "*.test.tsx"
+        - "*.spec.ts"
+        - "*.spec.tsx"
+        - node_modules/
