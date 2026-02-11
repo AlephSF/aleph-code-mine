@@ -1,0 +1,69 @@
+rules:
+  - id: require-try-catch-async-functions
+    pattern-either:
+      # Async function without try/catch containing await
+      - pattern: |
+          async function $FUNC(...) {
+            ...
+            await $EXPR
+            ...
+          }
+      # Async arrow function without try/catch
+      - pattern: |
+          const $FUNC = async (...) => {
+            ...
+            await $EXPR
+            ...
+          }
+      # Async method without try/catch
+      - pattern: |
+          async $METHOD(...) {
+            ...
+            await $EXPR
+            ...
+          }
+    pattern-not-inside: |
+      try {
+        ...
+      } catch (...) {
+        ...
+      }
+    paths:
+      include:
+        - "lib/**/*.ts"
+        - "app/**/*.ts"
+        - "app/**/*.tsx"
+        - "app/api/**/*.ts"
+      exclude:
+        - "**/*.test.ts"
+        - "**/*.spec.ts"
+    message: |
+      Async function contains await without try/catch error handling.
+
+      Unhandled promise rejections cause silent failures in production.
+
+      Add try/catch with error logging:
+      ```typescript
+      async function $FUNC(...) {
+        try {
+          const result = await $EXPR
+          return result
+        } catch (error) {
+          logger.error({ err: error, context: '$FUNC' }, 'Operation failed')
+          throw error  // Re-throw for caller or error boundary
+        }
+      }
+      ```
+
+      See: docs/js-nextjs/error-handling/silent-failure-antipatterns.md
+    severity: WARNING
+    languages:
+      - typescript
+      - tsx
+    metadata:
+      category: error-handling
+      confidence: HIGH
+      cwe: "CWE-755: Improper Handling of Exceptional Conditions"
+      source_confidence: "100%"
+      applies_to: "All async/await code"
+      false_positives: "Async functions wrapped in higher-level try/catch or error boundaries"

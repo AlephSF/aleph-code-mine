@@ -1,0 +1,139 @@
+rules:
+  - id: enforce-api-error-response-format
+    pattern-either:
+      # NextResponse.json without status code in error case
+      - pattern: |
+          catch ($ERROR) {
+            ...
+            return NextResponse.json({ error: $MSG })
+          }
+      # Generic error message without context
+      - pattern: |
+          catch ($ERROR) {
+            ...
+            return NextResponse.json(
+              { error: "Error" },
+              ...
+            )
+          }
+      - pattern: |
+          catch ($ERROR) {
+            ...
+            return NextResponse.json(
+              { error: "Internal server error" },
+              ...
+            )
+          }
+      # Wrong status code for validation errors (should be 400, not 500)
+      - pattern: |
+          if (!$VALIDATION) {
+            return NextResponse.json(
+              { error: $MSG },
+              { status: 500 }
+            )
+          }
+    paths:
+      include:
+        - "app/api/**/*.ts"
+    message: |
+      API error response missing proper status code or using generic error message.
+
+      Best practices for API error responses:
+
+      1. Always include HTTP status code:
+      ```typescript
+      catch (error) {
+        return NextResponse.json(
+          { error: 'Failed to fetch municipalities' },
+          { status: 500 }  // ✅ Include status code
+        )
+      }
+      ```
+
+      2. Use specific error messages with context:
+      ```typescript
+      // ❌ BAD: Generic message
+      { error: 'Error' }
+
+      // ✅ GOOD: Specific message with context
+      { error: 'Failed to fetch municipalities', code: 'FETCH_ERROR' }
+      ```
+
+      3. Use correct status codes:
+      - 400: Bad Request (validation errors, invalid input)
+      - 401: Unauthorized (missing/invalid authentication)
+      - 403: Forbidden (authenticated but insufficient permissions)
+      - 404: Not Found (resource does not exist)
+      - 409: Conflict (resource already exists)
+      - 422: Unprocessable Entity (valid syntax, semantic errors)
+      - 429: Too Many Requests (rate limit exceeded)
+      - 500: Internal Server Error (unexpected server errors)
+      - 503: Service Unavailable (temporary service outage)
+
+      4. Use custom error classes with status codes:
+      ```typescript
+      class ApiError extends Error {
+        readonly statusCode: number
+        constructor(message: string, statusCode: number = 500) {
+          super(message)
+          this.statusCode = statusCode
+        }
+      }
+
+      try {
+        if (!isValidSlug(params.slug)) {
+          throw new ApiError('Invalid slug format', 400)
+        }
+
+        const data = await fetchData(params.slug)
+
+        if (!data) {
+          throw new ApiError('Resource not found', 404)
+        }
+
+        return NextResponse.json(data)
+      } catch (error) {
+        if (error instanceof ApiError) {
+          return NextResponse.json(
+            { error: error.message, code: 'API_ERROR' },
+            { status: error.statusCode }
+          )
+        }
+
+        return NextResponse.json(
+          { error: 'Internal server error' },
+          { status: 500 }
+        )
+      }
+      ```
+
+      5. Log errors server-side, sanitize for client:
+      ```typescript
+      catch (error) {
+        // Log full error details (server-side)
+        logger.error({
+          err: error,
+          context: 'api-route',
+          path: request.nextUrl.pathname,
+        }, 'API error occurred')
+
+        // Return sanitized error (no stack traces to client)
+        return NextResponse.json(
+          { error: 'Internal server error', requestId: crypto.randomUUID() },
+          { status: 500 }
+        )
+      }
+      ```
+
+      See: docs/js-nextjs/error-handling/api-error-responses.md
+    severity: WARNING
+    languages:
+      - typescript
+    metadata:
+      category: error-handling
+      subcategory: api-routes
+      confidence: HIGH
+      cwe: "CWE-209: Generation of Error Message Containing Sensitive Information"
+      owasp: "A04:2021 - Insecure Design"
+      source_confidence: "33%"
+      applies_to: "Next.js API Routes (App Router)"

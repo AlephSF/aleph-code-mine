@@ -1,0 +1,59 @@
+rules:
+  - id: warn-missing-error-boundary
+    pattern-either:
+      # Detect Client Components without error boundaries
+      - pattern: |
+          'use client'
+          ...
+          export default function $COMPONENT(...) {
+            ...
+            throw $ERROR
+            ...
+          }
+      # Detect async Server Components that might error
+      - pattern: |
+          export default async function $PAGE(...) {
+            ...
+            const $DATA = await $FETCH(...)
+            ...
+          }
+    paths:
+      include:
+        - "app/**/page.tsx"
+        - "app/**/layout.tsx"
+        - "app/components/**/*.tsx"
+    message: |
+      Component may throw errors but no error.tsx file exists in this route segment.
+
+      Add error.tsx to handle errors gracefully:
+      ```typescript
+      // app/error.tsx
+      'use client'
+
+      export default function Error({
+        error,
+        reset,
+      }: {
+        error: Error & { digest?: string }
+        reset: () => void
+      }) {
+        return (
+          <div>
+            <h2>Something went wrong!</h2>
+            <button onClick={() => reset()}>Try again</button>
+          </div>
+        )
+      }
+      ```
+
+      See: docs/js-nextjs/error-handling/app-router-error-handling.md
+    severity: WARNING
+    languages:
+      - typescript
+      - tsx
+    metadata:
+      category: error-handling
+      confidence: MEDIUM
+      cwe: "CWE-755: Improper Handling of Exceptional Conditions"
+      source_confidence: "50%"
+      applies_to: "Next.js App Router (v13+)"

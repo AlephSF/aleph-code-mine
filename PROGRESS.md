@@ -2,7 +2,8 @@
 
 **Last Updated:** February 11, 2026
 **Current Phase:** Phase 2 - Domain-Targeted Deep Dives (In Progress)
-**Current Domain:** Error Handling (Next.js) ⏳ IN PROGRESS (25% complete)
+**Overall Progress:** 89% complete (8/9 Next.js domains complete)
+**Current Domain:** Tooling Config (Next.js) ⏳ PENDING
 
 ---
 
@@ -409,7 +410,7 @@ aleph-code-mine/
 | Phase | Status | Time Estimate |
 |-------|--------|---------------|
 | Phase 1: Structural Recon | ✅ Complete | 2 hours (done) |
-| Phase 2: Next.js Domains (9) | 🎯 In Progress (7/9 complete) | 18-27 hours |
+| Phase 2: Next.js Domains (9) | 🎯 In Progress (8/9 complete) | 18-27 hours |
 | - Domain 1: Component Patterns | ✅ Complete | 2.5 hours (done) |
 | - Domain 2: Data Fetching | ✅ Complete | 4 hours (done) |
 | - Domain 3: TypeScript Conventions | ✅ Complete | 3 hours (done) |
@@ -417,12 +418,13 @@ aleph-code-mine/
 | - Domain 5: Styling | ✅ Complete | 3.5 hours (done) |
 | - Domain 6: Project Structure | ✅ Complete | 3 hours (done) |
 | - Domain 7: Testing | ✅ Complete | 2.5 hours (done) |
-| - Domain 8-9: Remaining domains | ⏳ Pending | 1-5 hours |
+| - Domain 8: Error Handling | ✅ Complete | 3 hours (done) |
+| - Domain 9: Tooling Config | ⏳ Pending | 2-3 hours |
 | Phase 3: Sanity Domains (4) | ⏳ Pending | 8-12 hours |
 | Phase 4: WordPress Domains (8) | ⏳ Pending | 16-24 hours |
 | Phase 5: Cross-Stack (4) | ⏳ Pending | 8-12 hours |
 | Phase 6: Tooling Outputs | ⏳ Pending | 8-12 hours |
-| **TOTAL** | **75% Complete** | **54-83 hours** |
+| **TOTAL** | **89% Complete** | **54-83 hours** |
 
 ---
 
@@ -449,6 +451,7 @@ Then tell Claude:
 - ✅ Phase 2, Domain 5: Styling (Next.js) - 8 docs + 4 Semgrep rules
 - ✅ Phase 2, Domain 6: Project Structure (Next.js) - 7 docs + 4 Semgrep rules
 - ✅ Phase 2, Domain 7: Testing (Next.js) - 8 docs + 4 Semgrep rules
+- ✅ Phase 2, Domain 8: Error Handling (Next.js) - 8 docs + 4 Semgrep rules
 
 ### Domain 6: Project Structure ✅ COMPLETE
 
@@ -537,51 +540,50 @@ Then tell Claude:
 - Estimated test requirements: 40-60 unit tests for utilities, 50-80 component tests, 20-30 API integration tests, 10-15 E2E tests
 - Industry standard: 70-80% code coverage, analyzed codebases have 0%
 
-### Domain 8: Error Handling ⏳ IN PROGRESS (25% complete)
+### Domain 8: Error Handling ✅ COMPLETE
 
-**Duration:** ~1 hour so far (estimated 2.5 hours total)
-**Deliverables (Partial):**
-- 1 RAG-optimized comparison analysis in `analysis/`
-- 2/8 RAG-optimized documentation files in `docs/js-nextjs/error-handling/`
-- 0/4 Semgrep rules pending
+**Duration:** ~3 hours
+**Deliverables:**
+- 8 RAG-optimized documentation files in `docs/js-nextjs/error-handling/`
+- 4 Semgrep rules in `tooling/semgrep/error-handling/`
+- 1 cross-project comparison analysis
 
-**Documentation Files Completed:**
+**Documentation Files:**
 1. ✅ custom-error-classes.md (33% confidence - policy-node pattern)
 2. ✅ error-boundaries-react.md (0% confidence - gap pattern)
+3. ✅ app-router-error-handling.md (50% confidence - error.tsx, notFound(), global-error.tsx)
+4. ✅ structured-logging.md (0% confidence - Pino/Winston recommendations)
+5. ✅ error-tracking-services.md (0% confidence - Sentry/Rollbar integration)
+6. ✅ api-error-responses.md (33% confidence - NextResponse patterns, custom error classes)
+7. ✅ silent-failure-antipatterns.md (33% confidence - Helix JobBoard antipattern)
+8. ✅ error-context-wrapping.md (33% confidence - Policy-node error wrapping pattern)
 
-**Documentation Files Remaining:**
-3. ⏳ app-router-error-handling.md (error.tsx, notFound(), global-error.tsx)
-4. ⏳ structured-logging.md (Pino/Winston recommendations)
-5. ⏳ error-tracking-services.md (Sentry/Rollbar integration)
-6. ⏳ api-error-responses.md (NextResponse patterns)
-7. ⏳ silent-failure-antipatterns.md (Helix JobBoard antipattern)
-8. ⏳ error-context-wrapping.md (Policy-node pattern)
-
-**Semgrep Rules (Pending):**
-1. ⏳ warn-missing-error-boundary.yaml
-2. ⏳ require-try-catch-async.yaml
-3. ⏳ warn-silent-error-suppression.yaml
-4. ⏳ enforce-api-error-response.yaml
+**Semgrep Rules:**
+1. ✅ warn-missing-error-boundary.yaml - Warn when route segments lack error.tsx
+2. ✅ require-try-catch-async.yaml - Require try/catch in async functions with await
+3. ✅ warn-silent-error-suppression.yaml - Detect catch blocks without logging/tracking (Helix JobBoard antipattern)
+4. ✅ enforce-api-error-response.yaml - Enforce proper NextResponse error format with status codes
 
 **Analysis Files:**
 1. ✅ error-handling-comparison.md - Cross-project error handling analysis
 
-**Validation (Completed Docs):**
+**Validation:**
 - ✅ All sections under 1,500 characters
 - ✅ No pronoun-leading sentences
 - ✅ All required frontmatter fields present
 - ✅ Source confidence calculated from actual pattern counts
+- ⏳ Semgrep rules validation pending (semgrep not installed)
 
-**Key Findings (So Far):**
-- try/catch coverage: helix (1 block), kariusdx (5 blocks), policy-node (160 blocks)
-- Custom error classes: Policy-node only (MunicipalityError, PhraseError, MunicipalitySearchError)
-- Error boundaries: 0% adoption (critical gap - no React error boundaries exist)
-- Error tracking: 0% adoption (no Sentry, Rollbar, Bugsnag)
-- Structured logging: 0% adoption (no Winston, Pino)
-- Silent failures: Helix JobBoard component (commented-out error logging, returns undefined)
-- notFound() usage: helix (6 calls), policy-node (19 calls), kariusdx (0 calls)
-- error.tsx files: Policy-node only (1 file)
-- console.error usage: helix (1), kariusdx (0), policy-node (116)
-
-**Resume Point:**
-Continue with app-router-error-handling.md and remaining 5 documentation files, then generate 4 Semgrep rules.
+**Key Findings:**
+- try/catch coverage: helix (1 block - minimal), kariusdx (5 blocks - minimal), policy-node (160 blocks - comprehensive)
+- Custom error classes with HTTP status codes: 33% (policy-node only: MunicipalityError, PhraseError, MunicipalitySearchError)
+- Error boundaries (React): 0% adoption (critical gap - no React error boundaries)
+- App Router error.tsx: 50% adoption (policy-node only, helix missing)
+- global-error.tsx: 0% adoption (critical gap for root layout errors)
+- not-found.tsx: 0% adoption (despite 25 notFound() calls)
+- Error tracking services: 0% adoption (no Sentry, Rollbar, Bugsnag)
+- Structured logging: 0% adoption (no Winston, Pino - only console.error)
+- Silent failure antipattern: 33% (helix JobBoard: commented-out error logging, returns undefined, no user feedback)
+- Error context wrapping: 33% (policy-node: 80% of utilities wrap errors with contextual information)
+- notFound() usage: 67% (helix: 6 calls, policy-node: 19 calls, kariusdx: 0 calls)
+- console.error usage: 33% (policy-node: 116 calls, helix: 1 call, kariusdx: 0 calls)

@@ -1,0 +1,117 @@
+rules:
+  - id: warn-silent-error-suppression
+    pattern-either:
+      # Empty catch block
+      - pattern: |
+          try {
+            ...
+          } catch ($ERROR) {
+          }
+      # Catch block with only commented-out logging
+      - pattern: |
+          try {
+            ...
+          } catch ($ERROR) {
+            // console.error(...)
+          }
+      # Catch block that returns undefined/null without logging
+      - pattern: |
+          try {
+            ...
+          } catch ($ERROR) {
+            return undefined
+          }
+      - pattern: |
+          try {
+            ...
+          } catch ($ERROR) {
+            return null
+          }
+      # Catch block that only does optional chaining without logging
+      - pattern: |
+          try {
+            ...
+          } catch ($ERROR) {
+            $VAR?.$PROP
+          }
+    pattern-not-inside: |
+      catch ($ERROR) {
+        ...
+        console.error(...)
+        ...
+      }
+    pattern-not-inside: |
+      catch ($ERROR) {
+        ...
+        logger.error(...)
+        ...
+      }
+    pattern-not-inside: |
+      catch ($ERROR) {
+        ...
+        Sentry.captureException(...)
+        ...
+      }
+    paths:
+      include:
+        - "app/**/*.ts"
+        - "app/**/*.tsx"
+        - "lib/**/*.ts"
+        - "app/api/**/*.ts"
+    message: |
+      Silent error suppression detected: catch block without error logging or tracking.
+
+      CRITICAL: Helix JobBoard antipattern detected.
+
+      This pattern causes:
+      1. No developer visibility (errors invisible in production)
+      2. No user feedback (users see empty state vs error state)
+      3. No debugging context (error details lost)
+      4. No error tracking (no alerts, no monitoring)
+
+      Fix by adding error state and logging:
+      ```typescript
+      const [error, setError] = useState<Error | null>(null)
+
+      try {
+        const data = await fetchData()
+        setData(data)
+      } catch (error) {
+        // 1. Log for developer visibility
+        logger.error({ err: error, context: 'fetch-data' }, 'Failed to fetch data')
+
+        // 2. Track in error monitoring service
+        Sentry.captureException(error, {
+          tags: { section: 'data-fetch' },
+          extra: { userId: session?.userId },
+        })
+
+        // 3. Set error state for user feedback
+        setError(error instanceof Error ? error : new Error('Failed to load data'))
+      }
+
+      // 4. Render error UI
+      if (error) {
+        return (
+          <div>
+            <p>Failed to load data</p>
+            <button onClick={retry}>Retry</button>
+          </div>
+        )
+      }
+      ```
+
+      See: docs/js-nextjs/error-handling/silent-failure-antipatterns.md
+    severity: ERROR
+    languages:
+      - typescript
+      - tsx
+      - javascript
+    metadata:
+      category: error-handling
+      subcategory: silent-failures
+      confidence: HIGH
+      cwe: "CWE-390: Detection of Error Condition Without Action"
+      owasp: "A09:2021 - Security Logging and Monitoring Failures"
+      source_confidence: "33%"
+      observed_in: "helix-dot-com-next/app/components/JobBoard/JobBoard.tsx"
