@@ -1,0 +1,86 @@
+rules:
+  - id: warn-component-without-test
+    pattern-either:
+      # Default export components
+      - pattern: |
+          export default function $COMPONENT(...) {
+            ...
+            return <$JSX>...</$JSX>
+          }
+      # Named export components
+      - pattern: |
+          export function $COMPONENT(...) {
+            ...
+            return <$JSX>...</$JSX>
+          }
+      # Arrow function components
+      - pattern: |
+          export const $COMPONENT = (...) => {
+            ...
+            return <$JSX>...</$JSX>
+          }
+    paths:
+      include:
+        - "**/components/**/*.tsx"
+        - "**/app/**/*.tsx"
+      exclude:
+        - "**/*.test.tsx"
+        - "**/*.spec.tsx"
+        - "**/layout.tsx"  # Layouts tested via E2E
+        - "**/page.tsx"    # Pages tested via E2E
+        - "**/error.tsx"
+        - "**/loading.tsx"
+        - "**/not-found.tsx"
+    message: |
+      React component '$COMPONENT' should have component tests with Testing Library.
+
+      Create a test file testing component behavior from user perspective:
+      ```typescript
+      // Button.test.tsx
+      import { render, screen } from '@testing-library/react'
+      import userEvent from '@testing-library/user-event'
+      import { Button } from './Button'
+
+      describe('Button', () => {
+        it('renders with accessible label', () => {
+          render(<Button>Click Me</Button>)
+          expect(screen.getByRole('button', { name: /click me/i })).toBeInTheDocument()
+        })
+
+        it('calls onClick when clicked', async () => {
+          const handleClick = vi.fn()
+          const user = userEvent.setup()
+          render(<Button onClick={handleClick}>Submit</Button>)
+
+          await user.click(screen.getByRole('button'))
+          expect(handleClick).toHaveBeenCalledTimes(1)
+        })
+
+        it('is disabled when disabled prop is true', () => {
+          render(<Button disabled>Disabled</Button>)
+          expect(screen.getByRole('button')).toBeDisabled()
+        })
+      })
+      ```
+
+      Priority testing targets:
+      - Interactive components (buttons, forms, inputs)
+      - Stateful components (counters, toggles)
+      - Components with complex props logic
+
+      313+ untested components across 3 codebases. Start with:
+      - Button, Form, Input (high reuse, high risk)
+      - Navigation components (critical user flow)
+      - Card, List components (frequent usage)
+    languages:
+      - typescript
+    severity: INFO
+    metadata:
+      category: testing
+      subcategory: missing-tests
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: MEDIUM
+      references:
+        - https://testing-library.com/docs/react-testing-library/intro
+        - https://testing-library.com/docs/queries/about

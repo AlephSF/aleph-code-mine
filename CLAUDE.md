@@ -34,7 +34,7 @@ aleph-code-mine/
 ## Current Status
 
 **Phase:** Phase 2 - Domain-Targeted Deep Dives (In Progress)
-**Progress:** 67% complete
+**Progress:** 78% complete
 **Completed:**
 - ✅ Phase 1: Structural Reconnaissance (8/8 repos)
 - ✅ Phase 2, Domain 1: Component Patterns (Next.js) - 8 docs + 4 Semgrep rules
@@ -43,8 +43,10 @@ aleph-code-mine/
 - ✅ Phase 2, Domain 4: Hooks & State (Next.js) - 8 docs + 3 Semgrep rules
 - ✅ Phase 2, Domain 5: Styling (Next.js) - 8 docs + 4 Semgrep rules
 - ✅ Phase 2, Domain 6: Project Structure (Next.js) - 7 docs + 4 Semgrep rules
+- ✅ Phase 2, Domain 7: Testing (Next.js) - 8 docs + 4 Semgrep rules
+- ⏳ Phase 2, Domain 8: Error Handling (Next.js) - 2/8 docs (IN PROGRESS)
 
-**Next Domain:** Testing / Error Handling / Tooling Config (Next.js)
+**Next Domain:** Complete Error Handling domain (6 more docs + 4 Semgrep rules), then Tooling Config
 
 **To Resume:** Read `PROGRESS.md` for detailed status and next steps.
 
@@ -236,6 +238,38 @@ ls analysis/                       # Phase 1 outputs
 - Metadata API usage (100% App Router - replaces next-seo)
 - Async server components (100% App Router - 20 pages)
 - i18n with App Router (33% confidence - policy-node uses [lang] + middleware)
+
+### Phase 2, Domain 7: Testing ✅
+**Location:** `docs/js-nextjs/testing/`
+**Deliverables:**
+- 8 RAG-optimized documentation files (~2,300 lines)
+- 4 Semgrep enforcement rules in `tooling/semgrep/testing/`
+- 1 cross-project comparison analysis
+
+**Key Patterns Documented:**
+- Zero testing infrastructure (0% confidence - gap pattern across all repos)
+- Recommended testing stack (Vitest + Testing Library + Playwright + MSW)
+- Unit testing utilities (40-60 tests needed for policy-node's 33 utilities)
+- Component testing patterns (313+ untested components)
+- Testing async server components (App Router specific)
+- Testing API routes (10+ untested routes)
+- Testing custom hooks (4 SSR-safe hooks untested)
+- E2E testing critical flows (preview mode, ISR, i18n)
+
+### Phase 2, Domain 8: Error Handling ⏳ IN PROGRESS (25% complete)
+**Location:** `docs/js-nextjs/error-handling/`
+**Deliverables (Partial):**
+- 2/8 RAG-optimized documentation files
+- 0/4 Semgrep enforcement rules
+- 1 cross-project comparison analysis
+
+**Key Patterns Documented (So Far):**
+- Custom error classes with HTTP status codes (33% confidence - policy-node only)
+- React Error Boundaries (0% confidence - gap pattern, critical missing feature)
+- try/catch coverage: helix (1), kariusdx (5), policy-node (160 blocks)
+- Zero error tracking services (no Sentry, Rollbar)
+- Zero structured logging (no Winston, Pino)
+- Silent failure antipattern (helix JobBoard component)
 
 ## Next Session
 

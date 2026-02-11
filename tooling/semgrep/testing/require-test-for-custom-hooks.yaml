@@ -1,0 +1,90 @@
+rules:
+  - id: require-test-for-custom-hooks
+    pattern-either:
+      # Custom hooks (functions starting with "use")
+      - pattern: |
+          export function use$HOOK(...) { ... }
+      - pattern: |
+          export const use$HOOK = (...) => { ... }
+    paths:
+      include:
+        - "**/hooks/**/*.ts"
+        - "**/hooks/**/*.tsx"
+        - "**/*.ts"
+        - "**/*.tsx"
+      exclude:
+        - "**/*.test.ts"
+        - "**/*.test.tsx"
+        - "**/*.spec.ts"
+        - "**/*.spec.tsx"
+        - "**/node_modules/**"
+    message: |
+      Custom React hook 'use$HOOK' requires tests using renderHook from Testing Library.
+
+      Create a test file testing hook behavior in isolation:
+      ```typescript
+      // useCounter.test.ts
+      import { renderHook, act } from '@testing-library/react'
+      import { describe, it, expect } from 'vitest'
+      import { use$HOOK } from './use$HOOK'
+
+      describe('use$HOOK', () => {
+        it('initializes with default state', () => {
+          const { result } = renderHook(() => use$HOOK())
+          expect(result.current).toBeDefined()
+        })
+
+        it('updates state correctly', () => {
+          const { result } = renderHook(() => use$HOOK())
+
+          act(() => {
+            result.current.update('new-value')
+          })
+
+          expect(result.current.value).toBe('new-value')
+        })
+
+        it('cleans up effects on unmount', () => {
+          const { unmount } = renderHook(() => use$HOOK())
+
+          // Verify cleanup (spy on removeEventListener, clearInterval, etc.)
+          unmount()
+          // expect(cleanupSpy).toHaveBeenCalled()
+        })
+      })
+      ```
+
+      For SSR-safe hooks, test both server and client behavior:
+      ```typescript
+      describe('use$HOOK - SSR safety', () => {
+        it('returns default value during SSR (no window)', () => {
+          const originalWindow = global.window
+          delete (global as any).window
+
+          const { result } = renderHook(() => use$HOOK())
+          expect(result.current).toBe(DEFAULT_VALUE)
+
+          global.window = originalWindow
+        })
+
+        it('uses window API on client', () => {
+          const { result } = renderHook(() => use$HOOK())
+          expect(result.current).toBe(WINDOW_VALUE)
+        })
+      })
+      ```
+
+      4 SSR-safe custom hooks in analyzed codebases have ZERO tests.
+      Hooks are high-value test targets because bugs affect ALL components using the hook.
+    languages:
+      - typescript
+    severity: WARNING
+    metadata:
+      category: testing
+      subcategory: missing-tests
+      confidence: HIGH
+      likelihood: HIGH
+      impact: HIGH
+      references:
+        - https://react-hooks-testing-library.com/
+        - https://testing-library.com/docs/react-testing-library/api#renderhook

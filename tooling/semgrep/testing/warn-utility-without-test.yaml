@@ -1,0 +1,57 @@
+rules:
+  - id: warn-utility-without-test
+    pattern-either:
+      - pattern: |
+          export function $FUNC(...) { ... }
+      - pattern: |
+          export const $FUNC = (...) => { ... }
+    paths:
+      include:
+        - "**/utils/**/*.ts"
+        - "**/lib/**/*.ts"
+        - "**/helpers/**/*.ts"
+      exclude:
+        - "**/*.test.ts"
+        - "**/*.spec.ts"
+        - "**/*.d.ts"
+    message: |
+      Utility function '$FUNC' should have an accompanying test file.
+
+      Create a test file at the same location:
+      - Co-located: utils/$FUNC.test.ts
+      - Directory: utils/__tests__/$FUNC.test.ts
+
+      Example test structure:
+      ```typescript
+      import { describe, it, expect } from 'vitest'
+      import { $FUNC } from './$FUNC'
+
+      describe('$FUNC', () => {
+        it('handles expected input', () => {
+          const result = $FUNC('test-input')
+          expect(result).toBe('expected-output')
+        })
+
+        it('handles edge cases', () => {
+          expect($FUNC(null)).toBe('')
+          expect($FUNC(undefined)).toBe('')
+        })
+      })
+      ```
+
+      Policy-node has 33 utility files with ZERO tests. Start with high-risk utilities:
+      - formatValue.ts (affects all data displays)
+      - csvToJson.ts (build-time failures)
+      - replacePlaceholders.ts (XSS risk)
+    languages:
+      - typescript
+    severity: WARNING
+    metadata:
+      category: testing
+      subcategory: missing-tests
+      confidence: HIGH
+      likelihood: HIGH
+      impact: MEDIUM
+      references:
+        - https://vitest.dev/guide/
+        - https://testing-library.com/docs/react-testing-library/intro

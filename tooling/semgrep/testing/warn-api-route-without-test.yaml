@@ -1,0 +1,84 @@
+rules:
+  - id: warn-api-route-without-test
+    pattern-either:
+      # App Router route handlers
+      - pattern: |
+          export async function GET(...) { ... }
+      - pattern: |
+          export async function POST(...) { ... }
+      - pattern: |
+          export async function PUT(...) { ... }
+      - pattern: |
+          export async function DELETE(...) { ... }
+      # Pages Router API routes
+      - pattern: |
+          export default function handler(...) { ... }
+      - pattern: |
+          export default async function handler(...) { ... }
+    paths:
+      include:
+        - "**/app/api/**/route.ts"
+        - "**/pages/api/**/*.ts"
+      exclude:
+        - "**/*.test.ts"
+        - "**/*.spec.ts"
+    message: |
+      API route handler should have integration tests.
+
+      Create a test file testing HTTP methods, request parsing, and error handling:
+
+      For App Router route handlers:
+      ```typescript
+      // app/api/metrics/route.test.ts
+      import { describe, it, expect, vi } from 'vitest'
+      import { GET, POST } from './route'
+      import { NextRequest } from 'next/server'
+
+      describe('GET /api/metrics', () => {
+        it('returns metrics data', async () => {
+          const request = new NextRequest('http://localhost:3000/api/metrics')
+          const response = await GET(request)
+
+          expect(response.status).toBe(200)
+          const data = await response.json()
+          expect(data).toHaveProperty('metrics')
+        })
+
+        it('returns 404 for missing data', async () => {
+          // Mock data source returning empty
+          const response = await GET(request)
+          expect(response.status).toBe(404)
+        })
+      })
+      ```
+
+      For Pages Router API routes:
+      ```typescript
+      import { createMocks } from 'node-mocks-http'
+      import handler from './health'
+
+      describe('GET /api/health', () => {
+        it('returns health status', async () => {
+          const { req, res } = createMocks({ method: 'GET' })
+          await handler(req, res)
+
+          expect(res._getStatusCode()).toBe(200)
+          expect(res._getJSONData()).toEqual({ status: 'ok' })
+        })
+      })
+      ```
+
+      Policy-node has 10+ API routes with ZERO tests. Prioritize:
+      - /api/metrics (data transformations)
+      - /api/phrases (localization logic)
+    languages:
+      - typescript
+    severity: WARNING
+    metadata:
+      category: testing
+      subcategory: missing-tests
+      confidence: HIGH
+      likelihood: HIGH
+      impact: HIGH
+      references:
+        - https://nextjs.org/docs/app/building-your-application/testing/vitest

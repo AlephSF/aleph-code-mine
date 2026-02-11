@@ -2,7 +2,7 @@
 
 **Last Updated:** February 11, 2026
 **Current Phase:** Phase 2 - Domain-Targeted Deep Dives (In Progress)
-**Current Domain:** Hooks & State (Next.js) ✅ COMPLETE
+**Current Domain:** Error Handling (Next.js) ⏳ IN PROGRESS (25% complete)
 
 ---
 
@@ -409,19 +409,20 @@ aleph-code-mine/
 | Phase | Status | Time Estimate |
 |-------|--------|---------------|
 | Phase 1: Structural Recon | ✅ Complete | 2 hours (done) |
-| Phase 2: Next.js Domains (9) | 🎯 In Progress (6/9 complete) | 18-27 hours |
+| Phase 2: Next.js Domains (9) | 🎯 In Progress (7/9 complete) | 18-27 hours |
 | - Domain 1: Component Patterns | ✅ Complete | 2.5 hours (done) |
 | - Domain 2: Data Fetching | ✅ Complete | 4 hours (done) |
 | - Domain 3: TypeScript Conventions | ✅ Complete | 3 hours (done) |
 | - Domain 4: Hooks & State | ✅ Complete | 2.5 hours (done) |
 | - Domain 5: Styling | ✅ Complete | 3.5 hours (done) |
 | - Domain 6: Project Structure | ✅ Complete | 3 hours (done) |
-| - Domain 7-9: Remaining domains | ⏳ Pending | 1-5 hours |
+| - Domain 7: Testing | ✅ Complete | 2.5 hours (done) |
+| - Domain 8-9: Remaining domains | ⏳ Pending | 1-5 hours |
 | Phase 3: Sanity Domains (4) | ⏳ Pending | 8-12 hours |
 | Phase 4: WordPress Domains (8) | ⏳ Pending | 16-24 hours |
 | Phase 5: Cross-Stack (4) | ⏳ Pending | 8-12 hours |
 | Phase 6: Tooling Outputs | ⏳ Pending | 8-12 hours |
-| **TOTAL** | **67% Complete** | **54-83 hours** |
+| **TOTAL** | **75% Complete** | **54-83 hours** |
 
 ---
 
@@ -447,6 +448,7 @@ Then tell Claude:
 - ✅ Phase 2, Domain 4: Hooks & State (Next.js) - 8 docs + 3 Semgrep rules
 - ✅ Phase 2, Domain 5: Styling (Next.js) - 8 docs + 4 Semgrep rules
 - ✅ Phase 2, Domain 6: Project Structure (Next.js) - 7 docs + 4 Semgrep rules
+- ✅ Phase 2, Domain 7: Testing (Next.js) - 8 docs + 4 Semgrep rules
 
 ### Domain 6: Project Structure ✅ COMPLETE
 
@@ -490,3 +492,96 @@ Then tell Claude:
 - Component collocation: Hybrid model (shared + route-specific), helix uses route-specific folders
 - i18n: 33% adoption (policy-node uses [lang] param + middleware)
 - Critical gaps: kariusdx needs migration to App Router, zero loading.tsx usage, minimal error.tsx adoption
+
+### Domain 7: Testing ✅ COMPLETE
+
+**Duration:** ~2.5 hours
+**Deliverables:**
+- 8 RAG-optimized documentation files in `docs/js-nextjs/testing/`
+- 4 Semgrep rules in `tooling/semgrep/testing/`
+- 1 cross-project comparison analysis
+
+**Documentation Files:**
+1. ✅ why-testing-matters.md (0% confidence - gap pattern)
+2. ✅ recommended-testing-stack.md (0% confidence - gap pattern)
+3. ✅ unit-testing-utilities.md (0% confidence - gap pattern)
+4. ✅ component-testing-patterns.md (0% confidence - gap pattern)
+5. ✅ testing-async-server-components.md (0% confidence - gap pattern)
+6. ✅ testing-api-routes.md (0% confidence - gap pattern)
+7. ✅ testing-custom-hooks.md (0% confidence - gap pattern)
+8. ✅ e2e-testing-critical-flows.md (0% confidence - gap pattern)
+
+**Semgrep Rules:**
+1. ✅ warn-utility-without-test.yaml - Warn on untested utility functions
+2. ✅ warn-api-route-without-test.yaml - Warn on untested API routes
+3. ✅ warn-component-without-test.yaml - Info on untested components
+4. ✅ require-test-for-custom-hooks.yaml - Warn on untested custom hooks
+
+**Analysis Files:**
+1. ✅ testing-comparison.md - Cross-project testing gap analysis
+
+**Validation:**
+- ✅ All sections under 1,500 characters
+- ✅ No pronoun-leading sentences
+- ✅ All required frontmatter fields present
+- ✅ Source confidence: 0% (gap pattern documented)
+- ⏳ Semgrep rules validation pending
+
+**Key Findings:**
+- Universal gap: 0% testing infrastructure (no test files, no test runners, no E2E frameworks)
+- Quality assurance exists: ESLint (100%), TypeScript (100%), Stylelint (67%), Husky (67%)
+- Untested code: 313+ components, 33+ utility files (policy-node), 10+ API routes
+- High-risk untested utilities: formatValue.ts (78 lines, i18n, 5 format types), csvToJson.ts (170+ lines, async streaming), replacePlaceholders.ts (regex, recursion, XSS risk)
+- Custom validation irony: policy-node has validate:data script but validation script itself has no tests
+- Recommended stack: Vitest (5-10x faster than Jest), Testing Library (accessibility-first), Playwright (Next.js App Router support), MSW (network mocking)
+- Estimated test requirements: 40-60 unit tests for utilities, 50-80 component tests, 20-30 API integration tests, 10-15 E2E tests
+- Industry standard: 70-80% code coverage, analyzed codebases have 0%
+
+### Domain 8: Error Handling ⏳ IN PROGRESS (25% complete)
+
+**Duration:** ~1 hour so far (estimated 2.5 hours total)
+**Deliverables (Partial):**
+- 1 RAG-optimized comparison analysis in `analysis/`
+- 2/8 RAG-optimized documentation files in `docs/js-nextjs/error-handling/`
+- 0/4 Semgrep rules pending
+
+**Documentation Files Completed:**
+1. ✅ custom-error-classes.md (33% confidence - policy-node pattern)
+2. ✅ error-boundaries-react.md (0% confidence - gap pattern)
+
+**Documentation Files Remaining:**
+3. ⏳ app-router-error-handling.md (error.tsx, notFound(), global-error.tsx)
+4. ⏳ structured-logging.md (Pino/Winston recommendations)
+5. ⏳ error-tracking-services.md (Sentry/Rollbar integration)
+6. ⏳ api-error-responses.md (NextResponse patterns)
+7. ⏳ silent-failure-antipatterns.md (Helix JobBoard antipattern)
+8. ⏳ error-context-wrapping.md (Policy-node pattern)
+
+**Semgrep Rules (Pending):**
+1. ⏳ warn-missing-error-boundary.yaml
+2. ⏳ require-try-catch-async.yaml
+3. ⏳ warn-silent-error-suppression.yaml
+4. ⏳ enforce-api-error-response.yaml
+
+**Analysis Files:**
+1. ✅ error-handling-comparison.md - Cross-project error handling analysis
+
+**Validation (Completed Docs):**
+- ✅ All sections under 1,500 characters
+- ✅ No pronoun-leading sentences
+- ✅ All required frontmatter fields present
+- ✅ Source confidence calculated from actual pattern counts
+
+**Key Findings (So Far):**
+- try/catch coverage: helix (1 block), kariusdx (5 blocks), policy-node (160 blocks)
+- Custom error classes: Policy-node only (MunicipalityError, PhraseError, MunicipalitySearchError)
+- Error boundaries: 0% adoption (critical gap - no React error boundaries exist)
+- Error tracking: 0% adoption (no Sentry, Rollbar, Bugsnag)
+- Structured logging: 0% adoption (no Winston, Pino)
+- Silent failures: Helix JobBoard component (commented-out error logging, returns undefined)
+- notFound() usage: helix (6 calls), policy-node (19 calls), kariusdx (0 calls)
+- error.tsx files: Policy-node only (1 file)
+- console.error usage: helix (1), kariusdx (0), policy-node (116)
+
+**Resume Point:**
+Continue with app-router-error-handling.md and remaining 5 documentation files, then generate 4 Semgrep rules.
