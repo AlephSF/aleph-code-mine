@@ -1,0 +1,40 @@
+rules:
+  - id: warn-getstaticprops-usage
+    message: |
+      Consider migrating to App Router async server components instead of getStaticProps.
+
+      App Router pattern provides better collocation and type safety:
+
+      Before (Pages Router):
+        export const getStaticProps = async () => {
+          const data = await fetchData()
+          return { props: { data } }
+        }
+
+      After (App Router):
+        export default async function Page() {
+          const data = await fetchData()
+          return <Content data={data} />
+        }
+
+      Benefits:
+      - Data fetching collocated with component
+      - No prop drilling from getStaticProps
+      - Better TypeScript inference
+      - Streaming and Suspense support
+
+      See: app-router-vs-pages-router.md, async-server-components.md
+    severity: INFO
+    languages:
+      - typescript
+      - tsx
+    patterns:
+      - pattern-either:
+          - pattern: export const getStaticProps = ...
+          - pattern: export async function getStaticProps(...) { ... }
+          - pattern: export const getServerSideProps = ...
+          - pattern: export async function getServerSideProps(...) { ... }
+    paths:
+      include:
+        - "*/pages/**/*.tsx"
+        - "*/pages/**/*.ts"

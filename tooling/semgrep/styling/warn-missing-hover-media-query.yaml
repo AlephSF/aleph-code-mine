@@ -1,0 +1,40 @@
+rules:
+  - id: warn-missing-hover-media-query
+    message: |
+      Wrap :hover pseudo-class in '@media (hover: hover)' to prevent confusing UX on touch devices.
+
+      Touch devices emulate hover on tap, causing hover state to persist after tap.
+
+      Before:
+        &:hover {
+          transform: scale(1.04);
+        }
+
+      After:
+        @media (hover: hover) {
+          &:hover {
+            transform: scale(1.04);
+          }
+        }
+
+      Note: :active pseudo-class works on both touch and mouse, use for universal feedback.
+
+      See: state-management-patterns.md
+    severity: INFO
+    languages:
+      - generic
+    patterns:
+      - pattern: |
+          &:hover {
+            ...
+          }
+      - pattern-not-inside: |
+          @media (hover: hover) {
+            ...
+          }
+    paths:
+      include:
+        - "**/*.scss"
+        - "**/*.module.scss"
+      exclude:
+        - "*/node_modules/**"

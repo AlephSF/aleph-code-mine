@@ -34,15 +34,17 @@ aleph-code-mine/
 ## Current Status
 
 **Phase:** Phase 2 - Domain-Targeted Deep Dives (In Progress)
-**Progress:** 44% complete
+**Progress:** 67% complete
 **Completed:**
 - ✅ Phase 1: Structural Reconnaissance (8/8 repos)
 - ✅ Phase 2, Domain 1: Component Patterns (Next.js) - 8 docs + 4 Semgrep rules
 - ✅ Phase 2, Domain 2: Data Fetching (Next.js) - 8 docs + 4 Semgrep rules
 - ✅ Phase 2, Domain 3: TypeScript Conventions (Next.js) - 8 docs + 4 Semgrep rules
 - ✅ Phase 2, Domain 4: Hooks & State (Next.js) - 8 docs + 3 Semgrep rules
+- ✅ Phase 2, Domain 5: Styling (Next.js) - 8 docs + 4 Semgrep rules
+- ✅ Phase 2, Domain 6: Project Structure (Next.js) - 7 docs + 4 Semgrep rules
 
-**Next Domain:** Styling / Project Structure / Testing (Next.js)
+**Next Domain:** Testing / Error Handling / Tooling Config (Next.js)
 
 **To Resume:** Read `PROGRESS.md` for detailed status and next steps.
 
@@ -202,14 +204,47 @@ ls analysis/                       # Phase 1 outputs
 - useMemo/useCallback guidelines (minimal usage - helix: 0 useMemo)
 - useEffect dependencies (100% confidence - separated by concern)
 
+### Phase 2, Domain 5: Styling ✅
+**Location:** `docs/js-nextjs/styling/`
+**Deliverables:**
+- 8 RAG-optimized documentation files (~3,000 lines)
+- 4 Semgrep enforcement rules in `tooling/semgrep/styling/`
+- 1 cross-project comparison analysis
+
+**Key Patterns Documented:**
+- CSS Modules convention (91% confidence - 194/213 files)
+- Design system structure (100% confidence - all have _colors, _typography, _spacing, _mixins)
+- SCSS naming conventions (100% confidence - camelCase + BEM)
+- @use over @import (68% confidence - helix 91%, policy-node 96%, kariusdx 16%)
+- Conditional classnames with cx() (67% confidence - 267 calls)
+- Responsive breakpoint patterns (67% confidence - desktop-first, 593 mixin calls)
+- State management patterns (100% confidence - :focus-visible, hover media queries)
+- Globals and resets (100% confidence - all have globals.scss)
+
+### Phase 2, Domain 6: Project Structure ✅
+**Location:** `docs/js-nextjs/project-structure/`
+**Deliverables:**
+- 7 RAG-optimized documentation files (~2,500 lines)
+- 4 Semgrep enforcement rules in `tooling/semgrep/project-structure/`
+- 1 cross-project comparison analysis
+
+**Key Patterns Documented:**
+- App Router vs Pages Router (67% App Router adoption - helix v15, policy-node v14)
+- Route groups organization (50% App Router - helix uses (frontend)/(studio))
+- Component collocation patterns (100% confidence - hybrid shared + route-specific)
+- File-based routing conventions (100% confidence - special file names)
+- Metadata API usage (100% App Router - replaces next-seo)
+- Async server components (100% App Router - 20 pages)
+- i18n with App Router (33% confidence - policy-node uses [lang] + middleware)
+
 ## Next Session
 
-Start with: "Continue the codebase mining project. Start Phase 2, Domain 5: [Next Domain]"
+Start with: "Continue the codebase mining project. Start Phase 2, Domain 7: [Next Domain]"
 
 **Recommended next domains:**
-- Styling (SCSS + CSS Modules patterns, design system structure)
-- Project structure (App Router vs Pages Router organization)
 - Testing (document the gap and provide guidance)
+- Error Handling (patterns + best practices)
+- Tooling Config (ESLint/Prettier/tsconfig)
 
 **Files to Review Before Starting:**
 ```bash
@@ -220,4 +255,6 @@ ls docs/js-nextjs/component-patterns/      # Domain 1 deliverables
 ls docs/js-nextjs/data-fetching/           # Domain 2 deliverables
 ls docs/js-nextjs/typescript-conventions/  # Domain 3 deliverables
 ls docs/js-nextjs/hooks-state/             # Domain 4 deliverables
+ls docs/js-nextjs/styling/                 # Domain 5 deliverables
+ls docs/js-nextjs/project-structure/       # Domain 6 deliverables
 ```

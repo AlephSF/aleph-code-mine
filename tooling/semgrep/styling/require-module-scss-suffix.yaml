@@ -1,0 +1,27 @@
+rules:
+  - id: require-module-scss-suffix
+    message: |
+      Component SCSS files must use '.module.scss' suffix for CSS Modules.
+      Found: $FILENAME
+      Expected: ComponentName.module.scss
+
+      CSS Modules provide automatic scoping and prevent global namespace pollution.
+      See: css-modules-convention.md
+    severity: ERROR
+    languages:
+      - typescript
+      - tsx
+    patterns:
+      - pattern: import $STYLES from "./$FILE.scss"
+      - pattern-not: import $STYLES from "./$FILE.module.scss"
+      - metavariable-regex:
+          metavariable: $FILE
+          regex: ^[A-Z][a-zA-Z0-9]*$
+    paths:
+      include:
+        - "*/components/**/*.tsx"
+        - "*/app/**/*.tsx"
+      exclude:
+        - "*/node_modules/**"
+    fix: |
+      import $STYLES from "./$FILE.module.scss"

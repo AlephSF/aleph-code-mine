@@ -1,0 +1,42 @@
+rules:
+  - id: enforce-notfound-usage
+    message: |
+      Use notFound() function to handle missing resources in App Router pages.
+
+      Pattern:
+        import { notFound } from 'next/navigation'
+
+        export default async function Page({ params }) {
+          const data = await fetchData(params.id)
+
+          if (!data) {
+            notFound()  // Renders not-found.tsx
+          }
+
+          return <Content data={data} />
+        }
+
+      Benefits:
+      - Automatic 404 status code
+      - Renders nearest not-found.tsx
+      - Cleaner error handling
+      - SEO-friendly 404 pages
+
+      See: async-server-components.md
+    severity: WARNING
+    languages:
+      - typescript
+      - tsx
+    patterns:
+      - pattern: |
+          if (!$DATA) {
+            return <$COMPONENT />
+          }
+      - pattern-not-inside: |
+          import { notFound } from 'next/navigation'
+          ...
+    paths:
+      include:
+        - "**/app/**/page.tsx"
+      exclude:
+        - "*/node_modules/**"

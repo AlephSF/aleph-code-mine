@@ -1,0 +1,30 @@
+rules:
+  - id: enforce-classnames-cx-alias
+    message: |
+      Import 'classnames' library with 'cx' alias for consistency.
+
+      Found: import $NAME from 'classnames'
+      Expected: import cx from 'classnames'
+
+      The 'cx' alias is used consistently across 267 instances in helix and kariusdx.
+
+      See: conditional-classnames.md
+    severity: WARNING
+    languages:
+      - typescript
+      - tsx
+    patterns:
+      - pattern-either:
+          - pattern: import $NAME from 'classnames'
+          - pattern: import { $NAME } from 'classnames'
+      - metavariable-regex:
+          metavariable: $NAME
+          regex: ^(?!cx$).*$
+    paths:
+      include:
+        - "**/*.tsx"
+        - "**/*.ts"
+      exclude:
+        - "*/node_modules/**"
+    fix: |
+      import cx from 'classnames'

@@ -1,0 +1,36 @@
+rules:
+  - id: enforce-metadata-export
+    message: |
+      App Router layout files should export metadata for SEO and document head management.
+
+      Add metadata export to layout.tsx:
+
+        import type { Metadata } from 'next'
+
+        export const metadata: Metadata = {
+          title: {
+            template: '%s | Site Name',
+            default: 'Site Name',
+          },
+          description: 'Site description',
+        }
+
+      Benefits:
+      - Type-safe metadata
+      - Automatic meta tag generation
+      - SEO optimization
+      - No runtime overhead
+
+      See: metadata-api-usage.md
+    severity: WARNING
+    languages:
+      - typescript
+      - tsx
+    patterns:
+      - pattern-not-inside: export const metadata = ...
+      - pattern: export default function $LAYOUT({ children }) { ... }
+    paths:
+      include:
+        - "**/app/**/layout.tsx"
+      exclude:
+        - "*/node_modules/**"

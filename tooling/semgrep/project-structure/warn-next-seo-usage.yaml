@@ -1,0 +1,38 @@
+rules:
+  - id: warn-next-seo-usage
+    message: |
+      Consider using built-in Metadata API instead of next-seo library in App Router.
+
+      next-seo (Pages Router):
+        import { NextSeo } from 'next-seo'
+        <NextSeo title="Page" description="..." />
+
+      Metadata API (App Router):
+        export const metadata: Metadata = {
+          title: 'Page',
+          description: '...',
+        }
+
+      Benefits of Metadata API:
+      - No runtime overhead (static export vs component)
+      - Type-safe with TypeScript
+      - Smaller bundle (no library dependency)
+      - Automatic deduplication
+
+      Note: If using Pages Router, next-seo is appropriate. Migrate to App Router for Metadata API.
+
+      See: metadata-api-usage.md
+    severity: INFO
+    languages:
+      - typescript
+      - tsx
+    patterns:
+      - pattern-either:
+          - pattern: import { NextSeo } from 'next-seo'
+          - pattern: import { DefaultSeo } from 'next-seo'
+    paths:
+      include:
+        - "**/app/**/*.tsx"
+      exclude:
+        - "*/node_modules/**"
+        - "*/pages/**"  # OK in Pages Router

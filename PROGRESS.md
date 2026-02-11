@@ -209,6 +209,48 @@
 - Zero usage: useReducer (0 instances), external state libraries (0), type guards in hooks (0)
 - Critical gaps: No custom hooks for data fetching/forms, no useReducer despite complex state (11 useState in one component)
 
+### Domain 5: Styling ✅ COMPLETE
+
+**Duration:** ~3.5 hours
+**Deliverables:**
+- 8 RAG-optimized documentation files in `docs/js-nextjs/styling/`
+- 4 Semgrep rules in `tooling/semgrep/styling/`
+- 1 cross-project comparison analysis
+
+**Documentation Files:**
+1. ✅ css-modules-convention.md (91% confidence)
+2. ✅ design-system-structure.md (100% confidence)
+3. ✅ scss-naming-conventions.md (100% confidence)
+4. ✅ scss-use-over-import.md (68% confidence)
+5. ✅ conditional-classnames.md (67% confidence)
+6. ✅ responsive-breakpoint-patterns.md (67% confidence)
+7. ✅ state-management-patterns.md (100% confidence)
+8. ✅ globals-and-resets.md (100% confidence)
+
+**Semgrep Rules:**
+1. ✅ require-module-scss-suffix.yaml - Enforce .module.scss for component styles
+2. ✅ warn-scss-import-usage.yaml - Warn on @import (prefer @use)
+3. ✅ enforce-classnames-cx-alias.yaml - Enforce cx alias for classnames
+4. ✅ warn-missing-hover-media-query.yaml - Warn on hover without touch detection
+
+**Analysis Files:**
+1. ✅ styling-comparison.md - Cross-project quantitative styling analysis
+
+**Validation:**
+- ✅ All sections under 1,500 characters
+- ✅ No pronoun-leading sentences
+- ✅ All required frontmatter fields present
+- ✅ Source confidence calculated from actual file counts
+- ⏳ Semgrep rules validation pending
+
+**Key Findings:**
+- Universal patterns: CSS Modules (91%), design system partials (100%), camelCase + BEM naming (100%)
+- Modern SCSS: 68% overall @use adoption (helix 91%, policy-node 96%, kariusdx 16%)
+- Conditional classes: 67% adoption of cx() from classnames (helix + kariusdx, 267 total calls)
+- Responsive: Desktop-first approach with breakpoint mixins (593 calls in helix + kariusdx)
+- State management: 82 hover states, 55 focus-visible (100% modern focus pattern)
+- Critical gaps: Zero CSS Modules composition usage, minimal hover media query usage (14 instances)
+
 ### Priority Order (Based on Findings)
 
 **High Priority Domains:**
@@ -367,17 +409,19 @@ aleph-code-mine/
 | Phase | Status | Time Estimate |
 |-------|--------|---------------|
 | Phase 1: Structural Recon | ✅ Complete | 2 hours (done) |
-| Phase 2: Next.js Domains (9) | 🎯 In Progress (4/9 complete) | 18-27 hours |
+| Phase 2: Next.js Domains (9) | 🎯 In Progress (6/9 complete) | 18-27 hours |
 | - Domain 1: Component Patterns | ✅ Complete | 2.5 hours (done) |
 | - Domain 2: Data Fetching | ✅ Complete | 4 hours (done) |
 | - Domain 3: TypeScript Conventions | ✅ Complete | 3 hours (done) |
 | - Domain 4: Hooks & State | ✅ Complete | 2.5 hours (done) |
-| - Domain 5-9: Remaining domains | ⏳ Pending | 4-12 hours |
+| - Domain 5: Styling | ✅ Complete | 3.5 hours (done) |
+| - Domain 6: Project Structure | ✅ Complete | 3 hours (done) |
+| - Domain 7-9: Remaining domains | ⏳ Pending | 1-5 hours |
 | Phase 3: Sanity Domains (4) | ⏳ Pending | 8-12 hours |
 | Phase 4: WordPress Domains (8) | ⏳ Pending | 16-24 hours |
 | Phase 5: Cross-Stack (4) | ⏳ Pending | 8-12 hours |
 | Phase 6: Tooling Outputs | ⏳ Pending | 8-12 hours |
-| **TOTAL** | **44% Complete** | **54-83 hours** |
+| **TOTAL** | **67% Complete** | **54-83 hours** |
 
 ---
 
@@ -401,3 +445,48 @@ Then tell Claude:
 - ✅ Phase 2, Domain 2: Data Fetching (Next.js) - 8 docs + 4 Semgrep rules
 - ✅ Phase 2, Domain 3: TypeScript Conventions (Next.js) - 8 docs + 4 Semgrep rules
 - ✅ Phase 2, Domain 4: Hooks & State (Next.js) - 8 docs + 3 Semgrep rules
+- ✅ Phase 2, Domain 5: Styling (Next.js) - 8 docs + 4 Semgrep rules
+- ✅ Phase 2, Domain 6: Project Structure (Next.js) - 7 docs + 4 Semgrep rules
+
+### Domain 6: Project Structure ✅ COMPLETE
+
+**Duration:** ~3 hours
+**Deliverables:**
+- 7 RAG-optimized documentation files in `docs/js-nextjs/project-structure/`
+- 4 Semgrep rules in `tooling/semgrep/project-structure/`
+- 1 cross-project comparison analysis
+
+**Documentation Files:**
+1. ✅ app-router-vs-pages-router.md (67% confidence)
+2. ✅ route-groups-organization.md (100% App Router adoption)
+3. ✅ component-collocation-patterns.md (100% confidence)
+4. ✅ file-based-routing-conventions.md (100% confidence)
+5. ✅ metadata-api-usage.md (100% App Router adoption)
+6. ✅ async-server-components.md (100% App Router adoption)
+7. ✅ i18n-with-app-router.md (33% confidence)
+
+**Semgrep Rules:**
+1. ✅ warn-getstaticprops-usage.yaml - Suggest migration to async server components
+2. ✅ enforce-metadata-export.yaml - Require metadata in layout files
+3. ✅ warn-next-seo-usage.yaml - Suggest Metadata API over next-seo
+4. ✅ enforce-notfound-usage.yaml - Enforce notFound() for missing resources
+
+**Analysis Files:**
+1. ✅ project-structure-comparison.md - Cross-project router and organization analysis
+
+**Validation:**
+- ✅ All sections under 1,500 characters
+- ✅ No pronoun-leading sentences
+- ✅ All required frontmatter fields present
+- ✅ Source confidence calculated from actual adoption rates
+- ⏳ Semgrep rules validation pending
+
+**Key Findings:**
+- App Router adoption: 67% (helix v15, policy-node v14), kariusdx remains on Pages Router v12
+- Route groups: 50% of App Router projects use route groups (helix: (frontend)/(studio))
+- Nested layouts: 100% App Router projects use nested layouts (helix: 3, policy: 2)
+- Metadata API: 100% App Router projects use generateMetadata() (replaces next-seo)
+- Async server components: 100% App Router pages (20 total async pages)
+- Component collocation: Hybrid model (shared + route-specific), helix uses route-specific folders
+- i18n: 33% adoption (policy-node uses [lang] param + middleware)
+- Critical gaps: kariusdx needs migration to App Router, zero loading.tsx usage, minimal error.tsx adoption

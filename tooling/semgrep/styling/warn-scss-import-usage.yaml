@@ -1,0 +1,31 @@
+rules:
+  - id: warn-scss-import-usage
+    message: |
+      Use modern '@use' directive instead of deprecated '@import' for SCSS modules.
+
+      @import is deprecated and will be removed in Dart Sass 2.0.
+
+      Before: @import 'styles/colors';
+      After:  @use "../../styles/colors" as *;
+
+      Benefits:
+      - Explicit namespacing prevents variable collisions
+      - Files loaded once (vs @import loads multiple times)
+      - Better tree-shaking for smaller bundles
+
+      See: scss-use-over-import.md
+    severity: WARNING
+    languages:
+      - generic
+    patterns:
+      - pattern: |
+          @import ...
+    paths:
+      include:
+        - "**/*.scss"
+      exclude:
+        - "*/node_modules/**"
+        - "*/globals.scss"
+    fix-regex:
+      regex: "@import ['\"]([^'\"]+)['\"];"
+      replacement: '@use "$1" as *;'
