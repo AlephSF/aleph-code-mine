@@ -1,0 +1,61 @@
+rules:
+  - id: require-try-catch-in-fetch-wrapper
+    patterns:
+      - pattern-either:
+          # Fetch wrapper function without try/catch
+          - patterns:
+              - pattern: |
+                  async function $FUNC(...) {
+                    ...
+                    await fetch(...)
+                    ...
+                  }
+              - pattern-not-inside: |
+                  try {
+                    ...
+                  } catch (...) {
+                    ...
+                  }
+              - metavariable-regex:
+                  metavariable: $FUNC
+                  regex: "^(fetch|query|get).*" # Fetch wrapper naming convention
+          # Arrow function fetch wrapper without try/catch
+          - patterns:
+              - pattern: |
+                  const $FUNC = async (...) => {
+                    ...
+                    await fetch(...)
+                    ...
+                  }
+              - pattern-not-inside: |
+                  try {
+                    ...
+                  } catch (...) {
+                    ...
+                  }
+              - metavariable-regex:
+                  metavariable: $FUNC
+                  regex: "^(fetch|query|get).*"
+    message: "Fetch wrapper functions should include try/catch for error handling. Wrap fetch calls in try/catch to handle network errors and timeouts."
+    languages:
+      - typescript
+    severity: ERROR
+    metadata:
+      category: security
+      technology:
+        - nextjs
+      cwe: "CWE-754: Improper Check for Unusual or Exceptional Conditions"
+      confidence: HIGH
+      likelihood: HIGH
+      impact: HIGH
+      subcategory:
+        - vuln
+      dev_note: |
+        Unhandled fetch errors cause build failures and runtime crashes.
+        All fetch wrappers should implement try/catch with proper error logging.
+    paths:
+      include:
+        - "**/lib/**/*.ts"
+        - "**/lib/**/*.tsx"
+        - "**/utils/**/*.ts"
+        - "**/utils/**/*.tsx"

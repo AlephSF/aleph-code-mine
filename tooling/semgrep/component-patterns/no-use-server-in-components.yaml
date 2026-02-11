@@ -1,0 +1,42 @@
+rules:
+  - id: no-use-server-in-components
+    pattern: |
+      'use server'
+    message: |
+      The 'use server' directive should not be used in component files.
+      Server Actions belong in dedicated action files, not component files.
+
+      'use server' is for Server Actions (form handlers, mutations).
+      Components that fetch data should use async server components instead.
+
+      Correct structure:
+        // app/actions.ts
+        'use server'
+        export async function createUser(data) { ... }
+
+        // app/components/Form.tsx
+        'use client'
+        import { createUser } from '../actions'
+    languages:
+      - typescript
+      - tsx
+    severity: ERROR
+    paths:
+      include:
+        - "*/components/**/*.tsx"
+        - "*/app/**/components/**/*.tsx"
+        - "*/src/components/**/*.tsx"
+      exclude:
+        - "*/actions/**"
+        - "*/app/**/actions.ts"
+        - "*/app/**/actions.tsx"
+    metadata:
+      category: component-patterns
+      confidence: HIGH
+      likelihood: HIGH
+      impact: HIGH
+      subcategory:
+        - best-practice
+      references:
+        - https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions-and-mutations
+      source_confidence: 100%

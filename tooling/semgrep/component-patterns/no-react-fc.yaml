@@ -1,0 +1,37 @@
+rules:
+  - id: no-react-fc
+    pattern-either:
+      - pattern: |
+          const $COMPONENT: React.FC<$PROPS> = ...
+      - pattern: |
+          const $COMPONENT: React.FunctionComponent<$PROPS> = ...
+      - pattern: |
+          const $COMPONENT: FC<$PROPS> = ...
+      - pattern: |
+          const $COMPONENT: FunctionComponent<$PROPS> = ...
+    message: |
+      Avoid using React.FC or React.FunctionComponent type helpers.
+      These utilities are deprecated from React TypeScript best practices.
+      Use explicit props typing instead.
+
+      Instead of:
+        const Button: React.FC<ButtonProps> = ({ text }) => { ... }
+
+      Use:
+        function Button({ text }: ButtonProps) { ... }
+      Or:
+        const Button = ({ text }: ButtonProps) => { ... }
+    languages:
+      - typescript
+      - tsx
+    severity: WARNING
+    metadata:
+      category: typescript
+      confidence: HIGH
+      likelihood: HIGH
+      impact: MEDIUM
+      subcategory:
+        - best-practice
+      references:
+        - https://react-typescript-cheatsheet.netlify.app/docs/basic/getting-started/function_components/
+      source_confidence: 100%

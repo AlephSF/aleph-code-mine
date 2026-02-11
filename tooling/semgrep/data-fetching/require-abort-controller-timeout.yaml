@@ -1,0 +1,65 @@
+rules:
+  - id: require-abort-controller-timeout
+    patterns:
+      - pattern-either:
+          # fetch without AbortController signal
+          - patterns:
+              - pattern: |
+                  await fetch($URL, {
+                    ...,
+                  })
+              - pattern-not: |
+                  await fetch($URL, {
+                    ...,
+                    signal: ...,
+                    ...
+                  })
+              - pattern-inside: |
+                  async function $FUNC(...) {
+                    ...
+                  }
+              - metavariable-regex:
+                  metavariable: $FUNC
+                  regex: "^(fetch|query|get).*"
+          # fetch with signal but no timeout setup
+          - patterns:
+              - pattern: |
+                  await fetch($URL, {
+                    ...,
+                    signal: $CONTROLLER.signal,
+                    ...
+                  })
+              - pattern-not-inside: |
+                  const $TIMEOUT = setTimeout(() => $CONTROLLER.abort(), ...)
+    message: "Fetch calls in wrapper functions should implement timeout using AbortController. Create AbortController, set timeout with setTimeout, and pass signal to fetch."
+    languages:
+      - typescript
+    severity: WARNING
+    metadata:
+      category: security
+      technology:
+        - nextjs
+      cwe: "CWE-400: Uncontrolled Resource Consumption"
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+      subcategory:
+        - vuln
+      source-rule-url: https://developer.mozilla.org/en-US/docs/Web/API/AbortController
+      dev_note: |
+        Fetch without timeout can hang indefinitely during network issues, causing build timeouts.
+        Recommended timeout: 30s for production, 10s for development.
+        Example:
+          const controller = new AbortController()
+          const timeoutId = setTimeout(() => controller.abort(), 30000)
+          try {
+            const res = await fetch(url, { signal: controller.signal })
+          } finally {
+            clearTimeout(timeoutId)
+          }
+    paths:
+      include:
+        - "**/lib/**/*.ts"
+        - "**/lib/**/*.tsx"
+        - "**/utils/**/*.ts"
+        - "**/utils/**/*.tsx"

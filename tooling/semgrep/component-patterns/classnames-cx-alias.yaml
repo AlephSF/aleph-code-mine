@@ -1,0 +1,38 @@
+rules:
+  - id: classnames-wrong-import-alias
+    pattern-either:
+      - pattern: import classNames from 'classnames'
+      - pattern: import { ... } from 'classnames'
+      - pattern: import cn from 'classnames'
+      - pattern: import $ALIAS from 'classnames'
+    pattern-not: |
+      import cx from 'classnames'
+    message: |
+      The classnames library must be imported with the alias 'cx'.
+      All three codebases (100% adoption) use this consistent naming.
+
+      Incorrect:
+        import classNames from 'classnames'
+        import cn from 'classnames'
+        import cls from 'classnames'
+
+      Correct:
+        import cx from 'classnames'
+    languages:
+      - typescript
+      - tsx
+    severity: WARNING
+    paths:
+      include:
+        - "*/components/**/*.tsx"
+        - "*/app/**/*.tsx"
+        - "*/src/**/*.tsx"
+    fix: import cx from 'classnames'
+    metadata:
+      category: component-patterns
+      confidence: HIGH
+      likelihood: HIGH
+      impact: LOW
+      subcategory:
+        - convention
+      source_confidence: 100%

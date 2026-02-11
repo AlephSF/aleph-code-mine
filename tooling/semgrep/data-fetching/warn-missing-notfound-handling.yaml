@@ -1,0 +1,63 @@
+rules:
+  - id: warn-missing-notfound-handling
+    patterns:
+      - pattern-either:
+          # App Router: async component with data fetch but no notFound() call
+          - patterns:
+              - pattern: |
+                  export default async function $FUNC({ params }: ...) {
+                    ...
+                    const $DATA = await $FETCH(...)
+                    ...
+                    return <$COMPONENT ... />
+                  }
+              - pattern-not-inside: |
+                  if (!$DATA) {
+                    notFound()
+                  }
+              - pattern-not-inside: |
+                  if (!$DATA) notFound()
+          # Pages Router: getStaticProps without notFound in return
+          - patterns:
+              - pattern: |
+                  export const getStaticProps = async ({ params }: ...) => {
+                    ...
+                    const $DATA = await $FETCH(...)
+                    ...
+                    return {
+                      props: { $DATA },
+                    }
+                  }
+              - pattern-not-inside: |
+                  if (!$DATA) {
+                    return { notFound: true }
+                  }
+    message: "Data-fetched pages should handle missing content with notFound(). Check if data exists after fetch and call notFound() (App Router) or return { notFound: true } (Pages Router)."
+    languages:
+      - typescript
+    severity: WARNING
+    metadata:
+      category: best-practice
+      technology:
+        - nextjs
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: MEDIUM
+      subcategory:
+        - audit
+      source-rule-url: https://nextjs.org/docs/app/api-reference/functions/not-found
+      dev_note: |
+        Missing notFound handling results in 200 status for missing content, harming SEO.
+        Check data existence and use:
+          - App Router: if (!data) notFound()
+          - Pages Router: if (!data) return { notFound: true }
+    paths:
+      include:
+        - "**/app/**/page.tsx"
+        - "**/pages/**/*.tsx"
+      exclude:
+        - "**/pages/_app.tsx"
+        - "**/pages/_document.tsx"
+        - "**/pages/404.tsx"
+        - "**/pages/500.tsx"
+        - "**/pages/api/**"

@@ -1,0 +1,60 @@
+rules:
+  - id: require-revalidate-export
+    patterns:
+      - pattern-either:
+          # App Router: page.tsx with async component but no revalidate export
+          - patterns:
+              - pattern: |
+                  export default async function $FUNC(...) {
+                    ...
+                  }
+              - pattern-not-inside: |
+                  export const revalidate = ...
+              - metavariable-regex:
+                  metavariable: $FUNC
+                  regex: "^[A-Z].*" # Component name (PascalCase)
+          # Pages Router: getStaticProps without revalidate in return
+          - patterns:
+              - pattern: |
+                  export const getStaticProps = async (...) => {
+                    ...
+                    return {
+                      props: ...,
+                    }
+                  }
+              - pattern-not-inside: |
+                  return {
+                    ...,
+                    revalidate: ...,
+                    ...
+                  }
+    message: "Data-fetched pages should include ISR revalidation. Add 'export const revalidate = N' (App Router) or 'revalidate: N' in return object (Pages Router)."
+    languages:
+      - typescript
+    severity: WARNING
+    metadata:
+      category: performance
+      technology:
+        - nextjs
+      cwe: "CWE-1057: Data Access Operations Outside of Expected Data Manager Component"
+      confidence: HIGH
+      likelihood: MEDIUM
+      impact: MEDIUM
+      subcategory:
+        - vuln
+      source-rule-url: https://nextjs.org/docs/app/building-your-application/data-fetching/revalidating
+      dev_note: |
+        Pages without revalidation remain static after build, requiring full redeployment for updates.
+        Use revalidate: 10-60 seconds for ISR behavior based on content volatility.
+    paths:
+      include:
+        - "**/app/**/page.tsx"
+        - "**/app/**/page.ts"
+        - "**/pages/**/*.tsx"
+        - "**/pages/**/*.ts"
+      exclude:
+        - "**/pages/_app.tsx"
+        - "**/pages/_document.tsx"
+        - "**/pages/404.tsx"
+        - "**/pages/500.tsx"
+        - "**/pages/api/**"

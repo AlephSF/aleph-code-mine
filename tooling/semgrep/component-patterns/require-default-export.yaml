@@ -1,0 +1,43 @@
+rules:
+  - id: require-default-export
+    pattern-either:
+      - pattern: export default function $COMPONENT(...) { ... }
+      - pattern: export default async function $COMPONENT(...) { ... }
+      - pattern: |
+          const $COMPONENT = ...
+          ...
+          export default $COMPONENT
+      - pattern: |
+          function $COMPONENT(...) { ... }
+          ...
+          export default $COMPONENT
+    message: |
+      Component file should have a default export.
+      Next.js components use default exports to enable clean barrel re-exports.
+
+      Correct patterns:
+        export default function Button() { ... }
+        function Button() { ... }; export default Button
+        const Button = () => { ... }; export default Button
+    languages:
+      - typescript
+      - tsx
+    severity: ERROR
+    paths:
+      include:
+        - "*/components/**/*.tsx"
+        - "*/app/**/components/**/*.tsx"
+        - "*/src/components/**/*.tsx"
+      exclude:
+        - "**/*.test.tsx"
+        - "**/*.stories.tsx"
+        - "**/index.ts"
+        - "**/index.tsx"
+    metadata:
+      category: component-patterns
+      confidence: HIGH
+      likelihood: HIGH
+      impact: HIGH
+      subcategory:
+        - convention
+      source_confidence: 100%
