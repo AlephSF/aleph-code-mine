@@ -1,0 +1,52 @@
+rules:
+  - id: prefer-exclusion-filter-over-inclusion
+    patterns:
+      - pattern-either:
+          - pattern: |
+              S.documentTypeListItems().filter(
+                (item) => [$TYPES].includes(item.getId())
+              )
+          - pattern: |
+              S.documentTypeListItems().filter(
+                (item) => [$TYPES, ...].includes(item.getId())
+              )
+          - pattern: |
+              S.documentTypeListItems().filter(
+                listItem => [$TYPES].includes(listItem.getId())
+              )
+    message: |
+      Using inclusion filter for desk structure document types. Inclusion filters require updating structure file when adding new document types.
+
+      Prefer exclusion filter (more maintainable):
+      ```typescript
+      // ❌ BAD: Inclusion filter (current code)
+      S.documentTypeListItems().filter(
+        (item) => ['page', 'post', 'tag'].includes(item.getId())
+      )
+
+      // ✅ GOOD: Exclusion filter
+      S.documentTypeListItems().filter(
+        (item) => !['settings', 'navigation', 'homepage'].includes(item.getId() ?? '')
+      )
+      ```
+
+      Benefits of exclusion filter:
+      - New document types appear automatically
+      - Only system/singleton types need exclusion
+      - Scales better as schema grows
+
+      Exclude singletons and system types, allow all content types.
+    languages: [typescript, javascript]
+    severity: WARNING
+    metadata:
+      category: sanity
+      subcategory: studio-customization
+      confidence: MEDIUM
+      likelihood: HIGH
+      impact: LOW
+      technology:
+        - sanity
+      references:
+        - https://www.sanity.io/docs/structure-builder
+      cwe:
+        - "CWE-1041: Use of Redundant Code"

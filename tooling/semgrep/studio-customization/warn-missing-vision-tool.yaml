@@ -1,0 +1,68 @@
+rules:
+  - id: warn-missing-vision-tool
+    patterns:
+      - pattern: |
+          export default defineConfig({
+            ...,
+            plugins: [...],
+            ...
+          })
+      - pattern-not: |
+          export default defineConfig({
+            ...,
+            plugins: [
+              ...,
+              visionTool(...),
+              ...
+            ],
+            ...
+          })
+      - pattern-not: |
+          export default defineConfig({
+            ...,
+            plugins: [
+              ...,
+              visionTool(),
+              ...
+            ],
+            ...
+          })
+    message: |
+      Missing visionTool plugin. Vision Tool provides in-Studio GROQ query testing interface essential for development.
+
+      Add Vision Tool to plugins:
+      ```typescript
+      import { visionTool } from '@sanity/vision'
+
+      export default defineConfig({
+        plugins: [
+          structureTool(),
+          visionTool(),
+          // ... other plugins
+        ],
+      })
+      ```
+
+      For production environments, conditionally include Vision Tool:
+      ```typescript
+      export default defineConfig({
+        plugins: [
+          structureTool(),
+          ...(process.env.NODE_ENV === 'development' ? [visionTool()] : []),
+        ],
+      })
+      ```
+    languages: [typescript, javascript]
+    severity: INFO
+    metadata:
+      category: sanity
+      subcategory: studio-customization
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: LOW
+      technology:
+        - sanity
+      references:
+        - https://www.sanity.io/docs/the-vision-plugin
+      cwe:
+        - "CWE-1008: Architectural Concepts"

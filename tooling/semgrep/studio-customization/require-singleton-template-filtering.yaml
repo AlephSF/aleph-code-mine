@@ -1,0 +1,52 @@
+rules:
+  - id: require-singleton-template-filtering
+    patterns:
+      - pattern-either:
+          - pattern: |
+              const singletonTypes = new Set([...])
+          - pattern: |
+              const $SINGLETONS = new Set([...])
+      - pattern-not-inside: |
+          export default defineConfig({
+            ...,
+            schema: {
+              types: $TYPES,
+              templates: (prev) => prev.filter((template) => !$SINGLETONS.has(template.id)),
+            },
+            ...
+          })
+    message: |
+      Singleton types defined but not filtered from templates. Singletons will appear in the "+ Create" menu, allowing duplicate creation.
+
+      Add template filtering to prevent duplicate singletons:
+      ```typescript
+      const singletonTypes = new Set([
+        'homepage',
+        'siteSettings',
+        'navigation',
+      ])
+
+      export default defineConfig({
+        schema: {
+          types: schemaTypes,
+          templates: (prev) =>
+            prev.filter((template) => !singletonTypes.has(template.id)),
+        },
+      })
+      ```
+
+      This prevents content editors from creating multiple homepage or settings documents.
+    languages: [typescript, javascript]
+    severity: WARNING
+    metadata:
+      category: sanity
+      subcategory: studio-customization
+      confidence: HIGH
+      likelihood: HIGH
+      impact: MEDIUM
+      technology:
+        - sanity
+      references:
+        - https://www.sanity.io/docs/document-type-list
+      cwe:
+        - "CWE-840: Business Logic Errors"

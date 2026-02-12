@@ -1,0 +1,69 @@
+rules:
+  - id: prefer-structure-resolver-over-default
+    patterns:
+      - pattern: |
+          export default defineConfig({
+            ...,
+            plugins: [
+              structureTool(),
+              ...
+            ],
+            ...
+          })
+      - pattern-not: |
+          export default defineConfig({
+            ...,
+            plugins: [
+              structureTool({ structure: $STRUCTURE }),
+              ...
+            ],
+            ...
+          })
+    message: |
+      Missing custom desk structure configuration. Projects with 5+ document types or singleton documents should define custom desk structure for better content organization.
+
+      Add structure configuration:
+      ```typescript
+      import { structure } from './structure'
+
+      export default defineConfig({
+        plugins: [
+          structureTool({ structure }),
+          // ...
+        ],
+      })
+      ```
+
+      Create structure file:
+      ```typescript
+      // structure/index.ts
+      import { StructureResolver } from 'sanity/structure'
+
+      export const structure: StructureResolver = (S) =>
+        S.list()
+          .title('Base')
+          .items([
+            ...S.documentTypeListItems().filter(
+              (item) => !['settings', 'navigation'].includes(item.getId() ?? '')
+            ),
+            S.divider(),
+            S.listItem()
+              .title('Settings')
+              .icon(CogIcon)
+              .child(/* singleton group */),
+          ])
+      ```
+    languages: [typescript, javascript]
+    severity: INFO
+    metadata:
+      category: sanity
+      subcategory: studio-customization
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: LOW
+      technology:
+        - sanity
+      references:
+        - https://www.sanity.io/docs/structure-builder
+      cwe:
+        - "CWE-1008: Architectural Concepts"
