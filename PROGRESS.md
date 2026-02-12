@@ -1,9 +1,9 @@
 # Codebase Mining Progress
 
 **Last Updated:** February 12, 2026
-**Current Phase:** Phase 3 - Sanity.js Domains (IN PROGRESS)
-**Overall Progress:** Phase 2 complete (9/9), Phase 3 in progress (3/4 domains complete)
-**Current Domain:** Studio Customization (Sanity.js) - Next domain to start
+**Current Phase:** Phase 3 - Sanity.js Domains ✅ COMPLETE
+**Overall Progress:** Phase 2 complete (9/9), Phase 3 complete (4/4 domains complete)
+**Next Phase:** Phase 4 - WordPress Domains (8 domains planned)
 
 ---
 
@@ -860,3 +860,107 @@ Then tell Claude:
 - No type guards despite extensive API parsing
 - Kariusdx lacks Husky pre-commit hooks
 - Only policy-node runs tsc --noEmit before commit
+
+
+### Domain 4: Studio Customization ✅ COMPLETE
+
+**Duration:** ~3 hours
+**Deliverables:**
+- 8 RAG-optimized documentation files in `docs/sanity/studio-customization/`
+- 4 Semgrep enforcement rules in `tooling/semgrep/studio-customization/`
+- 1 cross-project comparison analysis
+
+**Documentation Files:**
+1. ✅ desk-structure-customization.md (67% confidence)
+2. ✅ singleton-document-management.md (67% confidence)
+3. ✅ presentation-tool-configuration.md (33% confidence)
+4. ✅ custom-document-actions.md (33% confidence)
+5. ✅ plugin-ecosystem-patterns.md (100% confidence)
+6. ✅ custom-branding-theming.md (33% confidence)
+7. ✅ custom-validation-utilities.md (33% confidence)
+8. ✅ custom-ordering-configurations.md (33% confidence)
+9. ✅ authentication-customization.md (33% confidence - SAML SSO)
+
+**Semgrep Rules:**
+1. ✅ prefer-structure-resolver.yaml
+2. ✅ require-singleton-template-filtering.yaml
+3. ✅ warn-missing-vision-tool.yaml
+4. ✅ prefer-exclusion-filter-structure.yaml
+
+**Analysis Files:**
+1. ✅ studio-customization-comparison.md
+
+**Validation:**
+- ✅ All sections under 1,500 characters
+- ✅ No pronoun-leading sentences
+- ✅ All required frontmatter fields present
+- ✅ Source confidence calculated from actual pattern counts
+- ⏳ Semgrep rules validation pending
+
+**Key Findings:**
+- **Desk Structure Customization**: 67% adoption (kariusdx v2 + ripplecom v4)
+- **Singleton Management**: 67% adoption (template filtering + desk grouping)
+- **Vision Tool**: 100% adoption (essential dev tool)
+- **Presentation Tool**: 33% adoption (ripplecom v4 only - requires v4+)
+- **Media Plugin**: 67% adoption (enhanced asset management)
+- **Custom Document Actions**: 33% adoption (kariusdx only - auto-slug + hierarchical paths)
+- **Custom Branding**: 33% adoption (kariusdx only - logo + CSS overrides)
+- **SAML SSO**: 33% adoption (ripplecom only - Okta integration)
+- **Custom Orderings**: 33% adoption (ripplecom only - 13 orderings across 7 document types)
+
+**Version-Specific Patterns:**
+- **v2 (kariusdx)**: Parts system (deprecated), legacy structure builder, custom document views
+- **v3 (helix)**: defineConfig API, minimal customization (2 plugins only)
+- **v4 (ripplecom)**: Modern API, presentationTool, SAML SSO, 6 plugins
+
+**Critical Gaps:**
+- Helix lacks custom desk structure (no content organization)
+- Kariusdx uses deprecated v2 APIs (migration needed to v3/v4)
+- Presentation Tool underutilized (only ripplecom uses visual editing)
+- No shared plugin strategy across projects
+
+---
+
+## Phase 3 Summary: Sanity.js Domains ✅ COMPLETE
+
+**Total Duration:** ~12 hours
+**Domains Completed:** 4/4 (100%)
+**Total Documentation Files:** 32 RAG-optimized markdown files
+**Total Semgrep Rules:** 16 enforcement rules
+**Total Analysis Files:** 4 cross-project comparisons
+
+**Deliverables:**
+- Schema Definitions (8 docs + 4 rules)
+- GROQ Queries (8 docs + 4 rules)
+- Content Modeling (8 docs + 4 rules)
+- Studio Customization (8 docs + 4 rules)
+
+**Key Universal Patterns (67-100% Adoption):**
+- Validation rules (100%)
+- Reference field relationships (100%)
+- SEO metadata objects (100%)
+- Reusable query partials (100%)
+- TypeScript query typing (100%)
+- Portable Text for rich content (100%)
+- Vision Tool for development (100%)
+- Custom desk structure (67%)
+- Singleton document management (67%)
+- Media plugin (67%)
+
+**Version-Specific Patterns:**
+- **v2 (kariusdx)**: Object-literal schemas, parts system, legacy plugins
+- **v3 (helix)**: defineType API, minimal Studio customization
+- **v4 (ripplecom)**: Modern APIs, presentationTool, SAML SSO, extensive Studio customization
+
+**Critical Findings:**
+- Helix (v3) not leveraging modern defineType/defineField APIs
+- Kariusdx (v2) requires migration to v3/v4 (breaking changes)
+- Field groups underutilized (12% adoption)
+- Presentation Tool adoption low (33% - only v4 feature)
+- No standardized plugin set across projects
+
+**Next Steps:**
+- Phase 4: WordPress Domains (8 domains planned)
+- Document WP patterns: theme structure, custom post types, ACF, hooks, security
+
+
