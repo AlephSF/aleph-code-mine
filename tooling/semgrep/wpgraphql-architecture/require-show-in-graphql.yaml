@@ -1,0 +1,97 @@
+rules:
+  - id: require-show-in-graphql-cpt
+    languages:
+      - php
+    message: |
+      Custom post type registration should include 'show_in_graphql' => true
+      for headless WordPress applications using WPGraphQL. Without this flag,
+      the post type will not be exposed to GraphQL clients.
+
+      Add the following to your register_post_type() args:
+        'show_in_graphql' => true,
+        'graphql_single_name' => 'YourType',
+        'graphql_plural_name' => 'yourTypes',
+    severity: WARNING
+    patterns:
+      - pattern-either:
+          - pattern: |
+              register_post_type(..., [...])
+          - pattern: |
+              register_taxonomy(..., [...], [...])
+      - pattern-not-inside: |
+          register_post_type(..., [
+            ...,
+            'show_in_graphql' => ...,
+            ...,
+          ])
+      - pattern-not-inside: |
+          register_taxonomy(..., [...], [
+            ...,
+            'show_in_graphql' => ...,
+            ...,
+          ])
+    metadata:
+      category: best-practice
+      technology:
+        - wordpress
+        - wpgraphql
+      cwe: CWE-710
+      confidence: HIGH
+      likelihood: MEDIUM
+      impact: MEDIUM
+      subcategory:
+        - audit
+      references:
+        - https://www.wpgraphql.com/docs/custom-post-types
+      source: wpgraphql-architecture-patterns
+
+  - id: require-graphql-naming-cpt
+    languages:
+      - php
+    message: |
+      Custom post type with 'show_in_graphql' enabled must include
+      'graphql_single_name' and 'graphql_plural_name' in camelCase format.
+
+      Example:
+        'graphql_single_name' => 'localPage',
+        'graphql_plural_name' => 'localPages',
+
+      These names define the GraphQL schema type names and should follow
+      JavaScript naming conventions for frontend consistency.
+    severity: ERROR
+    patterns:
+      - pattern: |
+          register_post_type(..., [
+            ...,
+            'show_in_graphql' => true,
+            ...,
+          ])
+      - pattern-not-inside: |
+          register_post_type(..., [
+            ...,
+            'show_in_graphql' => true,
+            ...,
+            'graphql_single_name' => ...,
+            'graphql_plural_name' => ...,
+            ...,
+          ])
+    fix-regex:
+      regex: "'show_in_graphql'\\s*=>\\s*true,"
+      replacement: |
+        'show_in_graphql' => true,
+        'graphql_single_name' => 'YourType',
+        'graphql_plural_name' => 'yourTypes',
+    metadata:
+      category: correctness
+      technology:
+        - wordpress
+        - wpgraphql
+      cwe: CWE-710
+      confidence: HIGH
+      likelihood: HIGH
+      impact: HIGH
+      subcategory:
+        - vuln
+      references:
+        - https://www.wpgraphql.com/docs/custom-post-types#naming-conventions
+      source: wpgraphql-architecture-patterns

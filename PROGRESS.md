@@ -1,9 +1,9 @@
 # Codebase Mining Progress
 
 **Last Updated:** February 12, 2026
-**Current Phase:** Phase 3 - Sanity.js Domains ✅ COMPLETE
-**Overall Progress:** Phase 2 complete (9/9), Phase 3 complete (4/4 domains complete)
-**Next Phase:** Phase 4 - WordPress Domains (8 domains planned)
+**Current Phase:** Phase 4 - WordPress Domains ⏳ IN PROGRESS
+**Overall Progress:** Phase 2 complete (9/9), Phase 3 complete (4/4), Phase 4 in progress (2/8 domains complete)
+**Next Phase:** Continue Phase 4 - WordPress Domains (6 more domains)
 
 ---
 
@@ -425,10 +425,10 @@ aleph-code-mine/
 | - Domain 2: GROQ Queries | ✅ Complete | 3 hours (done) |
 | - Domain 3: Content Modeling | ✅ Complete | 3 hours (done) |
 | - Domain 4: Studio Customization | ⏳ Next | 2-3 hours |
-| Phase 4: WordPress Domains (8) | ⏳ Pending | 16-24 hours |
+| Phase 4: WordPress Domains (8) | ⏳ In Progress (2/8) | 16-24 hours (6 hours done) |
 | Phase 5: Cross-Stack (4) | ⏳ Pending | 8-12 hours |
 | Phase 6: Tooling Outputs | ⏳ Pending | 8-12 hours |
-| **TOTAL** | **43% Complete** | **35/83 hours done** |
+| **TOTAL** | **49% Complete** | **41/83 hours done** |
 
 ---
 
@@ -444,7 +444,7 @@ ls analysis/  # See all structural analyses
 ```
 
 Then tell Claude:
-> "Continue the codebase mining project. Start Phase 3, Domain 4: Studio Customization"
+> "Continue the codebase mining project. Start Phase 4, Domain 3: [Next WordPress Domain]"
 
 **Completed Domains:**
 - ✅ Phase 1: Structural Reconnaissance (all 8 repos)
@@ -460,6 +460,9 @@ Then tell Claude:
 - ✅ Phase 3, Domain 1: Schema Definitions (Sanity) - 8 docs + 4 Semgrep rules
 - ✅ Phase 3, Domain 2: GROQ Queries (Sanity) - 8 docs + 4 Semgrep rules
 - ✅ Phase 3, Domain 3: Content Modeling (Sanity) - 8 docs + 4 Semgrep rules
+- ✅ Phase 3, Domain 4: Studio Customization (Sanity) - 8 docs + 4 Semgrep rules
+- ✅ Phase 4, Domain 1: WPGraphQL Architecture (WordPress) - 8 docs + 4 Semgrep rules
+- ✅ Phase 4, Domain 2: Custom Post Types & Taxonomies (WordPress) - 8 docs + 9 Semgrep rules
 
 ### Domain 6: Project Structure ✅ COMPLETE
 
@@ -653,7 +656,120 @@ Then tell Claude:
 
 ---
 
-## Phase 3: Sanity.js Domains ⏳ IN PROGRESS
+## Phase 4: WordPress Domains ⏳ IN PROGRESS
+
+**Status:** 2 of 8 domains complete (25%)
+**Focus:** Extract patterns from 2 WordPress repositories (airbnb VIP multisite, thekelsey-wp)
+
+### Domain 1: WPGraphQL Architecture ✅ COMPLETE
+
+**Duration:** ~3 hours
+**Deliverables:**
+- 8 RAG-optimized documentation files in `docs/php-wordpress/wpgraphql-architecture/`
+- 4 Semgrep enforcement rules in `tooling/semgrep/wpgraphql-architecture/`
+- 1 cross-project comparison analysis
+
+**Documentation Files:**
+1. ✅ acf-field-graphql-configuration.md (100% confidence - 193 ACF fields)
+2. ✅ conditional-plugin-loading-multisite.md (100% confidence)
+3. ✅ cpt-taxonomy-graphql-registration.md (100% confidence)
+4. ✅ custom-graphql-field-registration.md (100% confidence - 362 registrations)
+5. ✅ graphql-security-dos-protection.md (100% confidence)
+6. ✅ minimal-headless-theme-pattern.md (100% confidence)
+7. ✅ polylang-graphql-integration.md (100% confidence)
+8. ✅ vip-block-data-api-filters.md (100% confidence)
+
+**Semgrep Rules:**
+1. ✅ require-show-in-graphql.yaml (2 rules: CPT + taxonomy GraphQL exposure)
+2. ✅ require-graphql-register-types-hook.yaml (2 rules: correct hook timing)
+3. ✅ warn-graphql-dos-no-limits.yaml (3 rules: depth, batch, cost limits)
+4. ✅ enforce-acf-graphql-naming.yaml (3 rules: field config, camelCase, descriptions)
+
+**Analysis Files:**
+1. ✅ wpgraphql-architecture-comparison.md (51 query files analyzed)
+
+**Key Findings:**
+- WPGraphQL adoption: 50% (airbnb 100% GraphQL-first, thekelsey 0% REST-only)
+- GraphQL security: airbnb implements query depth limits (15), batch limits (10), 10KB query size limit
+- ACF GraphQL integration: 193 fields with custom GraphQL names across 23 field groups
+- Custom field registration: 362 `register_graphql_field()` calls
+- Polylang multilingual: Language filtering, translations, locale switching via GraphQL
+- Headless theme pattern: Minimal 200-line theme for admin-only WordPress
+
+### Domain 2: Custom Post Types & Taxonomies ✅ COMPLETE
+
+**Duration:** ~3 hours
+**Deliverables:**
+- 8 RAG-optimized documentation files in `docs/php-wordpress/custom-post-types-taxonomies/`
+- 9 Semgrep enforcement rules in `tooling/semgrep/custom-post-types-taxonomies/`
+- 1 cross-project comparison analysis (20 sections)
+
+**Documentation Files:**
+1. ✅ namespaced-cpt-registration.md (100% confidence)
+2. ✅ class-based-cpt-organization.md (100% confidence)
+3. ✅ hierarchical-taxonomies-pattern.md (100% confidence)
+4. ✅ rest-api-configuration.md (50% confidence - architecture-dependent)
+5. ✅ rewrite-slug-best-practices.md (100% confidence)
+6. ✅ cpt-label-conventions.md (100% confidence)
+7. ✅ menu-icon-positioning.md (50% confidence)
+8. ✅ activation-hook-rewrite-flush.md (50% confidence)
+
+**Semgrep Rules:**
+1. ✅ require-cpt-namespace-prefix.yaml (2 rules: CPT + taxonomy prefixing)
+2. ✅ warn-missing-text-domain.yaml (2 rules: i18n translation + consistency)
+3. ✅ require-rest-base-if-show-in-rest.yaml (2 rules: REST base + controller)
+4. ✅ warn-missing-rewrite-flush.yaml (3 rules: activation hooks + performance)
+
+**Analysis Files:**
+1. ✅ custom-post-types-taxonomies-comparison.md (20 sections, 13,698 chars)
+
+**Key Findings:**
+- CPT/Taxonomy registration: 8 custom post types, 7 custom taxonomies analyzed
+- Namespace prefixing: 100% adoption (`bnb_`, `kelsey_` prefixes)
+- Class-based organization: 100% adoption (separate vs monolithic patterns)
+- Hierarchical taxonomies: 100% adoption (0% flat/tag-style)
+- REST API: 50% adoption (thekelsey 100%, airbnb 20% GraphQL-first)
+- Rewrite flush: 50% implement activation hooks (thekelsey best practice)
+- Label i18n: 50% complete translation (airbnb 100%, thekelsey 0% for CPTs)
+- Menu icons: 100% Dashicons, airbnb reuses icon for 80% of CPTs (UX issue)
+
+### Remaining WordPress Domains (6)
+
+**Priority order based on Phase 1 findings:**
+
+3. **ACF (Advanced Custom Fields) Patterns** - High priority
+   - ACF Pro with JSON storage (24MB plugin)
+   - Field groups, field types, conditional logic
+   - Estimated: 2-3 hours
+
+4. **WordPress VIP Patterns** - High priority
+   - VIP-specific patterns (mu-plugins, code sniffer)
+   - Platform utilities, caching, security
+   - Estimated: 2-3 hours
+
+5. **Theme Structure & Organization** - Medium priority
+   - Sage framework (Roots), Blade templating
+   - Traditional PHP themes
+   - Estimated: 2-3 hours
+
+6. **Security & Code Standards** - High priority
+   - PHPCS (VIP WordPress standards)
+   - Input sanitization, output escaping
+   - Estimated: 2-3 hours
+
+7. **Multisite Patterns** - Medium priority
+   - Conditional plugin loading by blog_id
+   - Network-wide vs site-specific functionality
+   - Estimated: 2-3 hours
+
+8. **Block Development (Gutenberg)** - Medium priority
+   - Custom blocks (airbnb-policy-blocks: 12 custom + 15 ACF blocks)
+   - Block registration patterns
+   - Estimated: 2-3 hours
+
+---
+
+## Phase 3: Sanity.js Domains ✅ COMPLETE
 
 **Status:** 1 of 4 domains complete (25%)
 **Focus:** Extract patterns from 3 Sanity.js repositories (helix v3, kariusdx v2, ripplecom v4)

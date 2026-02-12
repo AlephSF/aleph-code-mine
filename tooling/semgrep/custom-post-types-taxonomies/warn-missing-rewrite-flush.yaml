@@ -1,0 +1,184 @@
+rules:
+  - id: warn-missing-activation-hook
+    languages:
+      - php
+    message: |
+      Plugins registering custom post types should implement activation hooks to flush
+      rewrite rules. Without flushing, custom post type URLs return 404 errors until
+      user manually visits Settings > Permalinks.
+
+      Required pattern:
+        function activation() {
+            // Register CPTs first
+            register_custom_post_types();
+
+            // Then flush rewrite rules
+            flush_rewrite_rules();
+        }
+        register_activation_hook(__FILE__, 'activation');
+
+      Also implement deactivation hook:
+        function deactivation() {
+            flush_rewrite_rules();  // Remove CPT rewrite rules
+        }
+        register_deactivation_hook(__FILE__, 'deactivation');
+
+      CRITICAL: Never call flush_rewrite_rules() inside 'init' hook or on every page
+      load. Causes 10x performance degradation via database writes and cache clears.
+
+      Analyzed codebases: The Kelsey 100% implements, Airbnb 0% (relies on manual flush).
+    severity: WARNING
+    patterns:
+      - pattern: register_post_type(...)
+      - pattern-not-inside: |
+          function $ACTIVATION(...) {
+            ...
+            flush_rewrite_rules();
+            ...
+          }
+          ...
+          register_activation_hook(...);
+    metadata:
+      category: best-practice
+      technology:
+        - wordpress
+        - custom-post-types
+      cwe: CWE-710
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: MEDIUM
+      subcategory:
+        - audit
+      references:
+        - https://developer.wordpress.org/plugins/plugin-basics/activation-deactivation-hooks/
+        - https://developer.wordpress.org/reference/functions/flush_rewrite_rules/
+      source: custom-post-types-taxonomies-patterns
+
+  - id: error-flush-rewrite-on-init
+    languages:
+      - php
+    message: |
+      CRITICAL PERFORMANCE ISSUE: Never call flush_rewrite_rules() inside 'init' hook
+      or on every page load.
+
+      Current code flushes rewrite rules on EVERY page load, causing:
+        - 10x performance degradation (50ms → 500ms per page)
+        - Database writes on every request
+        - Full option cache clears
+        - .htaccess file regeneration
+
+      ❌ WRONG (current code):
+        add_action('init', function() {
+            register_post_type('event', $args);
+            flush_rewrite_rules();  // Performance killer
+        });
+
+      ✅ CORRECT:
+        function activation() {
+            register_post_type('event', $args);
+            flush_rewrite_rules();
+        }
+        register_activation_hook(__FILE__, 'activation');
+
+      Only call flush_rewrite_rules() during:
+        - Plugin activation
+        - Plugin deactivation
+        - Admin action changing CPT configuration
+        - WP-CLI command after deployment
+
+      Never call on: init, wp_loaded, template_redirect, or any per-request hook.
+    severity: ERROR
+    patterns:
+      - pattern-either:
+          - pattern: |
+              add_action('init', function(...) {
+                ...
+                flush_rewrite_rules();
+                ...
+              })
+          - pattern: |
+              add_action('init', $CALLBACK);
+              ...
+              function $CALLBACK(...) {
+                ...
+                flush_rewrite_rules();
+                ...
+              }
+          - pattern: |
+              add_action('wp_loaded', function(...) {
+                ...
+                flush_rewrite_rules();
+                ...
+              })
+    metadata:
+      category: security
+      technology:
+        - wordpress
+        - performance
+      cwe: CWE-400
+      owasp:
+        - A05:2021 - Security Misconfiguration
+      confidence: HIGH
+      likelihood: HIGH
+      impact: HIGH
+      subcategory:
+        - vuln
+      references:
+        - https://developer.wordpress.org/reference/functions/flush_rewrite_rules/#comment-356
+        - https://wordpress.stackexchange.com/questions/108660/dont-flush-rewrites-on-init
+      source: custom-post-types-taxonomies-patterns
+
+  - id: warn-flush-rewrite-without-register
+    languages:
+      - php
+    message: |
+      flush_rewrite_rules() called without registering custom post types first.
+
+      Incorrect order flushes empty ruleset, causing 404 errors for CPT URLs.
+
+      ✅ Correct order:
+        1. Register post types (register_post_type)
+        2. Then flush rewrite rules (flush_rewrite_rules)
+
+      Example:
+        function activation() {
+            register_custom_post_types();  // Step 1
+            flush_rewrite_rules();          // Step 2
+        }
+    severity: WARNING
+    patterns:
+      - pattern: |
+          function $ACTIVATION(...) {
+            ...
+            flush_rewrite_rules();
+            ...
+          }
+      - pattern-not: |
+          function $ACTIVATION(...) {
+            ...
+            register_post_type(...);
+            ...
+            flush_rewrite_rules();
+            ...
+          }
+      - pattern-not: |
+          function $ACTIVATION(...) {
+            ...
+            $FUNC(...);
+            ...
+            flush_rewrite_rules();
+            ...
+          }
+    metadata:
+      category: correctness
+      technology:
+        - wordpress
+      cwe: CWE-696
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: MEDIUM
+      subcategory:
+        - audit
+      references:
+        - https://developer.wordpress.org/plugins/post-types/registering-custom-post-types/#flushing-rewrite-rules
+      source: custom-post-types-taxonomies-patterns

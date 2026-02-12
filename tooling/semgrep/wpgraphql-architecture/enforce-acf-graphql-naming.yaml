@@ -1,0 +1,144 @@
+rules:
+  - id: enforce-acf-graphql-field-configuration
+    languages:
+      - php
+    message: |
+      ACF field groups for headless WordPress must include four GraphQL-specific
+      configurations in their JSON definition:
+
+      Required fields:
+        "show_in_graphql": 1,
+        "graphql_field_name": "camelCaseName",
+        "graphql_description": "Human-readable description",
+        "graphql_non_null": 0,
+
+      Without these settings, ACF fields will not be exposed to GraphQL clients
+      or will use auto-generated names that don't match frontend conventions.
+
+      Analyzed codebase shows 193 ACF fields with custom GraphQL names across
+      23 field groups, demonstrating systematic API design for headless applications.
+    severity: WARNING
+    patterns:
+      - pattern: |
+          "key": "group_$KEY",
+          ...,
+          "fields": [
+            {
+              ...,
+              "key": "field_$FIELD_KEY",
+              ...
+            },
+            ...
+          ]
+      - pattern-not-inside: |
+          {
+            ...,
+            "show_in_graphql": $VALUE,
+            ...
+          }
+    metadata:
+      category: best-practice
+      technology:
+        - wordpress
+        - wpgraphql
+        - acf
+      cwe: CWE-710
+      confidence: HIGH
+      likelihood: MEDIUM
+      impact: MEDIUM
+      subcategory:
+        - audit
+      references:
+        - https://www.wpgraphql.com/acf
+        - https://github.com/wp-graphql/wpgraphql-acf
+      source: wpgraphql-architecture-patterns
+
+  - id: prefer-camelcase-graphql-field-names
+    languages:
+      - php
+    message: |
+      GraphQL field names should use camelCase to match JavaScript naming conventions
+      in frontend applications. Avoid snake_case or PascalCase for field names.
+
+      Incorrect:
+        "graphql_field_name": "hero_section_title"    // snake_case
+        "graphql_field_name": "HeroSectionTitle"      // PascalCase
+
+      Correct:
+        "graphql_field_name": "heroSectionTitle"      // camelCase
+
+      This convention ensures consistency with GraphQL best practices and reduces
+      naming transformation logic in frontend code.
+    severity: INFO
+    patterns:
+      - pattern-either:
+          - pattern: |
+              "graphql_field_name": "$SNAKE_CASE",
+          - pattern: |
+              'graphql_field_name' => '$SNAKE_CASE',
+          - pattern: |
+              'graphql_single_name' => '$SNAKE_CASE',
+      - metavariable-regex:
+          metavariable: $SNAKE_CASE
+          regex: '^[a-z]+_[a-z_]+$|^[A-Z][a-zA-Z]+$'
+    fix-regex:
+      regex: '("graphql_field_name":\s*"[a-z]+)_([a-z_]+)'
+      replacement: '\1\u\2'
+    metadata:
+      category: best-practice
+      technology:
+        - wordpress
+        - wpgraphql
+        - acf
+      cwe: CWE-710
+      confidence: MEDIUM
+      likelihood: LOW
+      impact: LOW
+      subcategory:
+        - audit
+      references:
+        - https://graphql.org/learn/best-practices/#naming-conventions
+      source: wpgraphql-architecture-patterns
+
+  - id: require-acf-graphql-description
+    languages:
+      - php
+    message: |
+      ACF fields exposed to GraphQL should include a "graphql_description" to
+      document the field's purpose in the auto-generated GraphQL schema documentation.
+
+      Add to your ACF field JSON:
+        "graphql_description": "Describes the purpose and expected content of this field"
+
+      Descriptions appear in GraphQL introspection queries and GraphiQL/Playground
+      documentation, improving developer experience for frontend teams consuming the API.
+    severity: INFO
+    patterns:
+      - pattern: |
+          {
+            ...,
+            "show_in_graphql": 1,
+            "graphql_field_name": "$NAME",
+            ...,
+          }
+      - pattern-not-inside: |
+          {
+            ...,
+            "graphql_description": $DESC,
+            ...,
+          }
+    metadata:
+      category: best-practice
+      technology:
+        - wordpress
+        - wpgraphql
+        - acf
+      cwe: CWE-710
+      confidence: MEDIUM
+      likelihood: LOW
+      impact: LOW
+      subcategory:
+        - audit
+      references:
+        - https://www.wpgraphql.com/acf#field-descriptions
+      source: wpgraphql-architecture-patterns

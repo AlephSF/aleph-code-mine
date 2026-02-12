@@ -1,0 +1,113 @@
+rules:
+  - id: warn-missing-label-translation
+    languages:
+      - php
+    message: |
+      Custom post type labels should use translation functions for i18n support.
+
+      Current code uses untranslated labels, preventing multilingual admin UI.
+
+      ❌ Bad:
+        'name' => 'Events',
+
+      ✅ Good:
+        'name' => esc_html__('Events', 'your-text-domain'),
+
+      Translation functions:
+        - esc_html__() for label text (returns escaped translated string)
+        - esc_attr__() for HTML attributes
+        - _e() to echo translated string
+
+      Analyzed codebases show: Airbnb 100% translation, The Kelsey 0% for CPT labels.
+    severity: WARNING
+    patterns:
+      - pattern-either:
+          - pattern: |
+              $LABELS = array(
+                ...,
+                $KEY => $LABEL,
+                ...,
+              )
+          - pattern: |
+              array(
+                ...,
+                'labels' => array(
+                  ...,
+                  $KEY => $LABEL,
+                  ...,
+                ),
+                ...,
+              )
+      - metavariable-pattern:
+          metavariable: $KEY
+          patterns:
+            - pattern-regex: '(name|singular_name|add_new_item|edit_item|all_items|menu_name)'
+      - metavariable-pattern:
+          metavariable: $LABEL
+          patterns:
+            - pattern-not: esc_html__(...)
+            - pattern-not: esc_attr__(...)
+            - pattern-not: __(...)
+            - pattern-not-regex: '.*__\('
+    fix-regex:
+      regex: "=>\\s*'([^']+)'"
+      replacement: "=> esc_html__('\\1', 'your-text-domain')"
+    metadata:
+      category: best-practice
+      technology:
+        - wordpress
+        - i18n
+      cwe: CWE-710
+      confidence: MEDIUM
+      likelihood: LOW
+      impact: MEDIUM
+      subcategory:
+        - audit
+      references:
+        - https://developer.wordpress.org/plugins/internationalization/
+        - https://developer.wordpress.org/reference/functions/esc_html__/
+      source: custom-post-types-taxonomies-patterns
+
+  - id: warn-inconsistent-label-escaping
+    languages:
+      - php
+    message: |
+      Label array mixes translated and untranslated strings. Use consistent escaping.
+
+      ✅ All labels should use esc_html__('String', 'text-domain')
+
+      Partial translation creates inconsistent multilingual support where some labels
+      translate while others remain hardcoded English.
+    severity: INFO
+    patterns:
+      - pattern: |
+          array(
+            ...,
+            'labels' => array(
+              ...,
+              $KEY1 => esc_html__(...),
+              ...,
+              $KEY2 => $LABEL,
+              ...,
+            ),
+            ...,
+          )
+      - metavariable-pattern:
+          metavariable: $LABEL
+          patterns:
+            - pattern-not: esc_html__(...)
+            - pattern-not: __(...)
+    metadata:
+      category: best-practice
+      technology:
+        - wordpress
+        - i18n
+      cwe: CWE-710
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: LOW
+      subcategory:
+        - audit
+      references:
+        - https://developer.wordpress.org/plugins/internationalization/how-to-internationalize-your-plugin/
+      source: custom-post-types-taxonomies-patterns

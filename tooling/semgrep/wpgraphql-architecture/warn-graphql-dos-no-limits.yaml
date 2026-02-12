@@ -1,0 +1,134 @@
+rules:
+  - id: warn-graphql-dos-no-query-depth-limit
+    languages:
+      - php
+    message: |
+      WPGraphQL installation should configure query depth limits to prevent
+      denial-of-service attacks through deeply nested queries. Without limits,
+      attackers can craft queries with 50+ nested levels that exhaust server
+      memory and CPU.
+
+      Add to your theme's functions.php or plugin:
+        add_filter('graphql_query_max_depth', function() {
+          return 15; // Maximum nesting depth
+        });
+
+      Analyzed codebase implements 15-level depth limit via graphql_query_max_depth
+      filter, protecting against exponential complexity attacks.
+    severity: WARNING
+    patterns:
+      - pattern-not: |
+          add_filter('graphql_query_max_depth', ...)
+      - pattern-either:
+          - pattern: |
+              add_action('graphql_register_types', ...)
+          - pattern: |
+              register_graphql_field(...)
+          - pattern: |
+              function wpgraphql_activation() {
+                ...
+              }
+    metadata:
+      category: security
+      technology:
+        - wordpress
+        - wpgraphql
+      cwe: CWE-400
+      owasp:
+        - A05:2021 - Security Misconfiguration
+      confidence: HIGH
+      likelihood: HIGH
+      impact: HIGH
+      subcategory:
+        - vuln
+      references:
+        - https://www.wpgraphql.com/docs/security
+        - https://owasp.org/www-community/attacks/Denial_of_Service
+      source: wpgraphql-architecture-patterns
+
+  - id: warn-graphql-dos-no-batch-limit
+    languages:
+      - php
+    message: |
+      WPGraphQL should limit batched query operations to prevent resource exhaustion.
+      Without batching limits, clients can send 100+ queries in a single HTTP request,
+      overwhelming database connections and PHP memory.
+
+      Add to your configuration:
+        add_filter('graphql_max_batch_size', function() {
+          return 10; // Maximum queries per request
+        });
+
+      Analyzed codebase sets batch limit to 10 queries per request via
+      graphql_max_batch_size filter.
+    severity: WARNING
+    patterns:
+      - pattern-not: |
+          add_filter('graphql_max_batch_size', ...)
+      - pattern-either:
+          - pattern: |
+              add_action('graphql_register_types', ...)
+          - pattern: |
+              register_graphql_field(...)
+    metadata:
+      category: security
+      technology:
+        - wordpress
+        - wpgraphql
+      cwe: CWE-400
+      owasp:
+        - A05:2021 - Security Misconfiguration
+      confidence: HIGH
+      likelihood: MEDIUM
+      impact: HIGH
+      subcategory:
+        - vuln
+      references:
+        - https://www.wpgraphql.com/docs/security#batch-queries
+      source: wpgraphql-architecture-patterns
+
+  - id: warn-graphql-dos-no-query-cost-analysis
+    languages:
+      - php
+    message: |
+      Production WPGraphQL instances should implement query cost analysis to limit
+      expensive operations. Without cost limits, clients can request thousands of
+      posts or deeply nested data structures, causing database timeouts.
+
+      Implement via plugin or custom filter:
+        add_filter('graphql_max_query_amount', function() {
+          return 100; // Maximum query result limit
+        });
+
+      Consider plugins like WPGraphQL Query Cost Analysis for fine-grained control.
+    severity: INFO
+    patterns:
+      - pattern-not: |
+          add_filter('graphql_max_query_amount', ...)
+      - pattern-not: |
+          add_filter('graphql_query_cost_analyzer', ...)
+      - pattern-either:
+          - pattern: |
+              register_graphql_connection(...)
+          - pattern: |
+              register_graphql_field(..., [
+                ...,
+                'type' => ['list_of' => ...],
+                ...,
+              ])
+    metadata:
+      category: security
+      technology:
+        - wordpress
+        - wpgraphql
+      cwe: CWE-400
+      owasp:
+        - A05:2021 - Security Misconfiguration
+      confidence: MEDIUM
+      likelihood: LOW
+      impact: MEDIUM
+      subcategory:
+        - audit
+      references:
+        - https://github.com/wp-graphql/wp-graphql-query-cost-analysis
+      source: wpgraphql-architecture-patterns

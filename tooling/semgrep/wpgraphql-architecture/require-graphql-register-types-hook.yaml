@@ -1,0 +1,124 @@
+rules:
+  - id: require-graphql-register-types-hook
+    languages:
+      - php
+    message: |
+      Custom GraphQL field and type registration must use the 'graphql_register_types'
+      action hook, not 'init' or other generic hooks. The graphql_register_types hook
+      ensures types are registered after WPGraphQL core initialization and before
+      schema compilation.
+
+      Incorrect:
+        add_action('init', function() {
+          register_graphql_field(...);
+        });
+
+      Correct:
+        add_action('graphql_register_types', function() {
+          register_graphql_field(...);
+        });
+
+      Found in 362 custom GraphQL field registrations in analyzed codebase.
+    severity: ERROR
+    patterns:
+      - pattern-either:
+          - pattern: |
+              add_action('init', function(...) {
+                ...
+                register_graphql_field(...);
+                ...
+              })
+          - pattern: |
+              add_action('init', function(...) {
+                ...
+                register_graphql_type(...);
+                ...
+              })
+          - pattern: |
+              add_action('init', function(...) {
+                ...
+                register_graphql_object_type(...);
+                ...
+              })
+          - pattern: |
+              add_action('plugins_loaded', function(...) {
+                ...
+                register_graphql_field(...);
+                ...
+              })
+    fix-regex:
+      regex: "add_action\\s*\\(\\s*'(?:init|plugins_loaded)'"
+      replacement: "add_action('graphql_register_types'"
+    metadata:
+      category: correctness
+      technology:
+        - wordpress
+        - wpgraphql
+      cwe: CWE-696
+      confidence: HIGH
+      likelihood: HIGH
+      impact: HIGH
+      subcategory:
+        - vuln
+      references:
+        - https://www.wpgraphql.com/docs/extending-wpgraphql
+        - https://www.wpgraphql.com/functions/register_graphql_field
+      source: wpgraphql-architecture-patterns
+
+  - id: prefer-graphql-register-types-hook-class
+    languages:
+      - php
+    message: |
+      Class-based GraphQL registration should hook into 'graphql_register_types'
+      action in the constructor or init method, not 'init'. This ensures proper
+      timing in the WPGraphQL type registry initialization lifecycle.
+
+      Pattern found in wp-graphql-polylang extension:
+        add_action('graphql_register_types', [$this, 'register_types']);
+    severity: WARNING
+    patterns:
+      - pattern-either:
+          - pattern: |
+              class $CLASS {
+                ...
+                function __construct(...) {
+                  ...
+                  add_action('init', [...]);
+                  ...
+                }
+                ...
+              }
+          - pattern: |
+              class $CLASS {
+                ...
+                function init(...) {
+                  ...
+                  add_action('init', [...]);
+                  ...
+                }
+                ...
+              }
+      - pattern-inside: |
+          class $CLASS {
+            ...
+            function $METHOD(...) {
+              ...
+              register_graphql_field(...);
+              ...
+            }
+            ...
+          }
+    metadata:
+      category: best-practice
+      technology:
+        - wordpress
+        - wpgraphql
+      cwe: CWE-710
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: LOW
+      subcategory:
+        - audit
+      references:
+        - https://www.wpgraphql.com/docs/extending-wpgraphql
+      source: wpgraphql-architecture-patterns

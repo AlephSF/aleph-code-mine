@@ -1,0 +1,99 @@
+rules:
+  - id: require-rest-base-if-show-in-rest
+    languages:
+      - php
+    message: |
+      Custom post types with 'show_in_rest' enabled should define custom 'rest_base'
+      to avoid exposing internal machine names in public API URLs.
+
+      Current: WordPress defaults to CPT machine name (e.g., kelsey_event)
+      Result:  /wp-json/wp/v2/kelsey_event (underscored, prefixed)
+
+      Recommended: Define clean REST endpoint:
+        'rest_base' => 'events',
+      Result: /wp-json/wp/v2/events (hyphenated, semantic)
+
+      REST base naming conventions:
+        - Use hyphens instead of underscores (URL-safe)
+        - Plural form for collections (events, not event)
+        - Remove client prefix (events, not kelsey-events)
+        - Semantic names matching frontend terminology
+
+      Analyzed codebases: 100% define custom rest_base when REST enabled.
+    severity: WARNING
+    patterns:
+      - pattern: |
+          register_post_type($NAME, array(
+            ...,
+            'show_in_rest' => true,
+            ...,
+          ))
+      - pattern-not: |
+          register_post_type($NAME, array(
+            ...,
+            'show_in_rest' => true,
+            ...,
+            'rest_base' => $REST_BASE,
+            ...,
+          ))
+    fix-regex:
+      regex: "'show_in_rest'\\s*=>\\s*true,"
+      replacement: |
+        'show_in_rest' => true,
+        'rest_base' => 'your-endpoint',
+    metadata:
+      category: best-practice
+      technology:
+        - wordpress
+        - rest-api
+      cwe: CWE-710
+      confidence: HIGH
+      likelihood: MEDIUM
+      impact: MEDIUM
+      subcategory:
+        - audit
+      references:
+        - https://developer.wordpress.org/rest-api/extending-the-rest-api/adding-custom-endpoints/
+        - https://developer.wordpress.org/reference/functions/register_post_type/#rest-api
+      source: custom-post-types-taxonomies-patterns
+
+  - id: require-rest-controller-class
+    languages:
+      - php
+    message: |
+      Custom post types with REST API enabled should explicitly define controller class.
+
+      Add 'rest_controller_class' => 'WP_REST_Posts_Controller' for standard CRUD.
+
+      While WordPress defaults to WP_REST_Posts_Controller, explicit declaration
+      documents API expectations and enables future custom controller implementation.
+    severity: INFO
+    patterns:
+      - pattern: |
+          register_post_type($NAME, array(
+            ...,
+            'show_in_rest' => true,
+            ...,
+          ))
+      - pattern-not: |
+          register_post_type($NAME, array(
+            ...,
+            'show_in_rest' => true,
+            ...,
+            'rest_controller_class' => $CLASS,
+            ...,
+          ))
+    metadata:
+      category: best-practice
+      technology:
+        - wordpress
+        - rest-api
+      cwe: CWE-710
+      confidence: MEDIUM
+      likelihood: LOW
+      impact: LOW
+      subcategory:
+        - audit
+      references:
+        - https://developer.wordpress.org/reference/classes/wp_rest_posts_controller/
+      source: custom-post-types-taxonomies-patterns
