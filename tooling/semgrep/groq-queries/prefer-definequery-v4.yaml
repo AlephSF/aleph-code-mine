@@ -1,0 +1,64 @@
+rules:
+  - id: prefer-definequery-v4
+    patterns:
+      - pattern-inside: |
+          import { groq } from 'next-sanity'
+          ...
+      - pattern: |
+          const $QUERY = groq`...`
+    message: |
+      Prefer defineQuery() over groq template literal for Sanity v4+ projects.
+      The modern defineQuery() API enables auto-generated TypeScript types from queries.
+
+      Legacy groq template (v2/v3):
+        import { groq } from 'next-sanity'
+
+        const pageQuery = groq`
+          *[_type == "page"][0] {
+            title,
+            slug
+          }
+        `
+
+      Modern defineQuery API (v4+):
+        import { defineQuery } from "next-sanity"
+
+        export const getPageQuery = defineQuery(`
+          *[_type == "page"][0] {
+            title,
+            slug
+          }
+        `)
+
+        // Auto-generate types with: npm run generate:schema:and:types
+
+      Benefits of defineQuery:
+      - Auto-generates TypeScript types via sanity-codegen
+      - Better type inference for query parameters
+      - Explicit query naming for improved debugging
+      - Types always match queries (no drift)
+      - Full IDE autocomplete for query results
+
+      Adoption in codebases:
+      - Ripplecom (v4.3.0): 94% defineQuery adoption (66 instances)
+      - Helix (v3): 100% groq template (defineQuery not available in v3)
+      - Kariusdx (v2): 100% groq template (defineQuery not available in v2)
+
+      Note: Only use this for Sanity v4+ projects. v2/v3 projects must use groq template.
+    languages:
+      - typescript
+      - javascript
+    severity: INFO
+    metadata:
+      category: sanity
+      confidence: HIGH
+      likelihood: MEDIUM
+      impact: MEDIUM
+      subcategory:
+        - best-practice
+        - type-safety
+      references:
+        - https://www.sanity.io/docs/query-cheat-sheet
+        - https://www.sanity.io/docs/sanity-typegen
+      source_confidence: 33%
+      upgrade_version: v4+

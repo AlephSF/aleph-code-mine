@@ -1,0 +1,101 @@
+rules:
+  - id: warn-missing-spread-before-conditional
+    pattern: |
+      $ARRAY[] {
+        _type == $TYPE => {
+          ...
+        }
+      }
+    pattern-not: |
+      $ARRAY[] {
+        ...,
+        _type == $TYPE => {
+          ...
+        }
+      }
+    message: |
+      Content arrays with conditional type expansion should include spread operator (...) before conditionals.
+      Without spread, default fields (_type, _key) and common fields are omitted from results.
+
+      Missing spread operator (incomplete):
+        content[] {
+          _type == 'textBlock' => {
+            heading,
+            text
+          },
+          _type == 'imageBlock' => {
+            'image': image.asset->{url}
+          }
+        }
+
+      Result (missing _type and _key):
+        {
+          "content": [
+            { "heading": "...", "text": "..." },
+            { "image": { "url": "..." } }
+          ]
+        }
+
+      With spread operator (complete):
+        content[] {
+          ...,
+          _type == 'textBlock' => {
+            heading,
+            text
+          },
+          _type == 'imageBlock' => {
+            'image': image.asset->{url}
+          }
+        }
+
+      Result (includes _type and _key):
+        {
+          "content": [
+            { "_type": "textBlock", "_key": "abc123", "heading": "...", "text": "..." },
+            { "_type": "imageBlock", "_key": "def456", "image": { "url": "..." } }
+          ]
+        }
+
+      Why spread operator is critical:
+      - Includes _type field (required for discriminated union types in TypeScript)
+      - Includes _key field (required for React key prop in .map())
+      - Includes common fields shared across all block types
+      - Prevents runtime errors when components expect _type field
+
+      TypeScript discriminated union pattern:
+        type ContentBlock =
+          | { _type: 'textBlock'; _key: string; heading: string }
+          | { _type: 'imageBlock'; _key: string; image: { url: string } }
+
+        const renderBlock = (block: ContentBlock) => {
+          switch (block._type) {  // ❌ Fails without spread (no _type field)
+            case 'textBlock':
+              return <div>{block.heading}</div>
+            case 'imageBlock':
+              return <img src={block.image.url} />
+          }
+        }
+
+      Observed in codebases:
+      - 100% adoption of spread operator pattern
+      - 143 conditional expansions across 51 query files
+      - All projects include spread before conditionals
+
+      Exception (rare):
+      Only omit spread if you explicitly want to exclude default fields,
+      but this breaks standard React rendering patterns.
+    languages:
+      - typescript
+      - javascript
+    severity: ERROR
+    metadata:
+      category: sanity
+      confidence: HIGH
+      likelihood: HIGH
+      impact: HIGH
+      subcategory:
+        - correctness
+        - type-safety
+      references:
+        - https://www.sanity.io/docs/query-cheat-sheet#conditionals
+      source_confidence: 100%

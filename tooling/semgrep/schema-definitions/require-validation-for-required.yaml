@@ -1,0 +1,67 @@
+rules:
+  - id: require-validation-for-required
+    patterns:
+      - pattern-inside: |
+          defineField({
+            ...,
+            validation: ($RULE) => $RULE.required()...,
+            ...
+          })
+      - pattern-not: |
+          defineField({
+            ...,
+            validation: ($RULE) => $RULE.required().max(...),
+            ...
+          })
+      - pattern-not: |
+          defineField({
+            ...,
+            validation: ($RULE) => $RULE.required().min(...),
+            ...
+          })
+      - metavariable-regex:
+          metavariable: $TYPE
+          regex: ^(string|text|number|url|email)$
+    message: |
+      Fields marked as required should include additional validation rules.
+      Simply marking a field as required() without constraints can lead to poor data quality.
+
+      Current pattern (incomplete):
+        defineField({
+          name: 'title',
+          type: 'string',
+          validation: (Rule) => Rule.required()
+        })
+
+      Recommended pattern (comprehensive):
+        defineField({
+          name: 'title',
+          type: 'string',
+          validation: (Rule) => Rule.required().max(180)
+        })
+
+      Common validation combinations:
+      - string fields: .required().max(N) or .min(N).max(N)
+      - text fields: .required().min(10).max(5000)
+      - number fields: .required().min(0).max(100)
+      - url/email fields: .required().max(500)
+
+      Observed in codebases:
+      - Ripplecom: 238 instances with max() validation
+      - Ripplecom: 75 instances with min() validation
+      - Pattern: 100% of required fields include additional constraints
+    languages:
+      - typescript
+      - javascript
+    severity: WARNING
+    metadata:
+      category: sanity
+      confidence: HIGH
+      likelihood: HIGH
+      impact: HIGH
+      subcategory:
+        - data-quality
+        - validation
+      references:
+        - https://www.sanity.io/docs/validation
+      source_confidence: 100%

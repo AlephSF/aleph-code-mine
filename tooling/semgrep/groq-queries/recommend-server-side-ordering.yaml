@@ -1,0 +1,95 @@
+rules:
+  - id: recommend-server-side-ordering
+    patterns:
+      - pattern-either:
+          - pattern: |
+              groq`*[_type == $TYPE][0..$N]`
+          - pattern: |
+              groq`*[_type == $TYPE][$START..$END]`
+          - pattern: |
+              defineQuery(`*[_type == $TYPE][0..$N]`)
+          - pattern: |
+              defineQuery(`*[_type == $TYPE][$START..$END]`)
+      - pattern-not: |
+          groq`*[_type == $TYPE]|order($FIELD $ORDER)[...]`
+      - pattern-not: |
+          defineQuery(`*[_type == $TYPE]|order($FIELD $ORDER)[...]`)
+    message: |
+      Pagination queries should use server-side ordering (|order) for performance and consistency.
+      Fetching paginated results without ordering leads to unpredictable result order and client-side sorting overhead.
+
+      Query without ordering (unpredictable results):
+        *[_type == 'post'][0..9]{
+          title,
+          publishedAt
+        }
+
+      Query with server-side ordering (recommended):
+        *[_type == 'post']|order(publishedAt desc)[0..9]{
+          title,
+          publishedAt
+        }
+
+      Benefits of server-side ordering:
+      - Predictable result order across pagination
+      - Efficient server-side sorting before slicing
+      - Reduces client payload (only needed items fetched)
+      - Prevents inconsistent ordering on client-side re-renders
+
+      Common ordering patterns:
+        // Recent content (newest first)
+        *[_type == 'post']|order(publishedAt desc)[0..9]
+
+        // Alphabetical (A-Z)
+        *[_type == 'post']|order(title asc)[0..9]
+
+        // Priority-based
+        *[_type == 'announcement']|order(priority asc, publishedAt desc)[0..4]
+
+        // With filtering
+        *[_type == 'post' && published == true]|order(publishedAt desc)[0..9]
+
+      Pagination helper pattern (Kariusdx):
+        export const recentNewsGroq = (startCount = 0, endCount = 5) => `
+          *[_type == 'news']|order(newsDate desc)[${startCount}..${endCount}]{
+            title,
+            excerpt,
+            newsDate
+          }
+        `
+
+        // Usage
+        const page1 = recentNewsGroq(0, 9)   // Items 0-9
+        const page2 = recentNewsGroq(10, 19) // Items 10-19
+
+      Adoption in codebases:
+      - Kariusdx: 7 instances of |order for paginated content
+      - Helix: 0 instances (handles sorting client-side)
+      - Ripplecom: Not extensively measured
+
+      When client-side sorting is acceptable:
+      - Small datasets (<50 items fetched)
+      - User-controlled sort (UI dropdown for sort order)
+      - No pagination (all items fetched at once)
+
+      Performance comparison:
+      - Server-side: Sorts 10,000 posts, returns 10 items (small payload)
+      - Client-side: Fetches all 10,000 posts, sorts in browser (large payload, slow)
+
+      Note: This is a recommendation, not an error. Client-side sorting is valid
+      for small datasets, but server-side ordering is preferred for pagination.
+    languages:
+      - typescript
+      - javascript
+    severity: INFO
+    metadata:
+      category: sanity
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: MEDIUM
+      subcategory:
+        - best-practice
+        - performance
+      references:
+        - https://www.sanity.io/docs/query-cheat-sheet#order
+      source_confidence: 67%

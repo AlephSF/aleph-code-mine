@@ -1,9 +1,9 @@
 # Codebase Mining Progress
 
-**Last Updated:** February 11, 2026
-**Current Phase:** Phase 2 - Domain-Targeted Deep Dives (COMPLETE)
-**Overall Progress:** 100% complete (9/9 Next.js domains complete)
-**Current Domain:** Phase 2 Complete ✅
+**Last Updated:** February 12, 2026
+**Current Phase:** Phase 3 - Sanity.js Domains (IN PROGRESS)
+**Overall Progress:** Phase 2 complete (9/9), Phase 3 in progress (2/4 domains complete)
+**Current Domain:** Content Modeling (Sanity.js) - Next domain to start
 
 ---
 
@@ -410,7 +410,7 @@ aleph-code-mine/
 | Phase | Status | Time Estimate |
 |-------|--------|---------------|
 | Phase 1: Structural Recon | ✅ Complete | 2 hours (done) |
-| Phase 2: Next.js Domains (9) | ✅ Complete (9/9 complete) | 24 hours (done) |
+| Phase 2: Next.js Domains (9) | ✅ Complete (9/9) | 24 hours (done) |
 | - Domain 1: Component Patterns | ✅ Complete | 2.5 hours (done) |
 | - Domain 2: Data Fetching | ✅ Complete | 4 hours (done) |
 | - Domain 3: TypeScript Conventions | ✅ Complete | 3 hours (done) |
@@ -420,11 +420,15 @@ aleph-code-mine/
 | - Domain 7: Testing | ✅ Complete | 2.5 hours (done) |
 | - Domain 8: Error Handling | ✅ Complete | 3 hours (done) |
 | - Domain 9: Tooling Config | ✅ Complete | 2.5 hours (done) |
-| Phase 3: Sanity Domains (4) | ⏳ Next Phase | 8-12 hours |
+| Phase 3: Sanity Domains (4) | ⏳ In Progress (2/4) | 8-12 hours |
+| - Domain 1: Schema Definitions | ✅ Complete | 3 hours (done) |
+| - Domain 2: GROQ Queries | ✅ Complete | 3 hours (done) |
+| - Domain 3: Content Modeling | ⏳ Next | 2-3 hours |
+| - Domain 4: Studio Customization | ⏳ Pending | 2-3 hours |
 | Phase 4: WordPress Domains (8) | ⏳ Pending | 16-24 hours |
 | Phase 5: Cross-Stack (4) | ⏳ Pending | 8-12 hours |
 | Phase 6: Tooling Outputs | ⏳ Pending | 8-12 hours |
-| **TOTAL** | **31% Complete** | **26/83 hours done** |
+| **TOTAL** | **39% Complete** | **32/83 hours done** |
 
 ---
 
@@ -440,7 +444,7 @@ ls analysis/  # See all structural analyses
 ```
 
 Then tell Claude:
-> "Continue the codebase mining project. Start Phase 2, Domain 4: [Next Domain]"
+> "Continue the codebase mining project. Start Phase 3, Domain 3: Content Modeling"
 
 **Completed Domains:**
 - ✅ Phase 1: Structural Reconnaissance (all 8 repos)
@@ -453,6 +457,8 @@ Then tell Claude:
 - ✅ Phase 2, Domain 7: Testing (Next.js) - 8 docs + 4 Semgrep rules
 - ✅ Phase 2, Domain 8: Error Handling (Next.js) - 8 docs + 4 Semgrep rules
 - ✅ Phase 2, Domain 9: Tooling Config (Next.js) - 8 docs + 4 Semgrep rules
+- ✅ Phase 3, Domain 1: Schema Definitions (Sanity) - 8 docs + 4 Semgrep rules
+- ✅ Phase 3, Domain 2: GROQ Queries (Sanity) - 8 docs + 4 Semgrep rules
 
 ### Domain 6: Project Structure ✅ COMPLETE
 
@@ -643,6 +649,101 @@ Then tell Claude:
 - No .editorconfig files (IDE settings may differ: indentation, line endings)
 - Kariusdx has no .nvmrc (team may use different Node versions)
 - Only policy-node runs TypeScript type-checking in pre-commit (helix skips tsc --noEmit)
+
+---
+
+## Phase 3: Sanity.js Domains ⏳ IN PROGRESS
+
+**Status:** 1 of 4 domains complete (25%)
+**Focus:** Extract patterns from 3 Sanity.js repositories (helix v3, kariusdx v2, ripplecom v4)
+
+### Domain 1: Schema Definitions ✅ COMPLETE
+
+**Duration:** ~3 hours
+**Deliverables:**
+- 8 RAG-optimized documentation files in `docs/sanity/schema-definitions/`
+- 4 Semgrep enforcement rules in `tooling/semgrep/schema-definitions/`
+- 1 cross-project comparison analysis
+
+**Documentation Files:**
+1. ✅ modern-definetype-api.md (33% confidence - ripplecom v4 only)
+2. ✅ field-groups-organization.md (12% confidence - low adoption)
+3. ✅ validation-rules.md (100% confidence - universal pattern)
+4. ✅ icon-customization.md (79% confidence - high adoption)
+5. ✅ preview-configuration.md (52% confidence - medium adoption)
+6. ✅ reference-fields-relationships.md (100% confidence - universal pattern)
+7. ✅ seo-metadata-objects.md (100% confidence - universal pattern)
+8. ✅ conditional-field-visibility.md (33% confidence - ripplecom only)
+
+**Semgrep Rules:**
+1. ✅ prefer-definetype-api.yaml - Suggest modern defineType() over object literals (v3+)
+2. ✅ require-validation-for-required.yaml - Warn when required fields lack additional constraints
+3. ✅ warn-missing-preview-config.yaml - Suggest preview config for document schemas
+4. ✅ require-reference-to-array.yaml - Enforce 'to' array in reference fields
+
+**Analysis Files:**
+1. ✅ sanity-schema-comparison.md - Cross-project schema API and pattern analysis
+
+**Validation:**
+- ✅ All sections under 1,500 characters
+- ✅ No pronoun-leading sentences
+- ✅ All required frontmatter fields present
+- ✅ Source confidence calculated from actual pattern counts
+- ⏳ Semgrep rules validation pending (semgrep not installed)
+
+**Key Findings:**
+- **API Evolution**: v2 → v3 → v4 shows significant breaking changes
+- **Modern API adoption**: 33% (only ripplecom v4 uses defineType/defineField)
+- **Validation rules**: 100% adoption (238 max(), 75 min() constraints in ripplecom)
+- **Preview config**: 52% adoption across 147 schemas (UX improvement opportunity)
+- **Field groups**: 12% adoption (low usage, primarily in complex schemas)
+- **Icon customization**: 79% adoption (37 icons from @sanity/icons, 80 from react-icons)
+- **Reference fields**: 100% proper configuration (156 references, all with 'to' array)
+- **SEO metadata**: 100% adoption (dedicated seo/metadata objects in all projects)
+- **Conditional visibility**: 33% adoption (ripplecom only, 18 hidden fields)
+
+**Version-Specific Patterns:**
+- **v2 (kariusdx)**: Object-literal pattern only, no modern API support
+- **v3 (helix)**: Supports modern API but uses v2-compatible object literals for backward compatibility
+- **v4 (ripplecom)**: Full modern API adoption (651 defineType/defineField instances)
+
+**Critical Gaps Identified:**
+- Helix (v3.10.0) not leveraging modern defineType API despite version support
+- Low field groups adoption (12%) despite UX benefits for complex schemas
+- 48% of document schemas lack preview configuration (poor Studio UX)
+
+### Domain 2: GROQ Queries ✅ COMPLETE
+
+**Duration:** ~3 hours
+**Deliverables:**
+- 8 RAG-optimized documentation files in `docs/sanity/groq-queries/`
+- 4 Semgrep enforcement rules in `tooling/semgrep/groq-queries/`
+- 1 cross-project comparison analysis
+
+**Documentation Files:**
+1. ✅ query-file-organization.md (100% confidence)
+2. ✅ modern-definequery-api.md (33% confidence)
+3. ✅ reusable-query-partials.md (100% confidence)
+4. ✅ reference-expansion.md (100% confidence)
+5. ✅ projection-composition.md (100% confidence)
+6. ✅ conditional-field-expansion.md (100% confidence)
+7. ✅ ordering-filtering-pagination.md (67% confidence)
+8. ✅ typescript-query-typing.md (100% confidence)
+
+**Semgrep Rules:**
+1. ✅ prefer-definequery-v4.yaml
+2. ✅ require-image-metadata.yaml
+3. ✅ warn-missing-spread-before-conditional.yaml
+4. ✅ recommend-server-side-ordering.yaml
+
+**Analysis Files:**
+1. ✅ groq-queries-comparison.md (51 query files analyzed)
+
+**Key Findings:**
+- Modern defineQuery API: Ripplecom 94%, others use groq template
+- Reference expansion: 134 instances across all projects
+- Image partials: 100% adoption
+- TypeScript typing: 100% adoption
 
 ---
 
