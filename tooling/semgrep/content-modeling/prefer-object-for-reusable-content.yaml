@@ -1,0 +1,49 @@
+# Prefer object type for reusable content structures
+# Detects potential misuse of document type when object type is more appropriate
+# Source confidence: 100% (SEO, links, images should be objects not documents)
+
+rules:
+  - id: prefer-object-type-for-reusable-content
+    pattern-either:
+      # Modern API: defineType with document but no slug/id management
+      - patterns:
+          - pattern-regex: |
+              defineType\(\s*\{\s*name:\s*["'](?:seo|link|meta|image|contact|address|stat)["']
+          - pattern: |
+              defineType({
+                ...,
+                type: "document",
+                ...
+              })
+      # Legacy API: export default with document
+      - patterns:
+          - pattern-regex: |
+              export\s+default\s*\{\s*name:\s*['"](?:seo|link|meta|image|contact|address|stat)['"]
+          - pattern: |
+              export default {
+                ...,
+                type: 'document',
+                ...
+              }
+    message: |
+      Reusable content structures (seo, link, meta, image, etc.) should use type: "object", not type: "document".
+
+      Objects are embedded in documents and don't need unique IDs.
+      Documents are standalone and appear in Studio document lists.
+
+      Change to:
+        type: "object"  // Instead of "document"
+    languages: [typescript, javascript]
+    severity: WARNING
+    metadata:
+      category: content-modeling
+      subcategory: object-vs-document
+      confidence: HIGH
+      likelihood: MEDIUM
+      impact: MEDIUM
+      technology:
+        - sanity
+      references:
+        - https://www.sanity.io/docs/object-type
+      cwe:
+        - "CWE-1076: Insufficient Adherence to Expected Conventions"

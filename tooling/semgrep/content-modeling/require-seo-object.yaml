@@ -1,0 +1,64 @@
+# Require SEO object in document types
+# Ensures all document types (page, blogPost, event, etc.) include SEO metadata
+# Source confidence: 100% (all analyzed projects implement SEO objects)
+
+rules:
+  - id: require-seo-object-in-documents
+    pattern-either:
+      - patterns:
+          - pattern: |
+              defineType({
+                ...,
+                type: "document",
+                ...,
+                fields: [...],
+                ...
+              })
+          - pattern-not: |
+              defineType({
+                ...,
+                type: "document",
+                ...,
+                fields: [..., defineField({..., type: "seo", ...}), ...],
+                ...
+              })
+      - patterns:
+          - pattern: |
+              export default {
+                ...,
+                type: 'document',
+                ...,
+                fields: [...],
+                ...
+              }
+          - pattern-not: |
+              export default {
+                ...,
+                type: 'document',
+                ...,
+                fields: [..., {..., type: 'seo', ...}, ...],
+                ...
+              }
+    message: |
+      Document type should include SEO object for search engine optimization.
+      Add SEO field:
+        defineField({
+          name: "seo",
+          title: "SEO",
+          type: "seo",
+          group: "seo",
+        })
+    languages: [typescript, javascript]
+    severity: WARNING
+    metadata:
+      category: content-modeling
+      subcategory: seo-metadata
+      confidence: HIGH
+      likelihood: MEDIUM
+      impact: MEDIUM
+      technology:
+        - sanity
+      references:
+        - https://www.sanity.io/docs/schema-types
+      cwe:
+        - "CWE-1076: Insufficient Adherence to Expected Conventions"

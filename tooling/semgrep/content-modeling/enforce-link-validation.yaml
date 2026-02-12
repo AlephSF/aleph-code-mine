@@ -1,0 +1,72 @@
+# Enforce proper link validation for internal/external links
+# Ensures link objects properly validate internal vs external link fields
+# Source confidence: 67% (kariusdx v2 + ripplecom v4 implement enhanced links)
+
+rules:
+  - id: missing-link-validation
+    patterns:
+      - pattern-either:
+          # Modern API: defineField with link type structure
+          - pattern: |
+              defineField({
+                name: "linkType",
+                ...,
+                type: "string",
+                options: {
+                  list: [
+                    { ..., value: "internal" },
+                    { ..., value: "external" },
+                  ],
+                  ...
+                },
+                ...
+              })
+          # Legacy API: field with link type options
+          - pattern: |
+              {
+                name: 'linkType',
+                ...,
+                type: 'string',
+                options: {
+                  list: [
+                    { ..., value: 'internal' },
+                    { ..., value: 'external' },
+                  ],
+                  ...
+                },
+                ...
+              }
+      # But missing conditional validation
+      - pattern-not-inside: |
+          validation: (Rule) => Rule.custom(...)
+      - pattern-not-inside: |
+          validation: Rule => Rule.custom(...)
+    message: |
+      Link object with internal/external types should include conditional validation.
+
+      Add validation to ensure appropriate field is required based on linkType:
+
+        validation: (Rule) => Rule.custom((value, context) => {
+          const linkType = context.parent?.linkType
+          if (linkType === "internal" && !value) {
+            return "Internal link is required"
+          }
+          if (linkType === "external" && !value) {
+            return "External URL is required"
+          }
+          return true
+        })
+    languages: [typescript, javascript]
+    severity: WARNING
+    metadata:
+      category: content-modeling
+      subcategory: validation
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: MEDIUM
+      technology:
+        - sanity
+      references:
+        - https://www.sanity.io/docs/validation
+      cwe:
+        - "CWE-20: Improper Input Validation"

@@ -1,0 +1,74 @@
+# Warn on usage of legacy schema types in page builder
+# Detects references to deprecated legacy section types
+# Source confidence: 33% (ripplecom v4 implements explicit legacy folder)
+
+rules:
+  - id: warn-legacy-schema-in-page-builder
+    pattern-either:
+      # Modern API: defineField with array of types including legacy
+      - patterns:
+          - pattern: |
+              defineField({
+                ...,
+                type: "array",
+                of: [
+                  ...,
+                  { type: $LEGACY_TYPE },
+                  ...
+                ],
+                ...
+              })
+          - metavariable-regex:
+              metavariable: $LEGACY_TYPE
+              regex: >
+                "(faqSection|videoList|bioModalList|collapsibleSectionList|
+                marqueeLogoSection|modalLogosSection|quotesSection|
+                attestationsSection|hoverListsSection|investmentsSection|
+                agendaSection|contentLibrarySection|timelineSection|
+                valuePropsSection)"
+      # Legacy API: array field with legacy types
+      - patterns:
+          - pattern: |
+              {
+                ...,
+                type: 'array',
+                of: [
+                  ...,
+                  { type: $LEGACY_TYPE },
+                  ...
+                ],
+                ...
+              }
+          - metavariable-regex:
+              metavariable: $LEGACY_TYPE
+              regex: >
+                '(faqSection|videoList|bioModalList|collapsibleSectionList|
+                marqueeLogoSection|modalLogosSection|quotesSection|
+                attestationsSection|hoverListsSection|investmentsSection|
+                agendaSection|contentLibrarySection|timelineSection|
+                valuePropsSection)'
+    message: |
+      Usage of legacy schema type detected. Consider migrating to modern component patterns.
+
+      Legacy types are maintained for backward compatibility but should not be used in new content.
+
+      Migration recommendations:
+        - faqSection → collapsibleSection
+        - videoList → video component
+        - bioModalList → bioModal component
+
+      See legacy content migration documentation for full migration guide.
+    languages: [typescript, javascript]
+    severity: INFO
+    metadata:
+      category: content-modeling
+      subcategory: legacy-migration
+      confidence: MEDIUM
+      likelihood: LOW
+      impact: LOW
+      technology:
+        - sanity
+      references:
+        - https://www.sanity.io/docs/migrating-data
+      cwe:
+        - "CWE-477: Use of Obsolete Function"

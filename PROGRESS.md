@@ -2,8 +2,8 @@
 
 **Last Updated:** February 12, 2026
 **Current Phase:** Phase 3 - Sanity.js Domains (IN PROGRESS)
-**Overall Progress:** Phase 2 complete (9/9), Phase 3 in progress (2/4 domains complete)
-**Current Domain:** Content Modeling (Sanity.js) - Next domain to start
+**Overall Progress:** Phase 2 complete (9/9), Phase 3 in progress (3/4 domains complete)
+**Current Domain:** Studio Customization (Sanity.js) - Next domain to start
 
 ---
 
@@ -420,15 +420,15 @@ aleph-code-mine/
 | - Domain 7: Testing | ✅ Complete | 2.5 hours (done) |
 | - Domain 8: Error Handling | ✅ Complete | 3 hours (done) |
 | - Domain 9: Tooling Config | ✅ Complete | 2.5 hours (done) |
-| Phase 3: Sanity Domains (4) | ⏳ In Progress (2/4) | 8-12 hours |
+| Phase 3: Sanity Domains (4) | ⏳ In Progress (3/4) | 8-12 hours |
 | - Domain 1: Schema Definitions | ✅ Complete | 3 hours (done) |
 | - Domain 2: GROQ Queries | ✅ Complete | 3 hours (done) |
-| - Domain 3: Content Modeling | ⏳ Next | 2-3 hours |
-| - Domain 4: Studio Customization | ⏳ Pending | 2-3 hours |
+| - Domain 3: Content Modeling | ✅ Complete | 3 hours (done) |
+| - Domain 4: Studio Customization | ⏳ Next | 2-3 hours |
 | Phase 4: WordPress Domains (8) | ⏳ Pending | 16-24 hours |
 | Phase 5: Cross-Stack (4) | ⏳ Pending | 8-12 hours |
 | Phase 6: Tooling Outputs | ⏳ Pending | 8-12 hours |
-| **TOTAL** | **39% Complete** | **32/83 hours done** |
+| **TOTAL** | **43% Complete** | **35/83 hours done** |
 
 ---
 
@@ -444,7 +444,7 @@ ls analysis/  # See all structural analyses
 ```
 
 Then tell Claude:
-> "Continue the codebase mining project. Start Phase 3, Domain 3: Content Modeling"
+> "Continue the codebase mining project. Start Phase 3, Domain 4: Studio Customization"
 
 **Completed Domains:**
 - ✅ Phase 1: Structural Reconnaissance (all 8 repos)
@@ -459,6 +459,7 @@ Then tell Claude:
 - ✅ Phase 2, Domain 9: Tooling Config (Next.js) - 8 docs + 4 Semgrep rules
 - ✅ Phase 3, Domain 1: Schema Definitions (Sanity) - 8 docs + 4 Semgrep rules
 - ✅ Phase 3, Domain 2: GROQ Queries (Sanity) - 8 docs + 4 Semgrep rules
+- ✅ Phase 3, Domain 3: Content Modeling (Sanity) - 8 docs + 4 Semgrep rules
 
 ### Domain 6: Project Structure ✅ COMPLETE
 
@@ -711,6 +712,80 @@ Then tell Claude:
 - Helix (v3.10.0) not leveraging modern defineType API despite version support
 - Low field groups adoption (12%) despite UX benefits for complex schemas
 - 48% of document schemas lack preview configuration (poor Studio UX)
+
+### Domain 3: Content Modeling ✅ COMPLETE
+
+**Duration:** ~3 hours
+**Deliverables:**
+- 8 RAG-optimized documentation files in `docs/sanity/content-modeling/`
+- 4 Semgrep enforcement rules in `tooling/semgrep/content-modeling/`
+- 1 cross-project comparison analysis
+
+**Documentation Files:**
+1. ✅ page-builder-architecture.md (67% confidence)
+2. ✅ global-singleton-documents.md (33% confidence)
+3. ✅ content-block-organization.md (67% confidence)
+4. ✅ rich-text-configuration.md (100% confidence)
+5. ✅ content-hierarchies.md (33% confidence)
+6. ✅ content-block-naming-conventions.md (100% confidence)
+7. ✅ legacy-content-migration.md (33% confidence)
+8. ✅ reusable-content-objects.md (100% confidence)
+
+**Semgrep Rules:**
+1. ✅ require-seo-object.yaml - Require SEO object in document types
+2. ✅ prefer-object-for-reusable-content.yaml - Enforce object type for reusable structures
+3. ✅ warn-legacy-schema-usage.yaml - Warn on deprecated legacy schema types
+4. ✅ enforce-link-validation.yaml - Enforce conditional link validation
+
+**Analysis Files:**
+1. ✅ content-modeling-comparison.md - Cross-project content architecture analysis
+
+**Validation:**
+- ✅ All sections under 1,500 characters
+- ✅ No pronoun-leading sentences
+- ✅ All required frontmatter fields present
+- ✅ Source confidence calculated from actual pattern counts
+- ⏳ Semgrep rules validation pending
+
+**Key Findings:**
+- **Page Builder Adoption**: 67% (kariusdx v2 + ripplecom v4 use modular page builders)
+  - Flat content array pattern (ripplecom v4): 33%
+  - Nested section wrapper pattern (kariusdx v2): 33%
+  - Minimal content structure (helix v3): 33%
+- **Global/Singleton Documents**: 33% (ripplecom v4 only - 6 global documents)
+- **Content Block Organization**: 67% use dedicated folders (components/ or builderBlocks/)
+  - Ripplecom v4: 15 components in components/ folder
+  - Kariusdx v2: 20 builder blocks in builderBlocks/ folder
+- **Rich Text Configuration**: 100% use Portable Text
+  - Object wrapper pattern (ripplecom v4): 33% (prevents nested array issues)
+  - Direct array pattern (kariusdx v2 + helix v3): 67%
+- **Content Hierarchies**: 33% (helix v3 only - hierarchical pages with parent references)
+- **Flat Taxonomies**: 67% (kariusdx v2 + ripplecom v4 use categories/tags)
+- **Naming Conventions**: 100% use camelCase
+  - Purpose-driven names (ripplecom v4): heroSection, textSection
+  - Descriptive technical names (kariusdx v2): pageSection, imageCarousel
+- **Legacy Content Migration**: 33% (ripplecom v4 maintains 16 legacy sections in legacy/ folder)
+- **Reusable Objects**: 100% adoption
+  - SEO objects: 100%
+  - Link objects: 67%
+  - Image objects: 67%
+  - Navigation items: 67%
+
+**Content Block Counts:**
+- Helix v3: 2 documents + 2 objects (minimal)
+- Kariusdx v2: 11 documents + 20 builder blocks + 23 objects
+- Ripplecom v4: 16 documents + 15 components + 6 globals + 16 legacy sections + 15 objects
+
+**Critical Patterns:**
+- Rich text wrapped in object type prevents nested array TypeErrors (ripplecom v4)
+- Dual schema support enables zero-downtime content migration (legacy + modern)
+- Internal/external link objects prevent broken links and improve UX
+- Hierarchical slugs auto-generate from parent relationships (helix v3)
+
+**Critical Gaps:**
+- Most projects lack global/singleton documents (67% - no globals)
+- Content hierarchies rarely used (67% - flat taxonomies only)
+- Legacy migration strategy missing in 67% of projects
 
 ### Domain 2: GROQ Queries ✅ COMPLETE
 
