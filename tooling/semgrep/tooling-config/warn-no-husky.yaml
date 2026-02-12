@@ -1,0 +1,77 @@
+rules:
+  - id: warn-no-husky
+    patterns:
+      - pattern: |
+          {
+            "devDependencies": {
+              ...
+            }
+          }
+      - pattern-not: |
+          {
+            "devDependencies": {
+              ...,
+              "husky": "...",
+              ...
+            }
+          }
+    paths:
+      include:
+        - package.json
+    severity: WARNING
+    message: |
+      Missing Husky pre-commit hooks in package.json devDependencies. 67% of
+      analyzed projects use Husky to enforce code quality before commits.
+
+      Without pre-commit hooks:
+      - Developers can commit code with ESLint/stylelint errors
+      - TypeScript type errors reach main branch
+      - Broken code can pass local checks and fail in CI
+
+      Recommended setup:
+
+      1. Install Husky + lint-staged:
+         ```bash
+         npm install --save-dev husky lint-staged
+         ```
+
+      2. Initialize Husky:
+         ```bash
+         npx husky init
+         ```
+
+      3. Create .lintstagedrc.mjs:
+         ```javascript
+         export default {
+           '*.{js,jsx,ts,tsx}': ['next lint --file'],
+           '**/*.{css,sass,scss}': ['stylelint']
+         }
+         ```
+
+      4. Update .husky/pre-commit:
+         ```bash
+         npx lint-staged && npx tsc --noEmit
+         ```
+
+      5. Add prepare script to package.json:
+         ```json
+         {
+           "scripts": {
+             "prepare": "husky"
+           }
+         }
+         ```
+
+      See: docs/js-nextjs/tooling-config/husky-lint-staged-pattern.md
+    languages: [json]
+    metadata:
+      category: tooling-config
+      subcategory: git-hooks
+      confidence: HIGH
+      likelihood: HIGH
+      impact: HIGH
+      cwe:
+        - "CWE-710: Improper Adherence to Coding Standards"
+      references:
+        - https://typicode.github.io/husky/
+        - https://github.com/lint-staged/lint-staged

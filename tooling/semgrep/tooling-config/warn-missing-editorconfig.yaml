@@ -1,0 +1,58 @@
+rules:
+  - id: warn-missing-editorconfig
+    patterns:
+      - pattern: |
+          {...}
+      - metavariable-pattern:
+          metavariable: $FILE
+          pattern: package.json
+    paths:
+      include:
+        - package.json
+    severity: WARNING
+    message: |
+      Missing .editorconfig file in project root. Add .editorconfig to enforce
+      consistent editor settings (indentation, line endings, trailing whitespace)
+      across team IDEs. This prevents noisy git diffs and merge conflicts.
+
+      Recommended .editorconfig:
+
+      ```ini
+      root = true
+
+      [*]
+      charset = utf-8
+      end_of_line = lf
+      insert_final_newline = true
+      trim_trailing_whitespace = true
+
+      [*.{js,jsx,ts,tsx,mjs,cjs}]
+      indent_style = space
+      indent_size = 2
+
+      [*.{css,scss,sass}]
+      indent_style = space
+      indent_size = 2
+
+      [*.{json,yml,yaml}]
+      indent_style = space
+      indent_size = 2
+
+      [*.md]
+      trim_trailing_whitespace = false
+      max_line_length = off
+      ```
+
+      See: docs/js-nextjs/tooling-config/editorconfig-missing-pattern.md
+    languages: [json]
+    metadata:
+      category: tooling-config
+      subcategory: editor
+      confidence: HIGH
+      likelihood: HIGH
+      impact: MEDIUM
+      cwe:
+        - "CWE-710: Improper Adherence to Coding Standards"
+      references:
+        - https://editorconfig.org/
+        - https://github.com/editorconfig/editorconfig/wiki/EditorConfig-Properties

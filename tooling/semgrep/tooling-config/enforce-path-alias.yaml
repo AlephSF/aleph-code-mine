@@ -1,0 +1,86 @@
+rules:
+  - id: enforce-path-alias
+    patterns:
+      - pattern: |
+          {
+            "compilerOptions": {
+              ...
+            }
+          }
+      - pattern-not: |
+          {
+            "compilerOptions": {
+              ...,
+              "paths": {
+                "@/*": $PATHS,
+                ...
+              },
+              ...
+            }
+          }
+    paths:
+      include:
+        - tsconfig.json
+        - tsconfig.*.json
+    severity: WARNING
+    message: |
+      Missing @/* path alias in tsconfig.json. 67% of analyzed Next.js projects
+      (helix, policy-node) use @/* path aliases for cleaner imports.
+
+      Without path aliases:
+      ```typescript
+      // ❌ Brittle relative imports
+      import { Button } from '../../../components/Button'
+      import { formatDate } from '../../../utils/formatDate'
+      ```
+
+      With @/* alias:
+      ```typescript
+      // ✅ Clean absolute imports
+      import { Button } from '@/components/Button'
+      import { formatDate } from '@/utils/formatDate'
+      ```
+
+      Recommended tsconfig.json:
+
+      ```json
+      {
+        "compilerOptions": {
+          "baseUrl": ".",
+          "paths": {
+            "@/*": ["./*"]
+          }
+        }
+      }
+      ```
+
+      For src/ directory structure:
+      ```json
+      {
+        "compilerOptions": {
+          "baseUrl": ".",
+          "paths": {
+            "@/*": ["./src/*"]
+          }
+        }
+      }
+      ```
+
+      Benefits:
+      - Refactor-friendly (moving files doesn't break imports)
+      - Easier to read (no ../../.. chains)
+      - Consistent with Next.js ecosystem convention
+
+      See: docs/js-nextjs/tooling-config/typescript-strict-path-aliases.md
+    languages: [json]
+    metadata:
+      category: tooling-config
+      subcategory: typescript
+      confidence: HIGH
+      likelihood: MEDIUM
+      impact: MEDIUM
+      cwe:
+        - "CWE-710: Improper Adherence to Coding Standards"
+      references:
+        - https://www.typescriptlang.org/docs/handbook/module-resolution.html#path-mapping
+        - https://nextjs.org/docs/app/building-your-application/configuring/absolute-imports-and-module-aliases

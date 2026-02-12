@@ -1,0 +1,67 @@
+rules:
+  - id: require-strict-typescript
+    patterns:
+      - pattern: |
+          {
+            "compilerOptions": {
+              ...,
+              "strict": false,
+              ...
+            }
+          }
+      - pattern: |
+          {
+            "compilerOptions": {
+              ...
+            }
+          }
+      - pattern-not: |
+          {
+            "compilerOptions": {
+              ...,
+              "strict": true,
+              ...
+            }
+          }
+    paths:
+      include:
+        - tsconfig.json
+        - tsconfig.*.json
+    severity: ERROR
+    message: |
+      TypeScript strict mode must be enabled in tsconfig.json. All analyzed
+      Next.js projects (100%) use "strict": true for maximum type safety.
+
+      Strict mode enables:
+      - noImplicitAny: Errors on implicit any types
+      - strictNullChecks: null and undefined are distinct types
+      - strictFunctionTypes: Contravariant function parameter checking
+      - strictBindCallApply: Type-checks bind/call/apply methods
+      - strictPropertyInitialization: Class properties must be initialized
+      - noImplicitThis: Errors on implicit any type for this
+      - alwaysStrict: Parse files in strict mode and emit "use strict"
+
+      Fix:
+
+      ```json
+      {
+        "compilerOptions": {
+          "strict": true
+        }
+      }
+      ```
+
+      See: docs/js-nextjs/tooling-config/typescript-strict-path-aliases.md
+    languages: [json]
+    metadata:
+      category: tooling-config
+      subcategory: typescript
+      confidence: HIGH
+      likelihood: HIGH
+      impact: HIGH
+      cwe:
+        - "CWE-1088: Uncontrolled Data in Code Generation"
+        - "CWE-476: NULL Pointer Dereference"
+      references:
+        - https://www.typescriptlang.org/tsconfig#strict
+        - https://www.typescriptlang.org/docs/handbook/compiler-options.html

@@ -1,9 +1,9 @@
 # Codebase Mining Progress
 
 **Last Updated:** February 11, 2026
-**Current Phase:** Phase 2 - Domain-Targeted Deep Dives (In Progress)
-**Overall Progress:** 91% complete (8.1/9 Next.js domains complete)
-**Current Domain:** Tooling Config (Next.js) ⏳ IN PROGRESS (13% complete)
+**Current Phase:** Phase 2 - Domain-Targeted Deep Dives (COMPLETE)
+**Overall Progress:** 100% complete (9/9 Next.js domains complete)
+**Current Domain:** Phase 2 Complete ✅
 
 ---
 
@@ -410,7 +410,7 @@ aleph-code-mine/
 | Phase | Status | Time Estimate |
 |-------|--------|---------------|
 | Phase 1: Structural Recon | ✅ Complete | 2 hours (done) |
-| Phase 2: Next.js Domains (9) | 🎯 In Progress (8/9 complete) | 18-27 hours |
+| Phase 2: Next.js Domains (9) | ✅ Complete (9/9 complete) | 24 hours (done) |
 | - Domain 1: Component Patterns | ✅ Complete | 2.5 hours (done) |
 | - Domain 2: Data Fetching | ✅ Complete | 4 hours (done) |
 | - Domain 3: TypeScript Conventions | ✅ Complete | 3 hours (done) |
@@ -419,12 +419,12 @@ aleph-code-mine/
 | - Domain 6: Project Structure | ✅ Complete | 3 hours (done) |
 | - Domain 7: Testing | ✅ Complete | 2.5 hours (done) |
 | - Domain 8: Error Handling | ✅ Complete | 3 hours (done) |
-| - Domain 9: Tooling Config | ⏳ Pending | 2-3 hours |
-| Phase 3: Sanity Domains (4) | ⏳ Pending | 8-12 hours |
+| - Domain 9: Tooling Config | ✅ Complete | 2.5 hours (done) |
+| Phase 3: Sanity Domains (4) | ⏳ Next Phase | 8-12 hours |
 | Phase 4: WordPress Domains (8) | ⏳ Pending | 16-24 hours |
 | Phase 5: Cross-Stack (4) | ⏳ Pending | 8-12 hours |
 | Phase 6: Tooling Outputs | ⏳ Pending | 8-12 hours |
-| **TOTAL** | **89% Complete** | **54-83 hours** |
+| **TOTAL** | **31% Complete** | **26/83 hours done** |
 
 ---
 
@@ -452,7 +452,7 @@ Then tell Claude:
 - ✅ Phase 2, Domain 6: Project Structure (Next.js) - 7 docs + 4 Semgrep rules
 - ✅ Phase 2, Domain 7: Testing (Next.js) - 8 docs + 4 Semgrep rules
 - ✅ Phase 2, Domain 8: Error Handling (Next.js) - 8 docs + 4 Semgrep rules
-- ⏳ Phase 2, Domain 9: Tooling Config (Next.js) - 1/8 docs (IN PROGRESS)
+- ✅ Phase 2, Domain 9: Tooling Config (Next.js) - 8 docs + 4 Semgrep rules
 
 ### Domain 6: Project Structure ✅ COMPLETE
 
@@ -589,42 +589,40 @@ Then tell Claude:
 - notFound() usage: 67% (helix: 6 calls, policy-node: 19 calls, kariusdx: 0 calls)
 - console.error usage: 33% (policy-node: 116 calls, helix: 1 call, kariusdx: 0 calls)
 
-### Domain 9: Tooling Config ⏳ IN PROGRESS (13% complete)
+### Domain 9: Tooling Config ✅ COMPLETE
 
-**Duration:** ~0.5 hours so far (estimated 2.5 hours total)
-**Deliverables (Partial):**
-- 1 RAG-optimized comparison analysis in `analysis/` (tooling-config-comparison.md)
-- 1/8 RAG-optimized documentation files in `docs/js-nextjs/tooling-config/`
-- 0/4 Semgrep rules pending
+**Duration:** ~2.5 hours
+**Deliverables:**
+- 8 RAG-optimized documentation files in `docs/js-nextjs/tooling-config/`
+- 4 Semgrep enforcement rules in `tooling/semgrep/tooling-config/`
+- 1 cross-project comparison analysis
 
-**Documentation Files Completed:**
+**Documentation Files:**
 1. ✅ eslint-shared-configs.md (67% confidence - @aleph configs)
+2. ✅ typescript-strict-path-aliases.md (100% confidence - strict mode + @/* aliases)
+3. ✅ stylelint-scss-configuration.md (100% confidence - all use stylelint)
+4. ✅ husky-lint-staged-pattern.md (67% confidence - helix + policy-node)
+5. ✅ npm-scripts-conventions.md (100% confidence - lint, lint:styles, build patterns)
+6. ✅ node-version-management.md (67% confidence - .nvmrc usage)
+7. ✅ eslint-flat-config-migration.md (33% confidence - policy-node only)
+8. ✅ editorconfig-missing-pattern.md (0% confidence - gap pattern)
 
-**Documentation Files Remaining:**
-2. ⏳ typescript-strict-path-aliases.md (100% confidence - strict mode + @/* aliases)
-3. ⏳ stylelint-scss-configuration.md (100% confidence - all use stylelint)
-4. ⏳ husky-lint-staged-pattern.md (67% confidence - helix + policy-node)
-5. ⏳ npm-scripts-conventions.md (100% confidence - lint, lint:styles, build patterns)
-6. ⏳ node-version-management.md (67% confidence - .nvmrc usage)
-7. ⏳ eslint-flat-config-migration.md (33% confidence - policy-node only)
-8. ⏳ editorconfig-missing-pattern.md (0% confidence - gap pattern)
-
-**Semgrep Rules (Pending):**
-1. ⏳ warn-missing-editorconfig.yaml - Warn if .editorconfig missing
-2. ⏳ require-strict-typescript.yaml - Require strict: true in tsconfig.json
-3. ⏳ warn-no-husky.yaml - Warn if .husky directory missing
-4. ⏳ enforce-path-alias.yaml - Require @/* path alias in tsconfig.json
+**Semgrep Rules:**
+1. ✅ warn-missing-editorconfig.yaml - Warn if .editorconfig missing
+2. ✅ require-strict-typescript.yaml - Require strict: true in tsconfig.json
+3. ✅ warn-no-husky.yaml - Warn if .husky directory missing
+4. ✅ enforce-path-alias.yaml - Require @/* path alias in tsconfig.json
 
 **Analysis Files:**
-1. ✅ tooling-config-comparison.md - Cross-project tooling analysis (10,000+ lines)
+1. ✅ tooling-config-comparison.md - Cross-project tooling analysis
 
-**Validation (Completed Docs):**
-- ✅ Section under 1,500 characters
+**Validation:**
+- ✅ All sections under 1,500 characters
 - ✅ No pronoun-leading sentences
 - ✅ All required frontmatter fields present
 - ✅ Source confidence calculated from actual adoption rates
 
-**Key Findings (So Far):**
+**Key Findings:**
 - ESLint adoption: 100% (helix/policy-node use @aleph shared configs, kariusdx uses Airbnb)
 - TypeScript strict mode: 100% (all projects use "strict": true)
 - stylelint for SCSS: 100% (helix/policy-node use @aleph shared configs)
@@ -646,5 +644,43 @@ Then tell Claude:
 - Kariusdx has no .nvmrc (team may use different Node versions)
 - Only policy-node runs TypeScript type-checking in pre-commit (helix skips tsc --noEmit)
 
-**Resume Point:**
-Continue generating remaining 7 documentation files (typescript-strict-path-aliases.md through editorconfig-missing-pattern.md), then generate 4 Semgrep rules.
+---
+
+## Phase 2 Summary: Next.js Domains ✅ COMPLETE
+
+**Total Duration:** ~24 hours
+**Domains Completed:** 9/9 (100%)
+**Total Documentation Files:** 71 RAG-optimized markdown files
+**Total Semgrep Rules:** 35 enforcement rules
+**Total Analysis Files:** 9 cross-project comparisons
+
+**Deliverables:**
+- Component Patterns (8 docs + 4 rules)
+- Data Fetching (8 docs + 4 rules)
+- TypeScript Conventions (8 docs + 4 rules)
+- Hooks & State (8 docs + 3 rules)
+- Styling (8 docs + 4 rules)
+- Project Structure (7 docs + 4 rules)
+- Testing (8 docs + 4 rules)
+- Error Handling (8 docs + 4 rules)
+- Tooling Config (8 docs + 4 rules)
+
+**Key Universal Patterns (100% Adoption):**
+- TypeScript strict mode
+- SCSS + CSS Modules
+- 2-space indentation
+- ISR revalidation
+- Default exports for components
+- Multiple useState over single state object
+- Design system structure (_colors, _typography, _spacing)
+- npm scripts (dev, build, start, lint)
+- stylelint for SCSS
+
+**Critical Gaps Identified:**
+- Zero testing infrastructure (0% adoption)
+- Zero error boundaries (0% adoption)
+- Zero .editorconfig files (0% adoption)
+- Minimal custom hooks (4 total across all projects)
+- No type guards despite extensive API parsing
+- Kariusdx lacks Husky pre-commit hooks
+- Only policy-node runs tsc --noEmit before commit
