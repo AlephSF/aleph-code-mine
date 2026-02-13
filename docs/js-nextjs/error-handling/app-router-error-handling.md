@@ -107,7 +107,7 @@ if (!municipality) {
 
 ## not-found.tsx: Custom 404 Pages
 
-Next.js not-found.tsx files provide custom 404 error pages for missing routes and notFound() calls. Placed at any route level, not-found.tsx inherits parent layout.tsx styling and navigation.
+Next.js not-found.tsx files provide custom 404 error pages for missing routes and notFound() calls. Placed at any route level, inherits parent layout.tsx styling.
 
 **Missing Pattern (0% Adoption):**
 
@@ -126,11 +126,7 @@ export default function NotFound() {
 }
 ```
 
-**Gap Analysis:**
-- 25 notFound() calls across helix + policy-node
-- 0 custom not-found.tsx files (100% use Next.js default 404)
-- Users see unstyled Next.js default page instead of branded 404 experience
-- No tracking of 404 errors (missed opportunity for analytics)
+**Gap:** 25 notFound() calls, 0 custom not-found.tsx files. Users see unstyled Next.js default instead of branded 404.
 
 **Recommended Structure:**
 
@@ -164,9 +160,7 @@ export default function BlogNotFound() {
 
 ## global-error.tsx: Root Layout Error Handling
 
-Next.js global-error.tsx handles errors in the root layout.tsx, providing the last line of defense for unhandled errors. Must define <html> and <body> tags since root layout is not rendered during global-error.tsx activation.
-
-**Missing Pattern (0% Adoption):**
+Next.js global-error.tsx handles errors in root layout.tsx. Must define <html> and <body> tags since root layout is not rendered during activation. Critical gap: 0% adoption across App Router projects. Root layout errors crash entire application with blank white screen.
 
 ```typescript
 // app/global-error.tsx
@@ -193,18 +187,11 @@ export default function GlobalError({
 }
 ```
 
-**Critical Gap:**
-- 0% adoption across all App Router projects (helix v15, policy-node v14)
-- Errors in root layout crash entire application with no recovery
-- No global error tracking integration point
-- Production users see blank white screen on root layout errors
+Triggers when: error thrown in app/layout.tsx, error in root Server Component, or unhandled error not caught by nested error.tsx.
 
-**When global-error.tsx Triggers:**
-- Error thrown in app/layout.tsx
-- Error in root-level Server Component
-- Unhandled error not caught by nested error.tsx
+## global-error.tsx with Error Tracking
 
-**Integration Opportunity:**
+Sentry integration in global-error.tsx provides last-chance error tracking before application crashes. useEffect captures exception with location tag and digest metadata.
 
 ```typescript
 // app/global-error.tsx
@@ -333,7 +320,7 @@ export default function Error({
 
 ## reset() Function: Error Recovery
 
-Next.js error boundaries provide reset() function to re-render error route segment, enabling users to recover from transient errors without full page reload.
+Next.js error boundaries provide reset() function to re-render error route segment, enabling recovery from transient errors without full page reload.
 
 **Basic reset() Pattern:**
 
@@ -400,16 +387,7 @@ export default function Error({
 }
 ```
 
-**When reset() Works:**
-- Transient network errors (API timeout, connection drop)
-- Race condition errors (resolved on re-render)
-- Stale data errors (refetch resolves issue)
-
-**When reset() Does NOT Work:**
-- Syntax errors in code
-- Missing environment variables
-- Invalid data schema from API
-- Database connection failures
+Works for: transient network errors, race conditions, stale data. Does NOT work for: syntax errors, missing env vars, invalid schema, DB failures.
 
 ## Codebase Patterns
 

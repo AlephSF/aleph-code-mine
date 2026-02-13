@@ -18,45 +18,31 @@ Structured logging provides searchable, aggregatable, machine-readable log outpu
 
 ## Why Structured Logging Matters
 
-Console.error/console.log produce unstructured text output, limiting searchability, aggregation, and analysis. Structured logging outputs JSON objects with consistent fields (timestamp, level, context, error stack), enabling powerful querying and alerting in production.
+Console.error produces unstructured text output, limiting searchability and aggregation. Structured logging outputs JSON with consistent fields (timestamp, level, context, error stack), enabling querying and alerting.
 
 **Current Pattern (Policy-Node - 116 console.error calls):**
 
 ```typescript
-// ❌ Unstructured: No timestamps, no context, no searchability
+// ❌ Unstructured: No timestamps, no context
 catch (error) {
   console.error('Failed to fetch municipalities:', error)
 }
-
-// Production output (unstructured text):
-// Failed to fetch municipalities: Error: Network timeout
+// Output: Failed to fetch municipalities: Error: Network timeout
 ```
 
-**Structured Logging Pattern (Recommended):**
+**Structured Logging Pattern:**
 
 ```typescript
-// ✅ Structured: JSON output with timestamps, context, error details
+// ✅ Structured: JSON output
 import { logger } from '@/lib/logger'
 
 catch (error) {
-  logger.error({
-    err: error,
-    context: 'municipalities-api',
-    operation: 'fetch',
-    timestamp: new Date().toISOString(),
-  }, 'Failed to fetch municipalities')
+  logger.error({ err: error, context: 'municipalities-api', operation: 'fetch' }, 'Failed to fetch municipalities')
 }
-
-// Production output (structured JSON):
-// {"level":"error","time":"2026-02-11T10:30:00.000Z","err":{"type":"Error","message":"Network timeout","stack":"..."},"context":"municipalities-api","operation":"fetch","msg":"Failed to fetch municipalities"}
+// Output: {"level":"error","time":"2026-02-11T10:30:00.000Z","err":{"type":"Error","message":"Network timeout","stack":"..."},"context":"municipalities-api","operation":"fetch","msg":"Failed to fetch municipalities"}
 ```
 
-**Benefits of Structured Logging:**
-- Searchable: Query by error type, context, user ID, timestamp
-- Aggregatable: Group errors by context, count occurrences over time
-- Alertable: Trigger alerts when error count exceeds threshold
-- Contextual: Include user ID, request ID, operation, data keys
-- Correlatable: Link errors across services using trace IDs
+**Benefits:** Searchable (query by error type, context, user ID), aggregatable (group errors, count occurrences), alertable (threshold alerts), contextual (user ID, request ID, operation), correlatable (trace IDs across services).
 
 ## Pino: Fastest Node.js Logger
 
@@ -126,7 +112,7 @@ logger.info({ userId: '123', action: 'login' }, 'User logged in')
 
 ## Logging Levels and When to Use Them
 
-Pino supports standard logging levels (fatal, error, warn, info, debug, trace), enabling log filtering by severity in production.
+Pino supports standard logging levels (fatal, error, warn, info, debug, trace), enabling log filtering by severity.
 
 **Level Hierarchy (fatal > error > warn > info > debug > trace):**
 
@@ -134,45 +120,38 @@ Pino supports standard logging levels (fatal, error, warn, info, debug, trace), 
 import { logger } from '@/lib/logger'
 
 // FATAL: Application crashes, unrecoverable errors
-logger.fatal({ err: error, context: 'db-connection' }, 'Database connection failed, shutting down')
+logger.fatal({ err: error, context: 'db-connection' }, 'Database connection failed')
 process.exit(1)
 
-// ERROR: Exceptions, API failures, data corruption
-logger.error({ err: error, s3Key: 'data.csv', bucket: 'prod' }, 'Failed to download S3 file')
+// ERROR: Exceptions, API failures
+logger.error({ err: error, s3Key: 'data.csv' }, 'Failed to download S3 file')
 
-// WARN: Degraded functionality, retries, deprecated API usage
+// WARN: Degraded functionality, retries
 logger.warn({ retryCount: 3, endpoint: '/api/metrics' }, 'API request failed, retrying')
 
-// INFO: Business events, user actions, state changes (default level)
+// INFO: Business events, user actions (default level)
 logger.info({ userId: '123', municipalityId: 'oslo' }, 'User viewed municipality page')
 
 // DEBUG: Detailed debugging (disabled in production by default)
 logger.debug({ params: req.params, query: req.query }, 'Incoming API request')
 
-// TRACE: Ultra-detailed tracing (rarely used)
+// TRACE: Ultra-detailed tracing
 logger.trace({ sqlQuery: query, duration: 45 }, 'Database query executed')
 ```
 
-**Production LOG_LEVEL Configuration:**
+**Configuration:**
 
 ```bash
 # .env.production
-LOG_LEVEL=info  # Only logs info, warn, error, fatal (filters out debug, trace)
+LOG_LEVEL=info  # Logs info, warn, error, fatal (filters debug, trace)
 
 # .env.development
-LOG_LEVEL=debug  # Logs debug and above (filters out trace only)
+LOG_LEVEL=debug  # Logs debug and above
 ```
 
-**Environment-Based Level Control:**
-
 ```typescript
-// lib/logger.ts
-export const logger = pino({
-  level: process.env.LOG_LEVEL || 'info',
-})
-
-// Dynamically change level at runtime
-logger.level = 'debug'
+export const logger = pino({ level: process.env.LOG_LEVEL || 'info' })
+logger.level = 'debug'  // Change at runtime
 ```
 
 ## Error Logging Best Practices
@@ -223,28 +202,23 @@ catch (error) {
 }
 ```
 
-## Child Loggers for Request Context
+## Request-Scoped Child Loggers
 
-Pino child loggers inherit parent logger configuration while adding request-specific context (request ID, user ID, route), enabling error correlation across log entries.
+Pino child loggers inherit parent configuration while adding request-specific context (request ID, path, method), enabling error correlation across log entries.
 
-**Request-Scoped Logger:**
+**Middleware Request Logger:**
 
 ```typescript
-// middleware.ts
 import { logger } from '@/lib/logger'
 import { NextRequest, NextResponse } from 'next/server'
 
 export function middleware(request: NextRequest) {
-  const requestId = crypto.randomUUID()
   const requestLogger = logger.child({
-    requestId,
+    requestId: crypto.randomUUID(),
     path: request.nextUrl.pathname,
     method: request.method,
   })
-
-  // Attach logger to request for use in route handlers
   ;(request as any).logger = requestLogger
-
   requestLogger.info('Incoming request')
   return NextResponse.next()
 }
@@ -253,31 +227,26 @@ export function middleware(request: NextRequest) {
 **Using Request Logger in API Route:**
 
 ```typescript
-// app/api/municipalities/route.ts
-import { NextRequest } from 'next/server'
-
 export async function GET(request: NextRequest) {
   const logger = (request as any).logger
-
   logger.info({ operation: 'fetch-municipalities' }, 'Starting municipality fetch')
 
   try {
     const municipalities = await fetchMunicipalities()
-    logger.info({ count: municipalities.length }, 'Successfully fetched municipalities')
+    logger.info({ count: municipalities.length }, 'Successfully fetched')
     return NextResponse.json(municipalities)
   } catch (error) {
     logger.error({ err: error }, 'Failed to fetch municipalities')
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
-
-// All logs include requestId, path, method from child logger:
-// {"level":"info","requestId":"abc-123","path":"/api/municipalities","method":"GET","msg":"Incoming request"}
-// {"level":"info","requestId":"abc-123","path":"/api/municipalities","method":"GET","operation":"fetch-municipalities","msg":"Starting municipality fetch"}
-// {"level":"error","requestId":"abc-123","path":"/api/municipalities","method":"GET","err":{...},"msg":"Failed to fetch municipalities"}
 ```
 
-**User-Scoped Logger:**
+All logs include requestId, path, method: `{"level":"info","requestId":"abc-123","path":"/api/municipalities","method":"GET","msg":"Incoming request"}`
+
+## User-Scoped Child Loggers
+
+User-scoped child loggers add user context (user ID, email, role) to all log entries, enabling user-specific error tracking.
 
 ```typescript
 // lib/get-user-logger.ts
@@ -286,52 +255,33 @@ import { getSession } from '@/lib/session'
 
 export async function getUserLogger() {
   const session = await getSession()
-
-  return logger.child({
-    userId: session?.userId,
-    userEmail: session?.email,
-    userRole: session?.role,
-  })
+  return logger.child({ userId: session?.userId, userEmail: session?.email, userRole: session?.role })
 }
 
 // Usage in Server Component:
 const userLogger = await getUserLogger()
 userLogger.info({ action: 'view-municipality', municipalityId: 'oslo' }, 'User viewed municipality')
 
-// Output includes user context:
-// {"level":"info","userId":"user-123","userEmail":"user@example.com","userRole":"admin","action":"view-municipality","municipalityId":"oslo","msg":"User viewed municipality"}
+// Output: {"level":"info","userId":"user-123","userEmail":"user@example.com","userRole":"admin","action":"view-municipality","municipalityId":"oslo","msg":"User viewed municipality"}
 ```
 
-## Performance Monitoring with Pino
+## Operation Performance Timing
 
-Pino supports performance timing through child loggers with bindings, enabling measurement of operation duration, database query time, and API call latency.
-
-**Operation Timing:**
+Pino supports performance timing through duration logging, enabling measurement of operation duration, database query time, and API call latency.
 
 ```typescript
 import { logger } from '@/lib/logger'
 
 async function fetchMunicipalities() {
   const startTime = Date.now()
-
   try {
     const municipalities = await sanityClient.fetch(/* ... */)
     const duration = Date.now() - startTime
-
-    logger.info({
-      operation: 'fetch-municipalities',
-      duration,
-      count: municipalities.length,
-    }, `Fetched municipalities in ${duration}ms`)
-
+    logger.info({ operation: 'fetch-municipalities', duration, count: municipalities.length }, `Fetched in ${duration}ms`)
     return municipalities
   } catch (error) {
     const duration = Date.now() - startTime
-    logger.error({
-      err: error,
-      operation: 'fetch-municipalities',
-      duration,
-    }, `Failed to fetch municipalities after ${duration}ms`)
+    logger.error({ err: error, operation: 'fetch-municipalities', duration }, `Failed after ${duration}ms`)
     throw error
   }
 }
@@ -341,92 +291,63 @@ async function fetchMunicipalities() {
 
 ```typescript
 async function queryDatabase(sql: string, params: any[]) {
-  const queryLogger = logger.child({ context: 'database' })
   const startTime = Date.now()
-
   try {
     const result = await db.query(sql, params)
     const duration = Date.now() - startTime
-
-    queryLogger.debug({
-      sql,
-      params,
-      duration,
-      rowCount: result.rows.length,
-    }, 'Database query executed')
-
+    logger.debug({ sql, params, duration, rowCount: result.rows.length }, 'Database query executed')
     return result
   } catch (error) {
     const duration = Date.now() - startTime
-    queryLogger.error({
-      err: error,
-      sql,
-      params,
-      duration,
-    }, 'Database query failed')
+    logger.error({ err: error, sql, params, duration }, 'Database query failed')
     throw error
   }
 }
 ```
 
-**Threshold-Based Logging:**
+## Threshold-Based Performance Logging
+
+Log only slow operations exceeding threshold, reducing log volume while capturing performance issues.
 
 ```typescript
-// Only log slow queries (>100ms)
+const startTime = Date.now()
+const municipalities = await fetchMunicipalities()
 const duration = Date.now() - startTime
 
+// Only log slow queries (>100ms)
 if (duration > 100) {
-  logger.warn({
-    operation: 'fetch-municipalities',
-    duration,
-    threshold: 100,
-  }, 'Slow query detected')
+  logger.warn({ operation: 'fetch-municipalities', duration, threshold: 100 }, 'Slow query detected')
 }
 ```
 
 ## Log Sanitization: Removing Sensitive Data
 
-Pino redaction removes sensitive data (passwords, API keys, tokens) from logs before serialization, preventing credential leaks in production logs.
+Pino redaction removes sensitive data (passwords, API keys, tokens) from logs before serialization, preventing credential leaks.
 
 **Automatic Redaction:**
 
 ```typescript
-// lib/logger.ts
 import { pino } from 'pino'
 
 export const logger = pino({
   redact: {
-    paths: [
-      'password',
-      'apiKey',
-      'token',
-      'authorization',
-      'cookie',
-      'sessionId',
-      '*.password',
-      '*.apiKey',
-      'user.email',  // Redact PII if required
-    ],
+    paths: ['password', 'apiKey', 'token', 'authorization', 'cookie', 'sessionId', '*.password', '*.apiKey', 'user.email'],
     censor: '[REDACTED]',
   },
 })
 
-// Usage:
 logger.info({ username: 'john', password: 'secret123' }, 'User login')
-
-// Output (password redacted):
-// {"level":"info","username":"john","password":"[REDACTED]","msg":"User login"}
+// Output: {"level":"info","username":"john","password":"[REDACTED]","msg":"User login"}
 ```
 
 **Dynamic Redaction:**
 
 ```typescript
-// Redact based on environment
 export const logger = pino({
   redact: {
     paths: process.env.NODE_ENV === 'production'
       ? ['password', 'apiKey', 'token', 'user.email', 'user.phone']  // Full redaction in prod
-      : ['password', 'apiKey', 'token'],  // Minimal redaction in dev
+      : ['password', 'apiKey', 'token'],  // Minimal in dev
     censor: '[REDACTED]',
   },
 })
@@ -435,18 +356,8 @@ export const logger = pino({
 **Nested Field Redaction:**
 
 ```typescript
-// Redact nested fields
-logger.info({
-  user: {
-    id: '123',
-    email: 'user@example.com',  // Redacted
-    password: 'secret',  // Redacted
-  },
-  apiKey: 'abc-123',  // Redacted
-}, 'User data')
-
-// Output:
-// {"level":"info","user":{"id":"123","email":"[REDACTED]","password":"[REDACTED]"},"apiKey":"[REDACTED]","msg":"User data"}
+logger.info({ user: { id: '123', email: 'user@example.com', password: 'secret' }, apiKey: 'abc-123' }, 'User data')
+// Output: {"level":"info","user":{"id":"123","email":"[REDACTED]","password":"[REDACTED]"},"apiKey":"[REDACTED]","msg":"User data"}
 ```
 
 ## Integration with Error Tracking Services

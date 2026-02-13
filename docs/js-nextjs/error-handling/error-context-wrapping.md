@@ -18,7 +18,7 @@ Error context wrapping catches errors, adds contextual information (operation na
 
 ## Why Error Context Wrapping Matters
 
-Generic error messages ("Network timeout") lack context (which operation? which file? which data?). Error wrapping adds operational context to error messages, transforming "Network timeout" into "Failed to download S3 file from bucket 'data-bucket', key 'municipalities.csv': Network timeout".
+Generic error messages lack context. Error wrapping transforms "Network timeout" into "Failed to download S3 file from bucket 'data-bucket', key 'municipalities.csv': Network timeout".
 
 **Generic Error (Bad):**
 
@@ -58,11 +58,7 @@ async function downloadS3File(s3Key: string, bucket: string) {
 // Error: Failed to download S3 file from bucket "data-bucket", key "municipalities.csv": Network timeout
 ```
 
-**Benefits:**
-- **Contextual Debugging:** Know which operation failed without reading code
-- **Data Identification:** Know which S3 key, database record, or API endpoint failed
-- **Stack Trace Preservation:** Original error stack trace preserved in wrapped error
-- **Production Debugging:** Error messages sufficient for debugging without source code access
+Benefits: contextual debugging, data identification, stack trace preservation, production debugging without source code access.
 
 ## Policy-Node Pattern: String Concatenation Wrapping
 
@@ -71,20 +67,16 @@ Policy-node wraps errors with context using string concatenation, preserving ori
 **S3 Download Error Wrapping:**
 
 ```typescript
-// lib/s3-loader.ts (Policy-Node Pattern)
+// lib/s3-loader.ts
 async function downloadS3File(s3Key: string, bucket: string) {
   try {
-    const response = await s3Client.send(
-      new GetObjectCommand({ Bucket: bucket, Key: s3Key })
-    )
+    const response = await s3Client.send(new GetObjectCommand({ Bucket: bucket, Key: s3Key }))
     return response.Body
   } catch (error) {
     if (error instanceof Error) {
-      throw new Error(
-        `Failed to download S3 file from bucket "${bucket}", key "${s3Key}": ${error.message}`
-      )
+      throw new Error(`Failed to download S3 file from bucket "${bucket}", key "${s3Key}": ${error.message}`)
     }
-    throw error  // Re-throw non-Error objects unchanged
+    throw error
   }
 }
 ```
@@ -92,24 +84,23 @@ async function downloadS3File(s3Key: string, bucket: string) {
 **CSV Parsing Error Wrapping:**
 
 ```typescript
-// lib/csv-parser.ts (Policy-Node Pattern)
 async function parseStreamToCsv(stream: Readable) {
   try {
-    const csvData = await parseStream(stream)
-    return csvData
+    return await parseStream(stream)
   } catch (error) {
-    if (error instanceof Error) {
-      throw new Error(`CSV parsing failed: ${error.message}`)
-    }
+    if (error instanceof Error) throw new Error(`CSV parsing failed: ${error.message}`)
     throw error
   }
 }
 ```
 
-**Nested Error Context (Multi-Level Wrapping):**
+**Adoption:** Policy-node: 80% of utility functions wrap errors. Helix: 0%, Kariusdx: 0%.
+
+## Multi-Level Error Context Chaining
+
+Error wrapping at multiple abstraction levels builds context chain from low-level (S3 download) through high-level (data loading pipeline).
 
 ```typescript
-// lib/data-loader.ts
 async function loadMunicipalitiesFromS3(s3Key: string) {
   try {
     const fileStream = await downloadS3File(s3Key, 'data-bucket')
@@ -122,15 +113,9 @@ async function loadMunicipalitiesFromS3(s3Key: string) {
     throw error
   }
 }
-
-// Error message includes full context chain:
-// Error: Failed to load municipalities from S3 key "municipalities.csv": CSV parsing failed: Failed to download S3 file from bucket "data-bucket", key "municipalities.csv": Network timeout
 ```
 
-**Adoption:**
-- Policy-node: 80% of utility functions wrap errors with context
-- Helix: 0% (minimal error handling, no wrapping)
-- Kariusdx: 0% (minimal error handling, no wrapping)
+Error message includes full context chain: "Failed to load municipalities from S3 key 'municipalities.csv': CSV parsing failed: Failed to download S3 file from bucket 'data-bucket', key 'municipalities.csv': Network timeout"
 
 ## Preserving Stack Traces
 
@@ -174,48 +159,40 @@ try {
 }
 ```
 
-## Custom Error Classes with Cause Property
+## Error Cause Property (ES2022)
 
-Modern JavaScript Error constructor supports cause property (ES2022), enabling error chaining while preserving full original error object (not just message).
-
-**Error with Cause (ES2022+):**
+Modern JavaScript Error constructor supports cause property (ES2022), preserving full original error object (not just message).
 
 ```typescript
 async function downloadS3File(s3Key: string, bucket: string) {
   try {
-    const response = await s3Client.send(
-      new GetObjectCommand({ Bucket: bucket, Key: s3Key })
-    )
+    const response = await s3Client.send(new GetObjectCommand({ Bucket: bucket, Key: s3Key }))
     return response.Body
   } catch (error) {
     throw new Error(
       `Failed to download S3 file from bucket "${bucket}", key "${s3Key}"`,
-      { cause: error }  // Preserve full original error object
+      { cause: error }
     )
   }
 }
 
-// Accessing original error:
 catch (error) {
-  console.error('Wrapped error:', error.message)
-  console.error('Original error:', error.cause)
-  console.error('Original stack:', error.cause?.stack)
+  console.error('Wrapped:', error.message)
+  console.error('Original:', error.cause)
 }
 ```
 
-**Custom Error Class with Cause:**
+Benefits: preserves full error object, enables chaining, TypeScript-friendly, ES2022 standard.
+
+## Custom Error Classes with Cause and Context
+
+Custom error classes extend Error with cause property and context metadata for structured error handling.
 
 ```typescript
-// lib/errors.ts
 class S3Error extends Error {
   readonly cause: Error | undefined
   readonly context: Record<string, any>
-
-  constructor(
-    message: string,
-    cause?: Error,
-    context?: Record<string, any>
-  ) {
+  constructor(message: string, cause?: Error, context?: Record<string, any>) {
     super(message)
     this.name = 'S3Error'
     this.cause = cause
@@ -223,52 +200,29 @@ class S3Error extends Error {
   }
 }
 
-// Usage:
 try {
   await s3Client.send(command)
 } catch (error) {
-  throw new S3Error(
-    'Failed to download S3 file',
-    error instanceof Error ? error : undefined,
-    { bucket, s3Key, operation: 'download' }
-  )
+  throw new S3Error('Failed to download S3 file', error instanceof Error ? error : undefined, { bucket, s3Key, operation: 'download' })
 }
 
-// Accessing error details:
 catch (error) {
   if (error instanceof S3Error) {
-    console.error('Operation:', error.context.operation)
-    console.error('Bucket:', error.context.bucket)
-    console.error('S3 Key:', error.context.s3Key)
-    console.error('Root cause:', error.cause?.message)
+    console.error('Operation:', error.context.operation, 'Root cause:', error.cause?.message)
   }
 }
 ```
 
-**Benefits of Cause Property:**
-- Preserves full original error object (not just message)
-- Enables error chaining (wrap multiple layers)
-- TypeScript-friendly (typed error.cause)
-- Standard JavaScript (ES2022 specification)
-
 ## Contextual Metadata in Error Objects
 
-Error objects can store arbitrary metadata (user ID, request ID, operation name, data keys) as properties, enabling structured error logging and debugging.
-
-**Error with Metadata:**
+Error objects store metadata (user ID, request ID, operation name) as properties for structured logging.
 
 ```typescript
-// lib/errors.ts
 class ContextualError extends Error {
   readonly context: Record<string, any>
   readonly timestamp: string
   readonly operation: string
-
-  constructor(
-    message: string,
-    operation: string,
-    context?: Record<string, any>
-  ) {
+  constructor(message: string, operation: string, context?: Record<string, any>) {
     super(message)
     this.name = 'ContextualError'
     this.operation = operation
@@ -277,62 +231,30 @@ class ContextualError extends Error {
   }
 }
 
-// Usage:
 try {
   await fetchMunicipality(slug)
 } catch (error) {
-  throw new ContextualError(
-    'Failed to fetch municipality',
-    'fetch-municipality',
-    {
-      slug,
-      userId: session?.userId,
-      requestId: crypto.randomUUID(),
-      dataSource: 'sanity',
-    }
-  )
+  throw new ContextualError('Failed to fetch municipality', 'fetch-municipality', { slug, userId: session?.userId, requestId: crypto.randomUUID(), dataSource: 'sanity' })
 }
 
-// Structured logging with metadata:
 catch (error) {
   if (error instanceof ContextualError) {
-    logger.error({
-      err: error,
-      operation: error.operation,
-      timestamp: error.timestamp,
-      ...error.context,
-    }, error.message)
+    logger.error({ err: error, operation: error.operation, timestamp: error.timestamp, ...error.context }, error.message)
   }
 }
-
-// Log output includes full context:
-// {
-//   "level": "error",
-//   "err": { "type": "ContextualError", "message": "Failed to fetch municipality", "stack": "..." },
-//   "operation": "fetch-municipality",
-//   "timestamp": "2026-02-11T10:30:00.000Z",
-//   "slug": "oslo",
-//   "userId": "user-123",
-//   "requestId": "abc-def-456",
-//   "dataSource": "sanity",
-//   "msg": "Failed to fetch municipality"
-// }
 ```
 
-**Adoption:**
-- Custom error classes with metadata: 33% (policy-node custom error classes have statusCode)
-- Full context objects: 0% (policy-node uses string concatenation, not metadata objects)
+Log output: `{"level":"error","operation":"fetch-municipality","timestamp":"2026-02-11T10:30:00Z","slug":"oslo","userId":"user-123","requestId":"abc-def-456","dataSource":"sanity"}`
 
-## Error Wrapping Patterns
+**Adoption:** Custom error classes with metadata: 33% (policy-node statusCode only). Full context objects: 0%.
+
+## Basic Error Wrapping Patterns
 
 **Pattern 1: Operation Name Prefix:**
 
 ```typescript
-// Add operation name to error message
 catch (error) {
-  if (error instanceof Error) {
-    throw new Error(`CSV parsing failed: ${error.message}`)
-  }
+  if (error instanceof Error) throw new Error(`CSV parsing failed: ${error.message}`)
   throw error
 }
 ```
@@ -340,11 +262,8 @@ catch (error) {
 **Pattern 2: File Path Context:**
 
 ```typescript
-// Add file path to error message
 catch (error) {
-  if (error instanceof Error) {
-    throw new Error(`Failed to read file "${filePath}": ${error.message}`)
-  }
+  if (error instanceof Error) throw new Error(`Failed to read file "${filePath}": ${error.message}`)
   throw error
 }
 ```
@@ -352,56 +271,40 @@ catch (error) {
 **Pattern 3: Data Key Context:**
 
 ```typescript
-// Add S3 key, database ID, or API endpoint to error message
 catch (error) {
-  if (error instanceof Error) {
-    throw new Error(
-      `S3 download failed for bucket "${bucket}", key "${s3Key}": ${error.message}`
-    )
-  }
+  if (error instanceof Error) throw new Error(`S3 download failed for bucket "${bucket}", key "${s3Key}": ${error.message}`)
   throw error
 }
 ```
 
-**Pattern 4: Multi-Level Context Chain:**
+## Advanced Error Wrapping: Transformation and Chaining
+
+**Error Transformation (External Library → Domain Errors):**
 
 ```typescript
-// Wrap multiple layers, building context chain
+catch (error) {
+  if (error.code === 'NoSuchKey') throw new NotFoundError(`S3 file not found: ${s3Key}`)
+  if (error.code === 'AccessDenied') throw new UnauthorizedError(`Access denied to S3 bucket: ${bucket}`)
+  throw new S3Error(`S3 operation failed: ${error.message}`, error, { bucket, s3Key })
+}
+```
+
+**Multi-Level Context Chain:**
+
+```typescript
 async function loadData() {
   try {
     const stream = await downloadS3File(s3Key, bucket)
     const csvData = await parseStreamToCsv(stream)
-    const validated = await validateData(csvData)
-    return validated
+    return await validateData(csvData)
   } catch (error) {
-    if (error instanceof Error) {
-      throw new Error(`Data loading pipeline failed for S3 key "${s3Key}": ${error.message}`)
-    }
+    if (error instanceof Error) throw new Error(`Data loading pipeline failed for S3 key "${s3Key}": ${error.message}`)
     throw error
   }
 }
-
-// Error chain:
-// Data loading pipeline failed for S3 key "municipalities.csv": Data validation failed: CSV parsing failed: S3 download failed for bucket "data-bucket", key "municipalities.csv": Network timeout
 ```
 
-**Pattern 5: Error Transformation:**
-
-```typescript
-// Convert external library errors to domain errors
-catch (error) {
-  if (error.code === 'NoSuchKey') {
-    throw new NotFoundError(`S3 file not found: ${s3Key}`)
-  }
-
-  if (error.code === 'AccessDenied') {
-    throw new UnauthorizedError(`Access denied to S3 bucket: ${bucket}`)
-  }
-
-  // Generic error fallback
-  throw new S3Error(`S3 operation failed: ${error.message}`, error, { bucket, s3Key })
-}
-```
+Error chain: "Data loading pipeline failed for S3 key 'municipalities.csv': Data validation failed: CSV parsing failed: S3 download failed for bucket 'data-bucket', key 'municipalities.csv': Network timeout"
 
 ## When to Wrap Errors
 
@@ -455,12 +358,11 @@ catch (error) {
 
 ## Error Wrapping vs Error Logging
 
-Error wrapping adds context to error messages (for callers), while error logging records errors with context (for developers). Both serve different purposes and should be used together.
+Error wrapping adds context for callers, error logging records errors for developers. Use both together.
 
 **Error Wrapping (For Callers):**
 
 ```typescript
-// Wrapping adds context to error message
 async function downloadS3File(s3Key: string) {
   try {
     return await s3Client.send(command)
@@ -468,55 +370,30 @@ async function downloadS3File(s3Key: string) {
     throw new Error(`S3 download failed for key "${s3Key}": ${error.message}`)
   }
 }
-
-// Caller receives contextual error
-try {
-  await downloadS3File('municipalities.csv')
-} catch (error) {
-  console.error(error.message)
-  // "S3 download failed for key "municipalities.csv": Network timeout"
-}
 ```
 
 **Error Logging (For Developers):**
 
 ```typescript
-// Logging records error with context
 async function downloadS3File(s3Key: string) {
   try {
     return await s3Client.send(command)
   } catch (error) {
-    logger.error({
-      err: error,
-      context: 's3-download',
-      s3Key,
-      bucket: 'data-bucket',
-    }, 'S3 download failed')
-
-    throw error  // Re-throw original error (or wrapped error)
+    logger.error({ err: error, context: 's3-download', s3Key, bucket: 'data-bucket' }, 'S3 download failed')
+    throw error
   }
 }
 ```
 
-**Combined Pattern (Wrap + Log):**
+**Combined (Best Practice):**
 
 ```typescript
-// ✅ BEST: Wrap error AND log with context
 async function downloadS3File(s3Key: string, bucket: string) {
   try {
     return await s3Client.send(command)
   } catch (error) {
-    logger.error({
-      err: error,
-      context: 's3-download',
-      s3Key,
-      bucket,
-    }, 'S3 download failed')
-
-    throw new Error(
-      `S3 download failed for bucket "${bucket}", key "${s3Key}": ${error.message}`,
-      { cause: error }
-    )
+    logger.error({ err: error, context: 's3-download', s3Key, bucket }, 'S3 download failed')
+    throw new Error(`S3 download failed for bucket "${bucket}", key "${s3Key}": ${error.message}`, { cause: error })
   }
 }
 ```
@@ -600,12 +477,12 @@ catch (error) {
 - Error metadata objects: 0% (policy-node uses string concatenation)
 - Multi-level context chaining: 33% (policy-node only)
 
-## Anti-Patterns
+## Error Wrapping Anti-Patterns
 
 **1. Wrapping Without Adding Context:**
 
 ```typescript
-// ❌ BAD: Wraps error but adds no new information
+// ❌ BAD: No new information
 catch (error) {
   throw new Error(`Error: ${error.message}`)
 }
@@ -619,21 +496,23 @@ catch (error) {
 **2. Losing Original Error:**
 
 ```typescript
-// ❌ BAD: Creates new error, loses original stack trace
+// ❌ BAD: Loses original stack trace
 catch (error) {
   throw new Error('S3 download failed')
 }
 
-// ✅ GOOD: Preserves original error message and stack
+// ✅ GOOD: Preserves original error
 catch (error) {
   throw new Error(`S3 download failed: ${error.message}`, { cause: error })
 }
 ```
 
-**3. Over-Wrapping:**
+## Over-Wrapping and Type Safety Anti-Patterns
+
+**3. Over-Wrapping (Redundant Context):**
 
 ```typescript
-// ❌ BAD: Wraps same error multiple times with redundant context
+// ❌ BAD: Same context at every level
 async function downloadFile() {
   try {
     await s3Client.send(command)
@@ -641,7 +520,6 @@ async function downloadFile() {
     throw new Error(`Download failed: ${error.message}`)
   }
 }
-
 async function loadData() {
   try {
     await downloadFile()
@@ -650,7 +528,7 @@ async function loadData() {
   }
 }
 
-// ✅ GOOD: Wrap once with context, or wrap with different context at each level
+// ✅ GOOD: Different context at each level
 async function downloadFile(s3Key) {
   try {
     await s3Client.send(command)
@@ -658,7 +536,6 @@ async function downloadFile(s3Key) {
     throw new Error(`S3 download failed for key "${s3Key}": ${error.message}`)
   }
 }
-
 async function loadData() {
   try {
     await downloadFile('municipalities.csv')
@@ -671,17 +548,15 @@ async function loadData() {
 **4. Wrapping Non-Error Objects:**
 
 ```typescript
-// ❌ BAD: Wraps non-Error objects without instanceof check
+// ❌ BAD: No instanceof check
 catch (error) {
-  throw new Error(`Failed: ${error.message}`)  // TypeError if error is string or undefined
+  throw new Error(`Failed: ${error.message}`)  // TypeError if error is string
 }
 
-// ✅ GOOD: Check instanceof Error before accessing .message
+// ✅ GOOD: Check instanceof before accessing .message
 catch (error) {
-  if (error instanceof Error) {
-    throw new Error(`Failed: ${error.message}`)
-  }
-  throw error  // Re-throw non-Error objects unchanged
+  if (error instanceof Error) throw new Error(`Failed: ${error.message}`)
+  throw error
 }
 ```
 

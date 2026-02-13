@@ -16,11 +16,9 @@ last_updated: "2026-02-11"
 
 Next.js API routes return errors via NextResponse.json() with HTTP status codes, error messages, and optional error metadata. Analyzed codebases show 33% adoption of custom error classes with status codes (policy-node only: MunicipalityError, PhraseError, MunicipalitySearchError), 67% notFound() usage for 404 responses, and inconsistent error response formats across 10+ API routes.
 
-## NextResponse Error Patterns
+## NextResponse Basic Error Pattern
 
-Next.js App Router API routes use NextResponse.json() to return error responses with status codes, replacing Pages Router's res.status().json() pattern.
-
-**Basic Error Response:**
+Next.js App Router API routes use NextResponse.json() to return error responses with status codes, replacing Pages Router's res.status().json() pattern. Policy-node: 10+ API routes with structured error responses. Helix: minimal API error handling (reliance on automatic Next.js). Kariusdx: Pages Router (uses res.status().json() instead of NextResponse).
 
 ```typescript
 // app/api/municipalities/route.ts
@@ -39,7 +37,9 @@ export async function GET(request: NextRequest) {
 }
 ```
 
-**Error Response with Details:**
+## NextResponse Error with Metadata
+
+Error responses with code, message, and contextual fields (slug, municipalityId) enable client-side error handling and debugging. 404 responses include requested slug, 500 responses include error message if Error instance.
 
 ```typescript
 // app/api/municipalities/[slug]/route.ts
@@ -75,16 +75,9 @@ export async function GET(
 }
 ```
 
-**Observed Patterns:**
-- Policy-node: 10+ API routes with structured error responses
-- Helix: Minimal API error handling (reliance on automatic Next.js error handling)
-- Kariusdx: Pages Router (uses res.status().json() instead of NextResponse)
-
 ## Custom Error Classes with HTTP Status Codes
 
-Custom error classes extend Error with statusCode property, enabling type-safe error handling and automatic status code mapping in API routes.
-
-**Policy-Node Pattern (100% of API Routes):**
+Custom error classes extend Error with statusCode property, enabling type-safe error handling and automatic status code mapping in API routes. Policy-node pattern (100% of API routes) defines MunicipalityError, PhraseError, and MunicipalitySearchError classes. Gap: error classes duplicated across 3+ API route files (should be extracted to shared @/lib/errors module).
 
 ```typescript
 // lib/errors.ts (or inline in API route - duplication observed)
@@ -109,7 +102,9 @@ class MunicipalitySearchError extends Error {
 }
 ```
 
-**Usage in API Route:**
+## Custom Error Class Usage in API Routes
+
+Custom error classes enable throwing errors with specific status codes (400 validation, 404 not found) and catching with instanceof type guards for automatic status mapping. Benefits: type-safe error handling (TypeScript knows error.statusCode exists), automatic status code mapping (no manual if/else), consistent error response format, and error type identification via instanceof checks.
 
 ```typescript
 // app/api/municipalities/[slug]/route.ts
@@ -148,24 +143,9 @@ export async function GET(
 }
 ```
 
-**Benefits:**
-- Type-safe error handling (TypeScript knows error.statusCode exists)
-- Automatic status code mapping (no manual if/else for status codes)
-- Consistent error response format across API routes
-- Error type identification via instanceof checks
-
-**Adoption:**
-- Policy-node: 100% of API routes use custom error classes (3 classes: MunicipalityError, PhraseError, MunicipalitySearchError)
-- Helix: 0% (no API routes observed)
-- Kariusdx: 0% (Pages Router, no custom error classes)
-
-**Gap:** Error classes duplicated across 3+ API route files (should be extracted to shared @/lib/errors module)
-
 ## Type Guards for Error Handling
 
-Type guards (instanceof checks) enable distinct error handling per error type, allowing specific error messages, status codes, and logging per error class.
-
-**Policy-Node Pattern (100% of API Routes with Custom Errors):**
+Type guards (instanceof checks) enable distinct error handling per error type with specific messages, status codes, and logging.
 
 ```typescript
 // app/api/municipalities/search/route.ts
@@ -214,7 +194,9 @@ export async function POST(request: NextRequest) {
 }
 ```
 
-**Multi-Level Error Handling:**
+## Multi-Level Error Type Guards
+
+Cascading instanceof checks enable different responses for ValidationError (400), NotFoundError (404), UnauthorizedError (401), RateLimitError (429 with retryAfter), and generic errors (500). Each error type returns appropriate status code and error metadata.
 
 ```typescript
 // Specific error handling per error type
@@ -245,11 +227,9 @@ try {
 }
 ```
 
-## Validation Errors with Fail-Fast Principle
+## Fail-Fast Validation with Custom Errors
 
-Validation errors throw immediately with 400 Bad Request status, preventing invalid data from reaching business logic or database queries.
-
-**Policy-Node Pattern (100% of Validated API Routes):**
+Validation errors throw immediately with 400 Bad Request status, preventing invalid data from reaching business logic or database queries. Policy-node pattern (100% of validated API routes) uses custom validation functions that throw MunicipalityError with 400 status.
 
 ```typescript
 // app/api/municipalities/[slug]/route.ts
@@ -298,7 +278,9 @@ export async function GET(
 }
 ```
 
-**Request Body Validation:**
+## Zod Schema Validation for Request Bodies
+
+Zod schema validation throws ZodError on invalid request bodies, enabling structured field-level error responses. Policy-node: 100% of API routes with user input perform validation. Helix: no API routes. Kariusdx: minimal validation (Pages Router getStaticProps validates at build time).
 
 ```typescript
 // app/api/municipalities/route.ts
@@ -338,16 +320,9 @@ export async function POST(request: NextRequest) {
 }
 ```
 
-**Adoption:**
-- Policy-node: 100% of API routes with user input perform validation
-- Helix: No API routes observed (no validation patterns)
-- Kariusdx: Minimal validation (Pages Router getStaticProps validates at build time)
-
 ## Error Response Format Standardization
 
-Consistent error response format (error field, optional code field, optional details field) enables predictable client-side error handling and debugging.
-
-**Recommended Format:**
+Consistent error response format (error field, optional code field, optional details field) enables predictable client-side error handling and debugging. Recommended format: ErrorResponse interface with error (user-facing message), code (machine-readable), details (field errors, retry info), and requestId (debugging). Gap: policy-node has inconsistent format (some responses have code, some don't), helix has no API routes, kariusdx uses Pages Router format.
 
 ```typescript
 // Standard error response structure
@@ -389,7 +364,9 @@ interface ErrorResponse {
 }
 ```
 
-**Implementation:**
+## Error Response Helper Implementation
+
+createErrorResponse helper function encapsulates error response format with optional fields. Usage in API routes enables consistent error responses with minimal boilerplate.
 
 ```typescript
 // lib/api-error.ts
@@ -419,16 +396,9 @@ return NextResponse.json(
 )
 ```
 
-**Gap Analysis:**
-- Policy-node: Inconsistent format (some responses have code, some don't)
-- Helix: No API routes (no format to analyze)
-- Kariusdx: Pages Router (different error format)
+## Error Context Wrapping with Message Concatenation
 
-## Error Context Wrapping
-
-Error context wrapping preserves original error stack trace while adding contextual information (operation name, file path, data keys), improving production debugging.
-
-**Policy-Node Pattern (80% of Utilities):**
+Error context wrapping preserves original error stack trace while adding contextual information (operation name, file path, data keys), improving production debugging. Policy-node pattern (80% of utilities) uses string concatenation to prepend context to error.message before re-throwing. Adoption: policy-node 80%, helix 0%, kariusdx 0%.
 
 ```typescript
 // lib/s3-loader.ts
@@ -449,7 +419,9 @@ async function downloadS3File(s3Key: string, bucket: string) {
 }
 ```
 
-**Nested Error Context:**
+## Nested Error Context for Call Chains
+
+Nested error context chains preserve full call stack context. Each layer adds operation-specific details, creating error messages like "CSV parsing failed for S3 key 'municipalities.csv': Failed to download S3 file from bucket 'data-bucket', key 'municipalities.csv': Network timeout".
 
 ```typescript
 // lib/csv-parser.ts
@@ -470,7 +442,9 @@ async function parseCsvFromS3(s3Key: string) {
 // Error: CSV parsing failed for S3 key "municipalities.csv": Failed to download S3 file from bucket "data-bucket", key "municipalities.csv": Network timeout
 ```
 
-**Custom Error Wrapping:**
+## Custom WrappedError Class
+
+WrappedError class extends Error with cause property (original error) and context object (structured metadata like s3Key, bucket, operation). Enables programmatic error context access instead of parsing error.message strings.
 
 ```typescript
 // lib/errors.ts
@@ -498,16 +472,9 @@ try {
 }
 ```
 
-**Adoption:**
-- Policy-node: 80% of utility functions wrap errors with context
-- Helix: 0% (minimal error handling, no wrapping)
-- Kariusdx: 0% (minimal error handling, no wrapping)
+## Client Error Status Codes (4xx)
 
-## HTTP Status Code Best Practices
-
-HTTP status codes communicate error type to clients, enabling appropriate client-side handling (retry on 5xx, show error message on 4xx, redirect on 401).
-
-**Common Status Codes in API Routes:**
+4xx client errors indicate invalid requests fixable by modifying request parameters, authentication, or data format.
 
 ```typescript
 // 400 Bad Request - Client sent invalid data
@@ -541,23 +508,21 @@ if (existing) {
   )
 }
 
-// 422 Unprocessable Entity - Valid syntax but semantic errors
+// 422 Unprocessable Entity, 429 Too Many Requests
 const validation = await validateMunicipality(body)
 if (!validation.valid) {
-  return NextResponse.json(
-    { error: 'Validation failed', errors: validation.errors },
-    { status: 422 }
-  )
+  return NextResponse.json({ error: 'Validation failed', errors: validation.errors }, { status: 422 })
 }
-
-// 429 Too Many Requests - Rate limit exceeded
 if (isRateLimited(request)) {
-  return NextResponse.json(
-    { error: 'Rate limit exceeded', retryAfter: 60 },
-    { status: 429, headers: { 'Retry-After': '60' } }
-  )
+  return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 })
 }
+```
 
+## Server Error Status Codes (5xx)
+
+5xx server errors indicate unexpected server failures where retry may succeed. Always log full error details (stack trace, context) for debugging. Common codes: 500 (unexpected error), 503 (temporary outage with retryAfter).
+
+```typescript
 // 500 Internal Server Error - Unexpected server error
 catch (error) {
   console.error('Unexpected error:', error)
@@ -572,10 +537,6 @@ if (!isDatabaseConnected()) {
   )
 }
 ```
-
-**Status Code Selection:**
-- 4xx: Client error (client can fix by changing request)
-- 5xx: Server error (client cannot fix, retry may succeed)
 
 ## Logging API Errors
 

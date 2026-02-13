@@ -18,9 +18,9 @@ Silent failures occur when catch blocks suppress errors without logging, user fe
 
 ## The Silent Failure Antipattern
 
-Silent failures catch errors but provide no visibility to developers (no logging) or users (no error UI), causing features to appear functional while failing invisibly in production.
+Silent failures catch errors without logging or user feedback, causing features to fail invisibly in production.
 
-**Helix JobBoard Component (Production Antipattern):**
+### Helix JobBoard Antipattern Example
 
 ```typescript
 // app/components/JobBoard/JobBoard.tsx
@@ -56,107 +56,51 @@ return (
 )
 ```
 
-**Problems:**
-1. **No Developer Visibility:** Error logging commented out (developers unaware of production failures)
-2. **No User Feedback:** Users see "No jobs available" for both legitimate empty state and API failures
-3. **Indistinguishable States:** Cannot differentiate between "no jobs exist" vs "API request failed"
-4. **Lost Context:** Error details lost (network timeout, 404, 500, rate limit?)
-5. **No Retry Mechanism:** Users cannot retry failed request
-6. **No Error Tracking:** Error not sent to monitoring service (Sentry)
-
-**User Impact:**
-- Users assume no jobs are available (false negative)
-- Users cannot report error (no error message shown)
-- Support team cannot diagnose issue without error logs
+Problems: No developer visibility (commented logging), no user feedback (indistinguishable states), lost error context, no retry mechanism, no error tracking. Users see false negatives and cannot report failures.
 
 ## Correct Error Handling with Error States
 
-Error states store error information in component state, enabling conditional rendering of error UI, retry buttons, and error logging.
+Error states store error information enabling conditional rendering of error UI, retry buttons, and logging.
 
-**Corrected JobBoard Component:**
+### JobBoard with Error State
 
 ```typescript
-'use client'
-
-import { useState, useEffect } from 'react'
-import axios from 'axios'
-
 export default function JobBoard() {
   const [depts, setDepts] = useState<Department[] | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
 
-  const fetchGreenhouseData = async () => {
-    setLoading(true)
-    setError(null)
-
-    try {
-      const response = await axios.get(
-        'https://boards-api.greenhouse.io/v1/boards/helix/departments',
-        { timeout: 10000 }  // 10 second timeout
-      )
-      return response.data
-    } catch (error) {
-      console.error('Failed to fetch Greenhouse jobs:', error)
-      throw error  // Re-throw for caller to handle
-    }
-  }
-
   useEffect(() => {
-    const loadJobs = async () => {
+    const load = async () => {
       try {
-        const data = await fetchGreenhouseData()
-        const jobsByDept = data.departments.filter((dept) => dept.jobs.length > 0)
-        setDepts(jobsByDept)
-      } catch (error) {
-        setError(error instanceof Error ? error : new Error('Failed to load jobs'))
+        const res = await axios.get('https://boards-api.greenhouse.io/v1/boards/helix/departments', { timeout: 10000 })
+        const filtered = res.data.departments.filter(dept => dept.jobs.length > 0)
+        setDepts(filtered)
+      } catch (err) {
+        console.error('Failed to fetch jobs:', err)
+        setError(err instanceof Error ? err : new Error('Failed to load jobs'))
       } finally {
         setLoading(false)
       }
     }
-
-    loadJobs()
+    load()
   }, [])
 
-  // Loading state
-  if (loading) {
-    return <div>Loading jobs...</div>
-  }
-
-  // Error state
-  if (error) {
-    return (
-      <div className={styles.error}>
-        <h3>Unable to load jobs</h3>
-        <p>We're having trouble connecting to our jobs board. Please try again later.</p>
-        <button onClick={() => window.location.reload()}>
-          Retry
-        </button>
-      </div>
-    )
-  }
-
-  // Empty state (legitimate no jobs)
-  if (!depts || depts.length === 0) {
-    return <p>No jobs available at this time. Check back soon!</p>
-  }
-
-  // Success state
-  return (
-    <div>
-      {depts.map((dept) => <JobDepartment key={dept.id} {...dept} />)}
+  if (loading) return <div>Loading jobs...</div>
+  if (error) return (
+    <div className={styles.error}>
+      <h3>Unable to load jobs</h3>
+      <p>We're having trouble connecting. Please try again later.</p>
+      <button onClick={() => window.location.reload()}>Retry</button>
     </div>
   )
+  if (!depts || depts.length === 0) return <p>No jobs available. Check back soon!</p>
+
+  return <div>{depts.map(dept => <JobDepartment key={dept.id} {...dept} />)}</div>
 }
 ```
 
-**Improvements:**
-1. ✅ Error state stored in component state
-2. ✅ Error logged to console (developer visibility)
-3. ✅ Error UI shown to users (clear feedback)
-4. ✅ Retry mechanism provided (user can reload)
-5. ✅ Distinct UI for loading, error, empty, success states
-6. ✅ Error re-thrown for potential error boundary to catch
+Improvements: error state stored, errors logged, error UI, retry mechanism, distinct states.
 
 ## Empty State vs Error State Distinction
 
@@ -266,7 +210,7 @@ catch (error) {
 
 ## Returning Undefined vs Throwing Errors
 
-Returning undefined on error suppresses failures, forcing callers to handle undefined (easy to forget). Throwing errors propagates failures, enabling error boundaries to catch and display error UI.
+Returning undefined suppresses failures (callers must remember to check). Throwing errors propagates failures to error boundaries.
 
 **Bad: Returns undefined on Error:**
 
@@ -274,21 +218,13 @@ Returning undefined on error suppresses failures, forcing callers to handle unde
 // ❌ BAD: Returns undefined, caller must handle
 async function fetchJobs(): Promise<Job[] | undefined> {
   try {
-    const response = await fetch('/api/jobs')
-    return await response.json()
+    const res = await fetch('/api/jobs')
+    return await res.json()
   } catch (error) {
-    // console.error(error)  ← Commented out
     return undefined  // Silent failure
   }
 }
-
-// Caller must remember to check for undefined
-const jobs = await fetchJobs()
-if (jobs) {
-  setJobs(jobs)
-} else {
-  // Easy to forget this check → silent failure
-}
+// Caller must check for undefined (easy to forget)
 ```
 
 **Good: Throws Errors:**
@@ -319,22 +255,7 @@ try {
 }
 ```
 
-**Error Boundary Integration:**
-
-```typescript
-// Wrap component in error boundary
-<ErrorBoundary fallback={<ErrorFallback />}>
-  <JobBoard />
-</ErrorBoundary>
-
-// JobBoard component throws on error
-async function loadJobs() {
-  const jobs = await fetchJobs()  // Throws on error
-  setJobs(jobs)
-}
-
-// Error boundary catches thrown errors automatically
-```
+Error boundary integration: wrap component in ErrorBoundary, let JobBoard throw errors, error boundary catches automatically.
 
 ## Optional Chaining Masking Errors
 
@@ -379,7 +300,7 @@ const jobs = response?.data?.jobs  // If response is undefined, jobs is undefine
 
 ## User-Facing Error Messages
 
-User-facing error messages should be actionable (tell users what to do), non-technical (no stack traces), and empathetic (acknowledge frustration).
+User-facing error messages should be actionable, non-technical, and empathetic.
 
 **Bad: Technical Error Messages:**
 
@@ -400,14 +321,9 @@ User-facing error messages should be actionable (tell users what to do), non-tec
 </div>
 ```
 
-**Error Message Guidelines:**
-- **What happened:** "Unable to load jobs"
-- **Why it happened (optional):** "We're having trouble connecting"
-- **What to do:** "Please check your internet connection and try again"
-- **Escape hatch:** "Contact support if this persists"
-- **Retry mechanism:** Retry button or reload link
+Guidelines: state what happened, why (optional), what to do, escape hatch (contact support), retry mechanism.
 
-**Error-Specific Messages:**
+### Error-Specific Messages
 
 ```typescript
 function getErrorMessage(error: Error): string {
@@ -431,11 +347,9 @@ function getErrorMessage(error: Error): string {
 }
 ```
 
-## Retry Mechanisms for Transient Failures
+## Manual Retry for Transient Failures
 
-Transient failures (network timeout, rate limit, server restart) succeed on retry. Retry mechanisms enable users to recover from transient failures without page reload.
-
-**Manual Retry (User-Triggered):**
+Transient failures (network timeout, rate limit, server restart) succeed on retry. Manual retry enables users to recover without page reload.
 
 ```typescript
 const [retryCount, setRetryCount] = useState(0)
@@ -465,7 +379,7 @@ return error ? (
 )
 ```
 
-**Automatic Retry with Exponential Backoff:**
+## Automatic Retry with Exponential Backoff
 
 ```typescript
 async function fetchWithRetry<T>(
@@ -498,7 +412,9 @@ const jobs = await fetchWithRetry(() => fetchJobs(), 3, 1000)
 // Attempts: 0ms, 1000ms delay, 2000ms delay, 4000ms delay
 ```
 
-**Smart Retry (Retry Only on Transient Errors):**
+## Smart Retry for Transient Errors Only
+
+Retry only on transient error codes (408, 429, 500-504) and network timeouts. Skip retry for client errors (404, 401).
 
 ```typescript
 function isRetryableError(error: Error): boolean {

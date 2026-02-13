@@ -18,20 +18,19 @@ React Error Boundaries catch JavaScript errors anywhere in component tree, log e
 
 ## Why Error Boundaries Are Critical
 
-Uncaught errors in React components unmount entire component tree, displaying blank white screen to users. Users cannot recover, navigate, or complete tasks. Error boundaries prevent cascading failures by catching errors at boundary level, preserving surrounding UI, and displaying helpful fallback message. Source confidence: 0% (gap pattern - no error boundaries exist in analyzed codebases despite 313+ components).
+Uncaught errors in React components unmount entire component tree, displaying blank white screen. Error boundaries prevent cascading failures by catching errors at boundary level, preserving surrounding UI. Source confidence: 0% (gap - no error boundaries exist despite 313+ components).
 
-#### Without Error Boundary
+### Without Error Boundary
+
+Component errors unmount entire Layout, Header, and Footer. Users see blank page with no recovery option.
 
 ```typescript
 // Component with error
 function UserProfile({ userId }: { userId: string }) {
   const user = useUser(userId)
-
-  // Runtime error: user is null, accessing user.name throws
   return <h1>{user.name}</h1>  // 💥 Entire app crashes, white screen
 }
 
-// App structure
 export default function Page() {
   return (
     <Layout>
@@ -44,38 +43,30 @@ export default function Page() {
 // If UserProfile crashes, Header and Footer also unmount - entire page blank
 ```
 
-Error in UserProfile unmounts Layout, Header, and Footer. Users see blank page with no recovery option. Navigation broken. Console shows error but UI provides no feedback.
+### With Error Boundary
 
-#### With Error Boundary
+Error contained to UserProfile section. Header and Footer remain functional. ErrorFallback displays instead of crashed component.
 
 ```typescript
-function UserProfile({ userId }: { userId: string }) {
-  const user = useUser(userId)
-  return <h1>{user.name}</h1>  // Error occurs here
-}
-
 export default function Page() {
   return (
     <Layout>
       <Header />
       <ErrorBoundary fallback={<ErrorFallback />}>
-        <UserProfile userId="123" />  // Wrapped in boundary
+        <UserProfile userId="123" />
       </ErrorBoundary>
       <Footer />
     </Layout>
   )
 }
 // If UserProfile crashes, Header and Footer remain visible
-// ErrorFallback displays instead of UserProfile only
 ```
-
-Error contained to UserProfile section. Header and Footer remain functional. Users can navigate elsewhere. ErrorFallback explains problem and offers recovery actions.
 
 ## Error Boundary Class Component Implementation
 
-Error boundaries must be class components because getDerivedStateFromError and componentDidCatch are not available as hooks. Functional components cannot implement error boundaries directly. Error boundary stores hasError state, implements both lifecycle methods, and renders fallback UI when hasError is true.
+Error boundaries must be class components (getDerivedStateFromError and componentDidCatch not available as hooks). Stores hasError state, implements both lifecycle methods, renders fallback UI when hasError is true.
 
-#### Basic Error Boundary
+### Basic Error Boundary
 
 ```typescript
 // components/ErrorBoundary/ErrorBoundary.tsx
@@ -99,32 +90,19 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   static getDerivedStateFromError(error: Error): State {
-    // Update state so next render shows fallback UI
     return { hasError: true, error }
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    // Log error to error reporting service
     console.error('Caught by Error Boundary:', error, errorInfo)
-
-    // Call optional error callback
     this.props.onError?.(error, errorInfo)
-
-    // Send to Sentry/Rollbar
     // Sentry.captureException(error, { extra: errorInfo })
   }
 
   render() {
     if (this.state.hasError) {
-      // Render fallback UI
-      return this.props.fallback || (
-        <div>
-          <h2>Something went wrong</h2>
-          <p>{this.state.error?.message}</p>
-        </div>
-      )
+      return this.props.fallback || <div><h2>Something went wrong</h2></div>
     }
-
     return this.props.children
   }
 }
@@ -132,68 +110,49 @@ class ErrorBoundary extends Component<Props, State> {
 export default ErrorBoundary
 ```
 
-getDerivedStateFromError updates state during render phase (pure function, no side effects). componentDidCatch called during commit phase for side effects (logging, analytics). Props.fallback provides custom error UI. Props.onError enables parent components to handle errors.
+getDerivedStateFromError: render phase (pure, no side effects). componentDidCatch: commit phase (logging, analytics).
 
 ## Error Boundary with Reset Functionality
 
-Production error boundaries should provide reset button allowing users to recover without page refresh. Reset clears error state and re-renders children. Useful for transient errors (network failures, race conditions) that may resolve on retry.
+Production error boundaries should provide reset button for recovery without page refresh. Reset clears error state and re-renders children. Useful for transient errors.
 
-#### Error Boundary with Reset
+### Error Boundary with Reset
 
 ```typescript
-interface Props {
-  children: ReactNode
-  fallback?: (error: Error, reset: () => void) => ReactNode
-}
-
 class ErrorBoundary extends Component<Props, State> {
-  constructor(props: Props) {
-    super(props)
-    this.state = { hasError: false, error: null }
-  }
+  state = { hasError: false, error: null }
 
   static getDerivedStateFromError(error: Error): State {
     return { hasError: true, error }
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('Error Boundary caught:', error, errorInfo)
-  }
-
-  reset = () => {
-    this.setState({ hasError: false, error: null })
-  }
+  reset = () => this.setState({ hasError: false, error: null })
 
   render() {
     if (this.state.hasError && this.state.error) {
       return this.props.fallback?.(this.state.error, this.reset) || (
         <div>
           <h2>Something went wrong</h2>
-          <p>{this.state.error.message}</p>
           <button onClick={this.reset}>Try again</button>
         </div>
       )
     }
-
     return this.props.children
   }
 }
 
-// Usage with custom fallback
-<ErrorBoundary
-  fallback={(error, reset) => (
-    <div>
-      <h2>Failed to load user profile</h2>
-      <p>Error: {error.message}</p>
-      <button onClick={reset}>Reload profile</button>
-    </div>
-  )}
->
+// Usage
+<ErrorBoundary fallback={(error, reset) => (
+  <div>
+    <h2>Failed to load profile</h2>
+    <button onClick={reset}>Reload</button>
+  </div>
+)}>
   <UserProfile userId="123" />
 </ErrorBoundary>
 ```
 
-reset method clears error state, triggering re-render of children. Fallback function receives error and reset callback. Users can retry without full page reload. Reset button labeled descriptively ("Reload profile" not generic "Try again").
+reset clears error state, triggering re-render. Fallback receives error and reset callback. Label reset buttons descriptively.
 
 ## Granular Error Boundaries for Isolated Failures
 
@@ -234,7 +193,7 @@ Each widget isolated by boundary. UserStatsWidget error doesn't affect ActivityF
 
 ## Error Boundaries Cannot Catch These Errors
 
-Error boundaries have limitations: event handlers, asynchronous code (setTimeout, fetch), server-side rendering errors, and errors thrown in error boundary itself. Event handler errors require try/catch. Async errors caught in promise catch blocks or try/catch with async/await. SSR errors handled by Next.js error.tsx files.
+Error boundaries cannot catch: event handlers, asynchronous code (setTimeout, fetch), SSR errors, errors in error boundary itself. Require try/catch or promise catch blocks.
 
 #### Errors Outside Error Boundary Scope
 
