@@ -9,7 +9,7 @@ audience: "fullstack"
 complexity: "beginner"
 doc_type: "standard"
 source_confidence: "67%"
-last_updated: "2026-02-12"
+last_updated: "2026-02-13"
 ---
 
 # Content Block Organization Strategies
@@ -22,7 +22,7 @@ Sanity projects with page builders accumulate 15-35 reusable content block schem
 
 ## Folder Structure Patterns
 
-### Modern Components Pattern (Sanity v3+)
+## Modern Components Pattern (Sanity v3+)
 
 Ripplecom (v4) organizes reusable content blocks in a `components/` folder, distinguishing them from document types and objects:
 
@@ -64,7 +64,7 @@ schemaTypes/
 - Used in page builder `content` arrays
 - Modern naming: `heroSection`, `textSection`, `ctaSection`
 
-### Legacy Builder Blocks Pattern (Sanity v2)
+## Legacy Builder Blocks Pattern (Sanity v2)
 
 Kariusdx (v2) uses `builderBlocks/` folder for page composition elements:
 
@@ -101,7 +101,7 @@ schemas/
 - Domain-specific blocks: `pathogenList`, `diagnosisComparison`
 - Integration blocks: `hubspotForm`, `wistiaEmbed`
 
-### Minimal Objects Pattern (Sanity v3)
+## Minimal Objects Pattern (Sanity v3)
 
 Helix (v3) has no page builder, using simple `objects/` folder for shared data:
 
@@ -123,7 +123,7 @@ schemas/
 
 ## Naming Conventions
 
-### Components Folder (Modern)
+## Components Folder (Modern)
 
 **Pattern**: Descriptive, purpose-driven names
 
@@ -138,7 +138,7 @@ schemas/
 
 **Philosophy**: Names describe what the component renders, not its technical type
 
-### Builder Blocks Folder (Legacy)
+## Builder Blocks Folder (Legacy)
 
 **Pattern**: Mix of descriptive and technical names
 
@@ -155,7 +155,7 @@ schemas/
 
 ## Schema Registry Organization
 
-### Modern Index Pattern (TypeScript)
+## Modern Index Pattern (TypeScript)
 
 ```typescript
 // schemaTypes/index.ts
@@ -213,7 +213,7 @@ export const schemaTypes: SchemaTypeDefinition[] = [
 - Grouped by type
 - Import order controls Studio UI order
 
-### Legacy Schema Pattern (JavaScript)
+## Legacy Schema Pattern (JavaScript)
 
 ```javascript
 // schemas/schema.js
@@ -260,7 +260,7 @@ export default createSchema({
 
 ## Folder Guidelines by Project Size
 
-### Small Projects (< 10 Content Blocks)
+## Small Projects (< 10 Content Blocks)
 
 **Structure**:
 ```
@@ -272,7 +272,7 @@ schemas/
 
 **Rationale**: Single `objects/` folder sufficient for small block counts
 
-### Medium Projects (10-25 Content Blocks)
+## Medium Projects (10-25 Content Blocks)
 
 **Structure**:
 ```
@@ -286,7 +286,7 @@ schemaTypes/
 
 **Rationale**: Separate content blocks from data objects
 
-### Large Projects (25+ Content Blocks)
+## Large Projects (25+ Content Blocks)
 
 **Structure**:
 ```
@@ -307,7 +307,7 @@ schemaTypes/
 
 ## Component Categorization Strategies
 
-### By Purpose (Recommended)
+## By Purpose (Recommended)
 
 ```
 components/
@@ -336,7 +336,7 @@ components/
 - Mirrors frontend component structure
 - Easy to locate specific blocks
 
-### By Complexity
+## By Complexity
 
 ```
 components/
@@ -362,7 +362,7 @@ components/
 - Subjective complexity assessment
 - Less intuitive navigation
 
-### Flat Structure (No Subcategories)
+## Flat Structure (No Subcategories)
 
 ```
 components/
@@ -383,7 +383,7 @@ components/
 
 ## Legacy Content Migration
 
-### Migration Folder Pattern
+## Migration Folder Pattern
 
 Ripplecom v4 maintains deprecated schemas in `legacy/` folder:
 
@@ -412,7 +412,7 @@ schemaTypes/
 
 ## Pattern Selection Guidelines
 
-### Use components/ Folder When:
+## Use components/ Folder When:
 
 - Sanity v3+ project
 - 10+ reusable content blocks
@@ -420,7 +420,7 @@ schemaTypes/
 
 **Source Confidence**: 33% (ripplecom v4 only)
 
-### Use builderBlocks/ Folder When:
+## Use builderBlocks/ Folder When:
 
 - Sanity v2 project
 - Page builder with section wrappers
@@ -428,7 +428,7 @@ schemaTypes/
 
 **Source Confidence**: 33% (kariusdx v2 only)
 
-### Use objects/ Folder When:
+## Use objects/ Folder When:
 
 - < 5 reusable blocks
 - Focus on data objects (SEO, links, metadata)
@@ -438,19 +438,19 @@ schemaTypes/
 
 ## Common Pitfalls
 
-### Mixing Data Objects with Content Blocks
+## Mixing Data Objects with Content Blocks
 
 **Problem**: `objects/` folder contains both metadata (SEO, links) and content blocks (heroSection, cardGrid)
 
 **Solution**: Separate content blocks into `components/` or `builderBlocks/` folder
 
-### Inconsistent Naming
+## Inconsistent Naming
 
 **Problem**: Mix of `heroSection.ts`, `Hero.ts`, `hero-section.ts`
 
 **Solution**: Enforce naming convention: `camelCase` with descriptive suffixes (`Section`, `Block`, `Card`)
 
-### No Legacy Folder
+## No Legacy Folder
 
 **Problem**: Deprecated schemas mixed with active ones
 
@@ -458,7 +458,7 @@ schemaTypes/
 
 ## Frontend Mapping Patterns
 
-### Component Map from Folder Structure
+## Component Map from Folder Structure
 
 ```typescript
 // lib/componentMap.ts

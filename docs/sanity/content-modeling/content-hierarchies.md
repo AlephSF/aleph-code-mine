@@ -9,7 +9,7 @@ audience: "fullstack"
 complexity: "intermediate"
 doc_type: "standard"
 source_confidence: "33%"
-last_updated: "2026-02-12"
+last_updated: "2026-02-13"
 ---
 
 # Content Hierarchies and Parent-Child Relationships
@@ -30,7 +30,7 @@ Helix (v3) implements self-referential parent-child relationships for nested pag
 - Unlimited nesting depth
 - Breadcrumb navigation support
 
-### Schema Definition
+## Schema Definition
 
 ```javascript
 // schemas/documents/page.js
@@ -76,7 +76,7 @@ export default {
 }
 ```
 
-### Async Slug Generation
+## Async Slug Generation
 
 Helix implements async slugification that fetches parent document and prepends parent slug:
 
@@ -113,7 +113,7 @@ async function asyncSlugifier(input, type, context) {
 - Child: `team` → `/about/team`
 - Grandchild: `leadership` → `/about/team/leadership`
 
-### Breadcrumb Support
+## Breadcrumb Support
 
 GROQ query to fetch full ancestor path:
 
@@ -164,7 +164,7 @@ Ripplecom (v4) and Kariusdx (v2) use flat document structures with taxonomy refe
 - Flat URL structure
 - Filtering and grouping via taxonomies
 
-### Category Taxonomy Example
+## Category Taxonomy Example
 
 ```typescript
 // schemaTypes/documents/blogPost.ts
@@ -204,7 +204,7 @@ export default defineType({
 })
 ```
 
-### Taxonomy Document Example
+## Taxonomy Document Example
 
 ```typescript
 // schemaTypes/documents/category.ts
@@ -233,7 +233,7 @@ export default defineType({
 })
 ```
 
-### Querying Flat Taxonomies
+## Querying Flat Taxonomies
 
 ```groq
 // Get all posts in category
@@ -258,7 +258,7 @@ export default defineType({
 
 Some projects need hierarchical navigation without hierarchical content:
 
-### Navigation-Only Hierarchy
+## Navigation-Only Hierarchy
 
 ```typescript
 // schemaTypes/globals/navigation.ts
@@ -304,7 +304,7 @@ export default defineType({
 
 ## Pattern Comparison
 
-### Hierarchical Pages vs Flat Taxonomies
+## Hierarchical Pages vs Flat Taxonomies
 
 | Aspect | Hierarchical Pages | Flat Taxonomies |
 |--------|-------------------|-----------------|
@@ -318,7 +318,7 @@ export default defineType({
 
 ## Pattern Selection Guidelines
 
-### Use Hierarchical Pages When:
+## Use Hierarchical Pages When:
 
 - Site structure mirrors organizational hierarchy
 - Breadcrumb navigation is important
@@ -332,7 +332,7 @@ export default defineType({
 - Corporate websites (About > Team > Leadership)
 - Government sites with organizational structure
 
-### Use Flat Taxonomies When:
+## Use Flat Taxonomies When:
 
 - Content belongs to multiple categories
 - Flexible filtering and sorting needed
@@ -346,7 +346,7 @@ export default defineType({
 - E-commerce (products in multiple categories)
 - News sites (articles cross multiple sections)
 
-### Use Hybrid When:
+## Use Hybrid When:
 
 - Navigation is hierarchical but content is flat
 - Menu structure differs from content organization
@@ -361,7 +361,7 @@ export default defineType({
 
 ## Frontend Implementation
 
-### Hierarchical Page Routing
+## Hierarchical Page Routing
 
 ```typescript
 // app/[...slug]/page.tsx (Next.js App Router)
@@ -394,7 +394,7 @@ export default async function Page({ params }: { params: { slug: string[] } }) {
 }
 ```
 
-### Flat Taxonomy Routing
+## Flat Taxonomy Routing
 
 ```typescript
 // app/blog/[slug]/page.tsx
@@ -433,7 +433,7 @@ export default async function BlogPost({ params }: { params: { slug: string } })
 
 ## Common Pitfalls
 
-### Self-Referencing Pages
+## Self-Referencing Pages
 
 **Problem**: Page references itself as parent, creating infinite loop
 
@@ -445,7 +445,7 @@ options: {
 }
 ```
 
-### Circular References
+## Circular References
 
 **Problem**: Page A → Page B → Page C → Page A (circular hierarchy)
 
@@ -477,13 +477,13 @@ validation: (Rule) => Rule.custom(async (value, context) => {
 })
 ```
 
-### Broken Slug Generation
+## Broken Slug Generation
 
 **Problem**: Parent slug changes, child slugs don't update
 
 **Solution**: Implement custom document action to cascade slug updates, or regenerate slugs on publish
 
-### Over-Categorization
+## Over-Categorization
 
 **Problem**: 50+ categories overwhelm content editors
 
@@ -491,7 +491,7 @@ validation: (Rule) => Rule.custom(async (value, context) => {
 
 ## Migration Strategies
 
-### From Flat to Hierarchical
+## From Flat to Hierarchical
 
 **Phase 1**: Add optional `parent` reference field
 
@@ -501,7 +501,7 @@ validation: (Rule) => Rule.custom(async (value, context) => {
 
 **Phase 4**: Update frontend routing to support nested paths
 
-### From Hierarchical to Flat
+## From Hierarchical to Flat
 
 **Phase 1**: Export hierarchical data with full paths
 

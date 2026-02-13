@@ -9,7 +9,7 @@ audience: "fullstack"
 complexity: "intermediate"
 doc_type: "standard"
 source_confidence: "33%"
-last_updated: "2026-02-12"
+last_updated: "2026-02-13"
 ---
 
 # Global Singleton Documents
@@ -35,7 +35,7 @@ Global documents differ from regular documents in three ways:
 
 ## Schema Definition
 
-### Homepage Selector Example
+## Homepage Selector Example
 
 ```typescript
 // schemaTypes/globals/homepage.ts
@@ -73,7 +73,7 @@ export default defineType({
 })
 ```
 
-### Navigation Menu Example
+## Navigation Menu Example
 
 ```typescript
 // schemaTypes/globals/navigation.ts
@@ -109,7 +109,7 @@ export default defineType({
 
 ## Common Global Document Types
 
-### Observed Patterns (Ripplecom v4)
+## Observed Patterns (Ripplecom v4)
 
 **6 global documents identified**:
 
@@ -122,7 +122,7 @@ export default defineType({
 
 **Pattern**: Globals cover navigation, SEO, and site-wide configuration
 
-### SEO Metadata Global Example
+## SEO Metadata Global Example
 
 ```typescript
 // schemaTypes/globals/seoMetadata.ts
@@ -160,7 +160,7 @@ export default defineType({
 })
 ```
 
-### Footer Navigation Global Example
+## Footer Navigation Global Example
 
 ```typescript
 // schemaTypes/globals/footerNavigation.ts
@@ -214,9 +214,17 @@ export default defineType({
 
 ## Desk Structure Configuration
 
-### Registering Global Documents
+## Registering Global Documents
 
-Sanity Studio v3+ uses `structure` function in `sanity.config.ts` to customize desk panes:
+Sanity Studio v3+ uses `structure` function in `sanity.config.ts` to customize desk panes. Global documents are registered in the structure builder with fixed `documentId` values to ensure singleton behavior.
+
+**Key Configuration Requirements**:
+- Fixed `documentId` ensures only one instance exists
+- `filter` removes globals from regular document lists
+- Custom `child` provides direct edit access
+- Icon customization improves UX
+
+## Structure Builder Configuration Example
 
 ```typescript
 // sanity.config.ts
@@ -224,14 +232,12 @@ import { defineConfig } from 'sanity'
 import { deskTool, StructureBuilder } from 'sanity/desk'
 
 export default defineConfig({
-  // ... other config
   plugins: [
     deskTool({
       structure: (S: StructureBuilder) =>
         S.list()
           .title('Content')
           .items([
-            // Global Documents Section
             S.listItem()
               .title('Global Settings')
               .child(
@@ -254,26 +260,12 @@ export default defineConfig({
                           .schemaType('navigation')
                           .documentId('navigation')
                       ),
-                    S.listItem()
-                      .title('Footer Navigation')
-                      .child(
-                        S.document()
-                          .schemaType('footerNavigation')
-                          .documentId('footerNavigation')
-                      ),
-                    S.listItem()
-                      .title('SEO Metadata')
-                      .child(
-                        S.document()
-                          .schemaType('seoMetadata')
-                          .documentId('seoMetadata')
-                      ),
+                    // Repeat for footerNavigation, seoMetadata, etc.
                   ])
               ),
             S.divider(),
-            // Regular Documents
             ...S.documentTypeListItems().filter(
-              (item) => !['homepage', 'navigation', 'footerNavigation', 'seoMetadata'].includes(item.getId() || '')
+              (item) => !['homepage', 'navigation'].includes(item.getId() || '')
             ),
           ]),
     }),
@@ -281,15 +273,9 @@ export default defineConfig({
 })
 ```
 
-**Key Points**:
-- Fixed `documentId` ensures only one instance exists
-- `filter` removes globals from regular document lists
-- Custom `child` provides direct edit access
-- Icon customization improves UX
-
 ## Singleton Enforcement
 
-### Document Actions Customization
+## Document Actions Customization
 
 Prevent deletion and duplication of global documents:
 
@@ -308,7 +294,7 @@ export default defineType({
 })
 ```
 
-### GROQ Query Pattern
+## GROQ Query Pattern
 
 Always query globals by fixed `_id`:
 
@@ -387,7 +373,7 @@ export default {
 
 ## Frontend Data Fetching
 
-### Next.js App Router Example
+## Next.js App Router Example
 
 ```typescript
 // lib/sanity/queries.ts
@@ -436,7 +422,7 @@ export default async function RootLayout({ children }) {
 }
 ```
 
-### Caching Strategy
+## Caching Strategy
 
 Global documents change infrequently, so aggressive caching is appropriate:
 
@@ -469,7 +455,7 @@ export async function getGlobalData() {
 
 ## Pattern Selection Guidelines
 
-### Use Multiple Global Documents When:
+## Use Multiple Global Documents When:
 
 - Site has 5+ distinct global settings areas
 - Different team members manage different globals
@@ -477,7 +463,7 @@ export async function getGlobalData() {
 
 **Source Confidence**: 33% (ripplecom v4 only)
 
-### Use Single Settings Document When:
+## Use Single Settings Document When:
 
 - Site has < 5 global settings
 - Single person manages all site-wide content
@@ -485,7 +471,7 @@ export async function getGlobalData() {
 
 **Source Confidence**: 33% (kariusdx v2 only)
 
-### Skip Global Documents When:
+## Skip Global Documents When:
 
 - All configuration is hard-coded in frontend
 - Site is purely content-driven (blog, documentation)
@@ -495,19 +481,19 @@ export async function getGlobalData() {
 
 ## Common Pitfalls
 
-### Forgetting Fixed Document IDs
+## Forgetting Fixed Document IDs
 
 **Problem**: Querying `*[_type == "navigation"][0]` may return nothing or wrong document.
 
 **Solution**: Always use fixed `_id` in GROQ queries and desk structure.
 
-### Allowing Deletion
+## Allowing Deletion
 
 **Problem**: Content editors accidentally delete global navigation, breaking site.
 
 **Solution**: Customize document actions to omit `delete` action.
 
-### Over-Globalization
+## Over-Globalization
 
 **Problem**: Creating globals for content that should be page-specific (hero images, taglines).
 

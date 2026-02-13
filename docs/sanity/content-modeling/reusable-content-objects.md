@@ -9,7 +9,7 @@ audience: "fullstack"
 complexity: "beginner"
 doc_type: "standard"
 source_confidence: "100%"
-last_updated: "2026-02-12"
+last_updated: "2026-02-13"
 ---
 
 # Reusable Content Objects Pattern
@@ -22,7 +22,7 @@ Sanity object types enable reusable data structures across multiple document typ
 
 ## Object Type vs Document Type
 
-### Object Type Characteristics
+## Object Type Characteristics
 
 - **Not standalone**: Cannot be created/edited directly in Studio
 - **Embedded**: Used within document or other object fields
@@ -39,7 +39,7 @@ export default defineType({
 })
 ```
 
-### Document Type Characteristics
+## Document Type Characteristics
 
 - **Standalone**: Can be created/edited in Studio
 - **Top-level**: Appears in document lists
@@ -58,9 +58,20 @@ export default defineType({
 
 ## SEO Metadata Object Pattern
 
-### Universal Pattern (100% Adoption)
+## Universal Pattern (100% Adoption)
 
-All analyzed projects implement dedicated SEO object for OpenGraph, meta tags, and search engine controls:
+All analyzed projects implement dedicated SEO object for OpenGraph, meta tags, and search engine controls. The SEO object provides fields for meta title, meta description, OpenGraph images, canonical URLs, and indexing controls. Each document type can include the SEO object as a field for customizable search engine optimization.
+
+**Common SEO Fields**:
+- Meta title (50-60 chars) with validation
+- Meta description (150-160 chars) with validation
+- OpenGraph image (1200x630px recommended)
+- Canonical URL override
+- Indexing controls (noindex, nofollow)
+
+**Source Confidence**: 100% (all projects implement SEO objects)
+
+## SEO Object Implementation
 
 ```typescript
 // schemaTypes/objects/seo.ts
@@ -77,59 +88,48 @@ export default defineType({
       name: "metaTitle",
       title: "Meta Title",
       type: "string",
-      description: "Override default page title for search engines (50-60 chars)",
-      validation: (Rule) => Rule.max(60).warning("Should be 50-60 characters for optimal display"),
+      validation: (Rule) => Rule.max(60).warning("Should be 50-60 characters"),
     }),
     defineField({
       name: "metaDescription",
       title: "Meta Description",
       type: "text",
       rows: 3,
-      description: "Brief page summary for search results (150-160 chars)",
       validation: (Rule) => Rule.max(160).warning("Should be 150-160 characters"),
     }),
     defineField({
       name: "openGraphImage",
       title: "Open Graph Image",
       type: "image",
-      description: "Image for social sharing (1200x630px recommended)",
     }),
     defineField({
       name: "canonicalUrl",
       title: "Canonical URL",
       type: "url",
-      description: "Override canonical URL (use for duplicate content)",
     }),
     defineField({
       name: "noindex",
       title: "No Index",
       type: "boolean",
-      description: "Prevent search engines from indexing this page",
       initialValue: false,
     }),
     defineField({
       name: "nofollow",
       title: "No Follow",
       type: "boolean",
-      description: "Prevent search engines from following links on this page",
       initialValue: false,
     }),
   ],
   preview: {
-    select: {
-      title: "metaTitle",
-    },
+    select: { title: "metaTitle" },
     prepare({ title }) {
-      return {
-        title: title || "SEO Settings",
-        subtitle: "SEO Metadata",
-      }
+      return { title: title || "SEO Settings", subtitle: "SEO Metadata" }
     },
   },
 })
 ```
 
-### Usage in Document
+## SEO Object Usage
 
 ```typescript
 // schemaTypes/documents/page.ts
@@ -143,105 +143,66 @@ fields: [
 ]
 ```
 
-**Source Confidence**: 100% (all projects implement SEO objects)
-
 ## Link Object Pattern
 
-### Enhanced Link Object (Ripplecom Pattern)
+## Enhanced Link Object (Ripplecom Pattern)
 
-Link objects with internal/external routing and opening behavior:
+Link objects with internal/external routing and opening behavior support both reference-based internal links and URL-based external links. The pattern uses conditional field visibility and validation to ensure appropriate data entry based on link type.
+
+**Key Features**:
+- Radio selection for internal vs external links
+- Conditional field visibility (hide unused fields)
+- Type-specific validation (required based on selection)
+- Reference-based internal linking (prevents 404s)
+- Support for multiple URL schemes (http, https, mailto, tel)
+- New window control for external links
+
+**Source Confidence**: 67% (kariusdx v2 + ripplecom v4)
+
+## Enhanced Link Object Implementation
 
 ```typescript
 // schemaTypes/objects/link.ts
-import { LinkIcon } from '@sanity/icons'
 import { defineType, defineField } from 'sanity'
 
 export default defineType({
   name: "link",
   type: "object",
   title: "Link",
-  icon: LinkIcon,
   fields: [
     defineField({
       name: "linkType",
-      title: "Link Type",
       type: "string",
       options: {
         list: [
-          { title: "Internal Page", value: "internal" },
-          { title: "External URL", value: "external" },
+          { title: "Internal", value: "internal" },
+          { title: "External", value: "external" },
         ],
         layout: "radio",
       },
-      initialValue: "internal",
       validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: "internalLink",
-      title: "Internal Page",
       type: "reference",
-      to: [
-        { type: "page" },
-        { type: "blogPost" },
-        { type: "event" },
-      ],
+      to: [{ type: "page" }],
       hidden: ({ parent }) => parent?.linkType !== "internal",
-      validation: (Rule) =>
-        Rule.custom((value, context) => {
-          const linkType = (context.parent as any)?.linkType
-          if (linkType === "internal" && !value) {
-            return "Internal link is required"
-          }
-          return true
-        }),
     }),
     defineField({
       name: "externalUrl",
-      title: "External URL",
       type: "url",
       hidden: ({ parent }) => parent?.linkType !== "external",
-      validation: (Rule) =>
-        Rule.custom((value, context) => {
-          const linkType = (context.parent as any)?.linkType
-          if (linkType === "external" && !value) {
-            return "External URL is required"
-          }
-          return true
-        }).uri({ scheme: ["http", "https", "mailto", "tel"] }),
     }),
     defineField({
       name: "newWindow",
-      title: "Open in New Window",
       type: "boolean",
-      description: "Open link in new browser tab",
       initialValue: false,
     }),
   ],
-  preview: {
-    select: {
-      linkType: "linkType",
-      internalTitle: "internalLink.title",
-      externalUrl: "externalUrl",
-    },
-    prepare({ linkType, internalTitle, externalUrl }) {
-      return {
-        title: linkType === "internal" ? internalTitle || "Internal Link" : externalUrl || "External Link",
-        subtitle: linkType === "internal" ? "Internal" : "External",
-      }
-    },
-  },
 })
 ```
 
-**Benefits**:
-- Prevents broken internal links
-- Type-safe link resolution
-- Conditional validation
-- Flexible routing
-
-**Source Confidence**: 67% (kariusdx v2 + ripplecom v4)
-
-### Simple Link Object (Minimal Pattern)
+## Simple Link Object (Minimal Pattern)
 
 ```javascript
 // schemas/objects/link.js
@@ -268,7 +229,7 @@ export default {
 
 ## Image Object Pattern
 
-### Featured Image Object
+## Featured Image Object
 
 ```javascript
 // schemas/objects/featuredImage.js
@@ -322,7 +283,7 @@ fields: [
 
 ## Navigation Item Object
 
-### Simple Navigation Item
+## Simple Navigation Item
 
 ```typescript
 // schemaTypes/objects/navigationItem.ts
@@ -346,7 +307,7 @@ export default defineType({
 })
 ```
 
-### Navigation Dropdown Object
+## Navigation Dropdown Object
 
 ```typescript
 // schemaTypes/objects/navigationDropdown.ts
@@ -401,7 +362,7 @@ fields: [
 
 ## Meta Fields Object
 
-### Publishing Metadata Object
+## Publishing Metadata Object
 
 ```typescript
 // schemaTypes/objects/metaFields.ts
@@ -459,7 +420,7 @@ fields: [
 
 ## Stat Object Pattern
 
-### Statistics Display Object
+## Statistics Display Object
 
 ```typescript
 // schemaTypes/objects/stat.ts
@@ -521,7 +482,7 @@ fields: [
 
 ## Address/Contact Info Object
 
-### Contact Information Object
+## Contact Information Object
 
 ```typescript
 // schemaTypes/objects/contactInfo.ts
@@ -562,7 +523,7 @@ export default defineType({
 
 ## Pattern Selection Guidelines
 
-### Create Reusable Object When:
+## Create Reusable Object When:
 
 - Data structure used in 3+ places
 - Consistent validation across uses
@@ -571,7 +532,7 @@ export default defineType({
 
 **Examples**: SEO metadata, links, addresses, stats
 
-### Create Document When:
+## Create Document When:
 
 - Content needs unique URL/identity
 - Should appear in Studio document lists
@@ -580,7 +541,7 @@ export default defineType({
 
 **Examples**: Pages, blog posts, authors, categories
 
-### Inline Fields When:
+## Inline Fields When:
 
 - Used only once
 - No reuse expected
@@ -590,19 +551,19 @@ export default defineType({
 
 ## Common Pitfalls
 
-### Document When Should Be Object
+## Document When Should Be Object
 
 **Problem**: Creating `seo` as document type instead of object
 
 **Solution**: SEO metadata should be object embedded in pages, not standalone documents
 
-### Object When Should Be Document
+## Object When Should Be Document
 
 **Problem**: Creating `author` as object instead of document
 
 **Solution**: Authors should be documents so multiple posts can reference same author
 
-### No Validation
+## No Validation
 
 **Problem**: Reusable objects without validation
 
@@ -612,7 +573,7 @@ export default defineType({
 validation: (Rule) => Rule.required().max(60)
 ```
 
-### Overly Generic Names
+## Overly Generic Names
 
 **Problem**: Objects named `data`, `info`, `content`
 
@@ -620,7 +581,7 @@ validation: (Rule) => Rule.required().max(60)
 
 ## Frontend Usage
 
-### Rendering Objects
+## Rendering Objects
 
 ```typescript
 // components/SeoHead.tsx
@@ -656,7 +617,7 @@ export function SeoHead({ seo, fallbackTitle }: SeoProps) {
 }
 ```
 
-### Querying Objects
+## Querying Objects
 
 ```groq
 *[_type == "page" && slug.current == $slug][0] {

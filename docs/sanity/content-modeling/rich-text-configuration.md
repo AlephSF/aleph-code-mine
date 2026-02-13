@@ -9,7 +9,7 @@ audience: "fullstack"
 complexity: "intermediate"
 doc_type: "standard"
 source_confidence: "100%"
-last_updated: "2026-02-12"
+last_updated: "2026-02-13"
 ---
 
 # Rich Text Configuration Patterns
@@ -38,7 +38,7 @@ Ripplecom (v4) wraps Portable Text in an `object` type to prevent nested array i
 
 **Solution**: Wrap block content in object with `content` field.
 
-### Implementation Example
+## Implementation Example
 
 ```typescript
 // schemaTypes/fields/richText.ts
@@ -46,7 +46,7 @@ import { defineType, defineField, defineArrayMember } from "sanity"
 
 export default defineType({
   name: "richText",
-  type: "object", // Wrapper prevents nested array issues
+  type: "object",
   title: "Rich Text",
   fields: [
     defineField({
@@ -58,47 +58,35 @@ export default defineType({
           type: "block",
           styles: [
             { title: "Normal", value: "normal" },
-            { title: "Heading 1", value: "h1" },
             { title: "Heading 2", value: "h2" },
             { title: "Heading 3", value: "h3" },
-            { title: "Heading 4", value: "h4" },
             { title: "Quote", value: "blockquote" },
           ],
           lists: [
-            { title: "Bullet List", value: "bullet" },
-            { title: "Numbered List", value: "number" },
+            { title: "Bullet", value: "bullet" },
+            { title: "Numbered", value: "number" },
           ],
           marks: {
             decorators: [
               { title: "Bold", value: "strong" },
               { title: "Italic", value: "em" },
-              { title: "Underline", value: "underline" },
-              { title: "Strike", value: "strike-through" },
               { title: "Code", value: "code" },
             ],
-            annotations: [
-              defineField({
-                name: "link",
-                type: "link", // Custom link type
-              }),
-            ],
+            annotations: [defineField({ name: "link", type: "link" })],
           },
         }),
-        defineArrayMember({
-          type: "image",
-          name: "inlineImage",
-        }),
-        defineArrayMember({
-          type: "video",
-          name: "inlineVideo",
-        }),
+        defineArrayMember({ type: "image", name: "inlineImage" }),
+        defineArrayMember({ type: "video", name: "inlineVideo" }),
       ],
     }),
   ],
 })
 ```
 
-**Data Structure**:
+## Rich Text Data Structure
+
+Sanity Portable Text stores content as structured JSON with block-level and inline elements:
+
 ```json
 {
   "_type": "richText",
@@ -119,7 +107,7 @@ export default defineType({
 
 Kariusdx (v2) and Helix (v3) use Portable Text as direct array fields:
 
-### Standard Configuration Example
+## Standard Configuration Example
 
 ```javascript
 // schemas/fields/richTextCustom.js
@@ -175,7 +163,7 @@ export default {
 
 ## Custom Styles Configuration
 
-### Heading Hierarchy
+## Heading Hierarchy
 
 **Best Practice**: Limit heading levels to match frontend design system
 
@@ -194,7 +182,7 @@ styles: [
 - Match frontend design system constraints
 - Prevent content structure issues
 
-### Custom Style Example
+## Custom Style Example
 
 ```typescript
 styles: [
@@ -219,7 +207,7 @@ const components = {
 
 ## Custom Marks (Decorators)
 
-### Standard Decorators
+## Standard Decorators
 
 **100% adoption pattern**:
 ```typescript
@@ -231,7 +219,7 @@ marks: {
 }
 ```
 
-### Extended Decorators (Ripplecom Pattern)
+## Extended Decorators (Ripplecom Pattern)
 
 ```typescript
 marks: {
@@ -250,7 +238,7 @@ marks: {
 - More formatting options
 - Matches common WYSIWYG editors
 
-### Custom Decorator Example
+## Custom Decorator Example
 
 ```typescript
 marks: {
@@ -275,7 +263,7 @@ const components = {
 
 ## Link Annotations
 
-### Simple Link Pattern
+## Simple Link Pattern
 
 ```typescript
 annotations: [
@@ -294,7 +282,7 @@ annotations: [
 ]
 ```
 
-### Enhanced Link Pattern
+## Enhanced Link Pattern
 
 ```typescript
 // schemas/objects/link.ts
@@ -344,7 +332,7 @@ export default {
 
 Ripplecom (v4) embeds complex objects within Portable Text:
 
-### Inline Object Types
+## Inline Object Types
 
 ```typescript
 of: [
@@ -359,7 +347,7 @@ of: [
 ]
 ```
 
-### Inline Image Configuration
+## Inline Image Configuration
 
 ```typescript
 defineArrayMember({
@@ -444,7 +432,9 @@ export default defineType({
 
 ## Frontend Rendering
 
-### Next.js Portable Text
+## Next.js Portable Text
+
+The `@portabletext/react` library renders Sanity Portable Text in Next.js with custom component mappings for blocks, lists, marks, and types.
 
 ```typescript
 // lib/portableTextComponents.tsx
@@ -455,28 +445,23 @@ const components: PortableTextComponents = {
   block: {
     normal: ({ children }) => <p className="mb-4">{children}</p>,
     h2: ({ children }) => <h2 className="text-3xl font-bold mb-4">{children}</h2>,
-    h3: ({ children }) => <h3 className="text-2xl font-semibold mb-3">{children}</h3>,
     blockquote: ({ children }) => (
-      <blockquote className="border-l-4 border-gray-300 pl-4 italic my-6">
+      <blockquote className="border-l-4 border-gray-300 pl-4 italic">
         {children}
       </blockquote>
     ),
   },
   list: {
-    bullet: ({ children }) => <ul className="list-disc ml-6 mb-4">{children}</ul>,
-    number: ({ children }) => <ol className="list-decimal ml-6 mb-4">{children}</ol>,
+    bullet: ({ children }) => <ul className="list-disc ml-6">{children}</ul>,
+    number: ({ children }) => <ol className="list-decimal ml-6">{children}</ol>,
   },
   marks: {
     strong: ({ children }) => <strong className="font-bold">{children}</strong>,
-    em: ({ children }) => <em className="italic">{children}</em>,
-    link: ({ value, children }) => {
-      const href = value?.href || '#'
-      return (
-        <a href={href} className="text-blue-600 underline" target="_blank">
-          {children}
-        </a>
-      )
-    },
+    link: ({ value, children }) => (
+      <a href={value?.href || '#'} className="text-blue-600 underline">
+        {children}
+      </a>
+    ),
   },
   types: {
     image: ({ value }) => (
@@ -485,13 +470,11 @@ const components: PortableTextComponents = {
         alt={value.alt || ''}
         width={value.asset.metadata.dimensions.width}
         height={value.asset.metadata.dimensions.height}
-        className="my-6"
       />
     ),
   },
 }
 
-// Usage
 export function RichTextRenderer({ content }) {
   return <PortableText value={content} components={components} />
 }
@@ -499,7 +482,7 @@ export function RichTextRenderer({ content }) {
 
 ## Pattern Selection Guidelines
 
-### Use Object Wrapper When:
+## Use Object Wrapper When:
 
 - Rich text used in page builder arrays
 - Nested array issues encountered
@@ -507,7 +490,7 @@ export function RichTextRenderer({ content }) {
 
 **Source Confidence**: 33% (ripplecom v4 only)
 
-### Use Direct Array When:
+## Use Direct Array When:
 
 - Rich text in simple document fields
 - No page builder architecture
@@ -515,7 +498,7 @@ export function RichTextRenderer({ content }) {
 
 **Source Confidence**: 67% (kariusdx v2 + helix v3)
 
-### Limit Styles When:
+## Limit Styles When:
 
 - Frontend design system is constrained
 - Content consistency is priority
@@ -523,7 +506,7 @@ export function RichTextRenderer({ content }) {
 
 **Source Confidence**: 67% (kariusdx + ripplecom limit to H2-H4)
 
-### Include Inline Objects When:
+## Include Inline Objects When:
 
 - Complex content requirements (multimedia, forms)
 - Blog or news content
@@ -533,19 +516,19 @@ export function RichTextRenderer({ content }) {
 
 ## Common Pitfalls
 
-### Allowing H1 in Rich Text
+## Allowing H1 in Rich Text
 
 **Problem**: Multiple H1 tags hurt SEO, break heading hierarchy
 
 **Solution**: Start styles at H2, reserve H1 for page titles
 
-### No Link Validation
+## No Link Validation
 
 **Problem**: External links break, internal links point to deleted pages
 
 **Solution**: Use internal/external link pattern with references
 
-### Excessive Inline Objects
+## Excessive Inline Objects
 
 **Problem**: Editor overwhelmed with 10+ inline object types
 

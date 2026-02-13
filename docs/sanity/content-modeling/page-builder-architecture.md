@@ -9,7 +9,7 @@ audience: "fullstack"
 complexity: "intermediate"
 doc_type: "standard"
 source_confidence: "67%"
-last_updated: "2026-02-12"
+last_updated: "2026-02-13"
 ---
 
 # Page Builder Architecture Patterns
@@ -36,7 +36,7 @@ Ripplecom (Sanity v4) implements a flat array structure where each section type 
 - Better performance (fewer nested objects)
 - Cleaner Studio UI
 
-### Implementation Example
+## Implementation Example
 
 ```typescript
 // schemaTypes/documents/page.ts
@@ -67,7 +67,7 @@ export default defineType({
 })
 ```
 
-### Section Component Structure
+## Section Component Structure
 
 ```typescript
 // schemaTypes/components/heroSection.ts
@@ -127,7 +127,7 @@ Kariusdx (Sanity v2) implements a nested structure where a `pageSection` wrapper
 - More complex GROQ queries
 - Potential performance impact
 
-### Implementation Example
+## Implementation Example
 
 ```javascript
 // schemas/fields/pageBuilder.js
@@ -145,11 +145,11 @@ export default {
 }
 ```
 
-### Section Wrapper Implementation
+## Section Wrapper Implementation
 
 See "Nested Section Wrapper Code Example" subsection below for full implementation.
 
-### Nested Section Wrapper Code Example
+## Nested Section Wrapper Code Example
 
 ```javascript
 // schemas/builderBlocks/pageSection.js
@@ -201,7 +201,7 @@ export default {
 
 ## Querying Page Builder Content
 
-### Flat Structure Query (Ripplecom)
+## Flat Structure Query (Ripplecom)
 
 GROQ queries for flat content arrays are straightforward with direct array expansion:
 
@@ -230,7 +230,7 @@ GROQ queries for flat content arrays are straightforward with direct array expan
 }
 ```
 
-### Nested Structure Query (Kariusdx)
+## Nested Structure Query (Kariusdx)
 
 Nested structures require multiple levels of array expansion:
 
@@ -261,7 +261,7 @@ Nested structures require multiple levels of array expansion:
 
 ## Pattern Selection Guidelines
 
-### Choose Flat Content Array When:
+## Choose Flat Content Array When:
 
 - Building new Sanity v3+ projects
 - Performance is critical (fewer nested objects)
@@ -270,7 +270,7 @@ Nested structures require multiple levels of array expansion:
 
 **Source Confidence**: 33% (ripplecom v4 only)
 
-### Choose Nested Section Wrapper When:
+## Choose Nested Section Wrapper When:
 
 - Consistent section styling is required (background colors, padding)
 - Visual grouping improves editor experience
@@ -279,7 +279,7 @@ Nested structures require multiple levels of array expansion:
 
 **Source Confidence**: 33% (kariusdx v2 only)
 
-### Skip Page Builder When:
+## Skip Page Builder When:
 
 - Content structure is simple (blog posts, basic pages)
 - Team size is small (< 3 content editors)
@@ -289,7 +289,7 @@ Nested structures require multiple levels of array expansion:
 
 ## Frontend Rendering Patterns
 
-### React Component Mapping (Flat Structure)
+## React Component Mapping (Flat Structure)
 
 ```typescript
 // components/PageBuilder.tsx
@@ -313,7 +313,7 @@ export function PageBuilder({ content }: { content: ContentBlock[] }) {
 }
 ```
 
-### React Component Mapping (Nested Structure)
+## React Component Mapping (Nested Structure)
 
 ```typescript
 // components/PageBuilder.tsx
@@ -350,7 +350,7 @@ export function PageBuilder({ pageBuilder }: { pageBuilder: PageSection[] }) {
 
 ## Common Pitfalls
 
-### Nested Array Issues
+## Nested Array Issues
 
 **Problem**: Sanity's array input renderer can experience TypeErrors with deeply nested arrays (`array` containing `array`).
 
@@ -380,7 +380,7 @@ export function PageBuilder({ pageBuilder }: { pageBuilder: PageSection[] }) {
 
 **Source**: Ripplecom v4 codebase comments document this pattern explicitly.
 
-### Excessive Block Types
+## Excessive Block Types
 
 **Problem**: 30+ block types overwhelm content editors.
 
@@ -395,7 +395,7 @@ of: [
 ]
 ```
 
-### Missing Preview Configuration
+## Missing Preview Configuration
 
 **Problem**: Content editors cannot distinguish between similar blocks without preview.
 
@@ -419,7 +419,7 @@ preview: {
 
 ## Migration Path
 
-### From Simple Fields to Page Builder
+## From Simple Fields to Page Builder
 
 **Phase 1**: Create parallel `content` array field alongside existing fields
 
@@ -429,7 +429,7 @@ preview: {
 
 **Phase 4**: Remove deprecated fields after validation
 
-### From Nested to Flat Structure
+## From Nested to Flat Structure
 
 **Phase 1**: Create new section types that match old innerBlocks
 

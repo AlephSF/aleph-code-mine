@@ -9,7 +9,7 @@ audience: "fullstack"
 complexity: "advanced"
 doc_type: "standard"
 source_confidence: "33%"
-last_updated: "2026-02-12"
+last_updated: "2026-02-13"
 ---
 
 # Legacy Content Migration Patterns
@@ -50,7 +50,7 @@ schemaTypes/
 - Gradual migration as content is updated
 - No content breakage during transition
 
-### Legacy Schema Organization
+## Legacy Schema Organization
 
 ```typescript
 // schemaTypes/legacy/index.ts
@@ -71,7 +71,7 @@ export const legacyTypes: SchemaTypeDefinition[] = [
 ]
 ```
 
-### Main Schema Registry with Legacy Types
+## Main Schema Registry with Legacy Types
 
 ```typescript
 // schemaTypes/index.ts
@@ -89,7 +89,7 @@ export const schemaTypes: SchemaTypeDefinition[] = [
 
 ## Migration Strategies
 
-### Strategy 1: Dual Schema Support (Recommended)
+## Strategy 1: Dual Schema Support (Recommended)
 
 **Approach**: Keep both legacy and modern schemas active simultaneously
 
@@ -121,7 +121,7 @@ defineField({
 
 **Source Confidence**: 33% (ripplecom v4 implements this pattern)
 
-### Strategy 2: Schema Versioning
+## Strategy 2: Schema Versioning
 
 **Approach**: Version schema names, migrate content programmatically
 
@@ -148,7 +148,7 @@ const needsMigration = await client.fetch(`
 
 **Source Confidence**: N/A (not observed in analyzed projects)
 
-### Strategy 3: Content Transformation Layer
+## Strategy 3: Content Transformation Layer
 
 **Approach**: Transform legacy content at query time
 
@@ -183,7 +183,7 @@ const transformedContent = content.map((block) => {
 
 ## Frontend Rendering Strategies
 
-### Unified Component Mapping
+## Unified Component Mapping
 
 Map both legacy and modern schemas to appropriate components:
 
@@ -204,7 +204,7 @@ const componentMap: Record<string, React.ComponentType<any>> = {
 }
 ```
 
-### Adapter Pattern
+## Adapter Pattern
 
 Create adapters that transform legacy data to modern component props:
 
@@ -231,7 +231,7 @@ export default function FaqAdapter(props: LegacyFaqSectionProps) {
 - Isolate transformation logic
 - Easy to test transformations
 
-### Legacy Renderer Component
+## Legacy Renderer Component
 
 Dedicated component handles all legacy formats:
 
@@ -262,7 +262,7 @@ function renderBlock(block: SanityBlock) {
 
 ## Studio UI Indicators
 
-### Deprecation Warnings
+## Deprecation Warnings
 
 Add visual indicators for deprecated schemas:
 
@@ -287,7 +287,7 @@ export default defineType({
 })
 ```
 
-### Hidden from Insert Menu
+## Hidden from Insert Menu
 
 Prevent new usage while supporting existing content:
 
@@ -310,7 +310,7 @@ export default defineConfig({
 
 ## Migration Scripts
 
-### Identify Content Needing Migration
+## Identify Content Needing Migration
 
 ```typescript
 // scripts/identify-legacy-content.ts
@@ -342,7 +342,7 @@ async function identifyLegacyContent() {
 identifyLegacyContent()
 ```
 
-### Programmatic Migration
+## Programmatic Migration
 
 ```typescript
 // scripts/migrate-faq-to-collapsible.ts
@@ -391,7 +391,7 @@ migrateFaqSections()
 
 ## Phased Rollout
 
-### Phase 1: Dual Schema Support
+## Phase 1: Dual Schema Support
 
 - Add modern schemas
 - Keep legacy schemas active
@@ -402,7 +402,7 @@ migrateFaqSections()
 
 **Goal**: All new content uses modern schemas
 
-### Phase 2: Content Migration
+## Phase 2: Content Migration
 
 - Identify legacy content
 - Run migration scripts OR manually migrate
@@ -413,7 +413,7 @@ migrateFaqSections()
 
 **Goal**: 90%+ content migrated to modern schemas
 
-### Phase 3: Legacy Deprecation
+## Phase 3: Legacy Deprecation
 
 - Remove legacy types from schema registry
 - Archive legacy schema files
@@ -426,7 +426,7 @@ migrateFaqSections()
 
 ## Pattern Selection Guidelines
 
-### Use Legacy Folder When:
+## Use Legacy Folder When:
 
 - Major schema refactoring required
 - 10+ schemas being deprecated
@@ -435,7 +435,7 @@ migrateFaqSections()
 
 **Source Confidence**: 33% (ripplecom v4 only)
 
-### Use Schema Versioning When:
+## Use Schema Versioning When:
 
 - Breaking changes to popular schemas
 - Need explicit version tracking
@@ -444,7 +444,7 @@ migrateFaqSections()
 
 **Source Confidence**: N/A (not observed)
 
-### Use Transformation Layer When:
+## Use Transformation Layer When:
 
 - Quick migration needed
 - Content structure is similar
@@ -453,7 +453,7 @@ migrateFaqSections()
 
 **Source Confidence**: N/A (common pattern, not observed)
 
-### Skip Legacy Management When:
+## Skip Legacy Management When:
 
 - Small project (< 50 pages)
 - Few content editors
@@ -464,19 +464,19 @@ migrateFaqSections()
 
 ## Common Pitfalls
 
-### Removing Schemas Before Content Migration
+## Removing Schemas Before Content Migration
 
 **Problem**: Content references deleted schemas, breaking Studio and frontend
 
 **Solution**: Keep schemas until ALL content migrated
 
-### No Migration Timeline
+## No Migration Timeline
 
 **Problem**: Legacy content accumulates indefinitely
 
 **Solution**: Set explicit deprecation timeline (e.g., "Remove Q3 2026")
 
-### Complex Migration Scripts Without Backups
+## Complex Migration Scripts Without Backups
 
 **Problem**: Script error corrupts content
 
@@ -487,7 +487,7 @@ migrateFaqSections()
 sanity dataset export production backup-$(date +%Y%m%d).tar.gz
 ```
 
-### No Frontend Backward Compatibility
+## No Frontend Backward Compatibility
 
 **Problem**: Deploy modern frontend before content migration complete
 
@@ -495,7 +495,7 @@ sanity dataset export production backup-$(date +%Y%m%d).tar.gz
 
 ## Monitoring Migration Progress
 
-### Dashboard Query
+## Dashboard Query
 
 ```groq
 {

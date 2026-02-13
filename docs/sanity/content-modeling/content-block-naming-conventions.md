@@ -9,7 +9,7 @@ audience: "fullstack"
 complexity: "beginner"
 doc_type: "standard"
 source_confidence: "100%"
-last_updated: "2026-02-12"
+last_updated: "2026-02-13"
 ---
 
 # Content Block Naming Conventions
@@ -22,7 +22,7 @@ Consistent naming conventions for Sanity content blocks improve developer experi
 
 ## Naming Pattern Taxonomy
 
-### Purpose-Driven Names (Modern)
+## Purpose-Driven Names (Modern)
 
 Ripplecom (v4) uses descriptive names that emphasize component purpose over technical implementation:
 
@@ -43,7 +43,7 @@ Ripplecom (v4) uses descriptive names that emphasize component purpose over tech
 - Standalone names for inline/small components
 - No technical implementation details in name
 
-### Descriptive Technical Names (Legacy)
+## Descriptive Technical Names (Legacy)
 
 Kariusdx (v2) combines descriptive intent with technical details:
 
@@ -64,7 +64,7 @@ Kariusdx (v2) combines descriptive intent with technical details:
 - Domain-specific vocabulary (`pathogen`, `diagnosis`)
 - Technical suffixes (`Form`, `Embed`)
 
-### Minimal Metadata Objects
+## Minimal Metadata Objects
 
 Helix (v3) uses simple descriptive names for reusable objects:
 
@@ -81,7 +81,7 @@ Helix (v3) uses simple descriptive names for reusable objects:
 
 ## Naming Components by Type
 
-### Section Components
+## Section Components
 
 Full-width components that occupy dedicated page regions:
 
@@ -101,7 +101,7 @@ cardGridSection // Card layout
 - Distinguishes from inline elements
 - Maps to frontend section wrappers
 
-### Inline Components
+## Inline Components
 
 Small components embedded within other content:
 
@@ -121,7 +121,7 @@ badge           // Badge/tag
 - Reflects inline/embedded nature
 - Matches HTML element names where appropriate
 
-### Layout Components
+## Layout Components
 
 Components that control spacing and arrangement:
 
@@ -140,7 +140,7 @@ grid            // Grid layout
 - Matches CSS layout concepts
 - Easy pattern recognition
 
-### Integration Components
+## Integration Components
 
 Components connecting to external services:
 
@@ -159,7 +159,7 @@ stripeCheckout  // Stripe payment integration
 - Type suffix describes integration
 - Clear external dependency
 
-### Domain-Specific Components
+## Domain-Specific Components
 
 Components unique to business domain:
 
@@ -185,7 +185,7 @@ investmentCard        // Investment opportunity card
 
 ## Case Conventions
 
-### camelCase (Preferred)
+## camelCase (Preferred)
 
 **Adoption**: 100% of analyzed projects
 
@@ -203,7 +203,7 @@ newsletterSignup
 - Compatible with JSON property names
 - Consistent with Sanity documentation
 
-### PascalCase (Avoid)
+## PascalCase (Avoid)
 
 **Format**: All words capitalized
 
@@ -215,7 +215,7 @@ CardGrid       // ❌ Avoid - conflicts with frontend
 
 **Problem**: Conflicts with React component naming, creates confusion between schema types and frontend components
 
-### kebab-case (Avoid)
+## kebab-case (Avoid)
 
 **Format**: Lowercase with hyphens
 
@@ -229,7 +229,7 @@ CardGrid       // ❌ Avoid - conflicts with frontend
 
 ## Suffix Guidelines
 
-### When to Use "Section"
+## When to Use "Section"
 
 **Use `Section` suffix when**:
 - Component occupies full page width
@@ -244,7 +244,7 @@ textSection     // Full-width text content
 ctaSection      // Full-width CTA
 ```
 
-### When to Omit "Section"
+## When to Omit "Section"
 
 **Omit `Section` suffix when**:
 - Component is inline or embedded
@@ -261,7 +261,7 @@ video           // Not videoSection
 
 ## Naming Anti-Patterns
 
-### Over-Abbreviation
+## Over-Abbreviation
 
 **Problem**: Unclear abbreviations reduce readability
 
@@ -277,7 +277,7 @@ textSection
 button
 ```
 
-### Redundant Prefixes
+## Redundant Prefixes
 
 **Problem**: Unnecessary prefixes add noise
 
@@ -293,7 +293,7 @@ button
 quote
 ```
 
-### Technical Implementation Details
+## Technical Implementation Details
 
 **Problem**: Names expose technical implementation
 
@@ -309,7 +309,7 @@ imageSection
 form
 ```
 
-### Inconsistent Suffixes
+## Inconsistent Suffixes
 
 **Problem**: Mix of suffixes across similar components
 
@@ -329,7 +329,7 @@ ctaSection
 
 ## Frontend Component Mapping
 
-### Direct Name Mapping
+## Direct Name Mapping
 
 ```typescript
 // lib/componentMap.ts
@@ -356,7 +356,7 @@ function renderBlock(block: SanityBlock) {
 - Type-safe with TypeScript
 - Easy to extend
 
-### Transform Mapping
+## Transform Mapping
 
 When schema names differ from component names:
 
@@ -376,7 +376,7 @@ export function getComponent(schemaType: string) {
 
 ## File Naming Conventions
 
-### Schema Files
+## Schema Files
 
 Match schema `name` field to filename:
 
@@ -394,7 +394,7 @@ export default defineType({
 - Grep-friendly (`grep "heroSection" schemaTypes/`)
 - IDE autocomplete
 
-### Frontend Component Files
+## Frontend Component Files
 
 Use PascalCase for React components:
 
@@ -412,7 +412,7 @@ export default function HeroSection(props: HeroSectionProps) {
 
 ## Documentation Naming
 
-### README Files
+## README Files
 
 Document block purpose and usage:
 
@@ -444,7 +444,7 @@ content: [
 
 ## Pattern Selection Guidelines
 
-### Use Purpose-Driven Names When:
+## Use Purpose-Driven Names When:
 
 - Building modern Sanity v3+ projects
 - Emphasis on what component does
@@ -453,7 +453,7 @@ content: [
 
 **Source Confidence**: 33% (ripplecom v4 only)
 
-### Use Descriptive Technical Names When:
+## Use Descriptive Technical Names When:
 
 - Legacy Sanity v2 projects
 - Complex integrations (forms, embeds)
@@ -462,7 +462,7 @@ content: [
 
 **Source Confidence**: 33% (kariusdx v2 only)
 
-### Use Minimal Names When:
+## Use Minimal Names When:
 
 - Small projects (< 10 schemas)
 - Data-focused objects (SEO, metadata)
@@ -486,19 +486,19 @@ Before finalizing component names, verify:
 
 ## Common Pitfalls
 
-### Changing Names After Launch
+## Changing Names After Launch
 
 **Problem**: Renaming schema breaks existing content
 
 **Solution**: Plan names carefully upfront, or use migration scripts
 
-### Inconsistent Team Conventions
+## Inconsistent Team Conventions
 
 **Problem**: Different developers use different patterns
 
 **Solution**: Document naming conventions in CONTRIBUTING.md
 
-### Names Too Generic
+## Names Too Generic
 
 **Problem**: `content`, `section`, `block` are ambiguous
 
