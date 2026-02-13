@@ -22,7 +22,7 @@ All analyzed codebases (helix-dot-com-next, kariusdx-next, policy-node) implemen
 
 ## App Router Preview Pattern
 
-### Draft Mode API
+## Draft Mode API
 
 Next.js v13+ App Router provides `draftMode()` API for preview functionality, replacing Pages Router preview mode.
 
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
 
 **Source Evidence:** helix-dot-com-next (v15) implements this pattern at `app/api/preview/route.ts`. Eight App Router route handlers total, with preview/exit-preview forming core preview workflow.
 
-### Exit Preview Route Handler
+## Exit Preview Route Handler
 
 ```typescript
 // app/api/exit-preview/route.ts
@@ -68,7 +68,7 @@ export async function GET() {
 - Redirects to homepage (or custom destination)
 - No authentication required (cookie-based state)
 
-### Draft Mode Detection in Fetch Wrappers
+## Draft Mode Detection in Fetch Wrappers
 
 Fetch wrappers check draft mode status to alter caching and data source behavior.
 
@@ -116,7 +116,7 @@ export async function sanityFetch<T>({
 
 ## Pages Router Preview Pattern
 
-### Preview Context Parameter
+## Preview Context Parameter
 
 Next.js v12-v13 Pages Router provides `preview` boolean in `getStaticProps` context.
 
@@ -171,7 +171,7 @@ export default function Page({ pageData, preview }) {
 
 **Source Evidence:** kariusdx-next (v12) uses this pattern across 14 page routes with consistent `preview` prop passing.
 
-### Preview Data Filtering
+## Preview Data Filtering
 
 ```typescript
 // utils/filterPreviewData.tsx
@@ -205,7 +205,7 @@ export default function filterPreviewData(
 
 **Pattern Insight:** Single query fetches both versions, client-side filtering chooses correct one. Reduces API calls compared to separate queries per mode.
 
-### Preview API Routes (Pages Router)
+## Preview API Routes (Pages Router)
 
 ```typescript
 // pages/api/preview.ts
@@ -240,7 +240,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
 
 ## WordPress Preview with Token Authentication
 
-### Header-Based Token Injection
+## Header-Based Token Injection
 
 WordPress GraphQL APIs require explicit authentication for draft content access.
 
@@ -279,7 +279,7 @@ export default async function fetchGraphQL<T>(
 
 **Source Evidence:** policy-node (WordPress headless) uses token-based preview across 22 `getServerSideProps` functions. Zero cookie-based preview observed.
 
-### Preview URL Structure
+## Preview URL Structure
 
 ```
 # Sanity CMS Preview (helix, kariusdx)
@@ -295,7 +295,7 @@ https://example.com/api/preview?slug=my-post&token=abc123xyz
 
 ## Preview Banner Component Pattern
 
-### Universal Visual Indicator
+## Universal Visual Indicator
 
 All projects implement visual preview mode indicators to prevent editor confusion.
 
@@ -382,7 +382,7 @@ export default function RootLayout({ children }) {
 
 ## Sanity Studio Integration
 
-### Preview Secret Configuration
+## Preview Secret Configuration
 
 Sanity Studio plugins use secret-based preview URLs for security.
 
@@ -439,7 +439,7 @@ export function PreviewPane(props: { document: { displayed: { slug?: { current?:
 
 ## Preview Mode Security Considerations
 
-### Token Validation Best Practices
+## Token Validation Best Practices
 
 Preview implementations must validate access to prevent unauthorized draft content exposure.
 
@@ -480,7 +480,7 @@ export async function GET(request: NextRequest) {
 
 ## Migration Path: Pages Router to App Router
 
-### Before (Pages Router)
+## Before (Pages Router)
 ```typescript
 // pages/api/preview.ts
 export default function handler(req, res) {
@@ -496,7 +496,7 @@ export const getStaticProps: GetStaticProps = async ({ preview = false }) => {
 }
 ```
 
-### After (App Router)
+## After (App Router)
 ```typescript
 // app/api/preview/route.ts
 import { draftMode } from 'next/headers'

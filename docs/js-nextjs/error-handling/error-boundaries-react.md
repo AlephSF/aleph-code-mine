@@ -16,7 +16,7 @@ last_updated: "2026-02-11"
 
 React Error Boundaries catch JavaScript errors anywhere in component tree, log errors, and display fallback UI instead of crashing entire application with white screen. Error boundaries use componentDidCatch lifecycle method and getDerivedStateFromError static method to intercept errors during rendering, in lifecycle methods, and in constructors. Next.js applications without error boundaries risk catastrophic user experience when single component error crashes entire page. Analysis of three Next.js codebases (helix, kariusdx, policy-node) reveals zero error boundary implementations.
 
-### Why Error Boundaries Are Critical
+## Why Error Boundaries Are Critical
 
 Uncaught errors in React components unmount entire component tree, displaying blank white screen to users. Users cannot recover, navigate, or complete tasks. Error boundaries prevent cascading failures by catching errors at boundary level, preserving surrounding UI, and displaying helpful fallback message. Source confidence: 0% (gap pattern - no error boundaries exist in analyzed codebases despite 313+ components).
 
@@ -71,7 +71,7 @@ export default function Page() {
 
 Error contained to UserProfile section. Header and Footer remain functional. Users can navigate elsewhere. ErrorFallback explains problem and offers recovery actions.
 
-### Error Boundary Class Component Implementation
+## Error Boundary Class Component Implementation
 
 Error boundaries must be class components because getDerivedStateFromError and componentDidCatch are not available as hooks. Functional components cannot implement error boundaries directly. Error boundary stores hasError state, implements both lifecycle methods, and renders fallback UI when hasError is true.
 
@@ -134,7 +134,7 @@ export default ErrorBoundary
 
 getDerivedStateFromError updates state during render phase (pure function, no side effects). componentDidCatch called during commit phase for side effects (logging, analytics). Props.fallback provides custom error UI. Props.onError enables parent components to handle errors.
 
-### Error Boundary with Reset Functionality
+## Error Boundary with Reset Functionality
 
 Production error boundaries should provide reset button allowing users to recover without page refresh. Reset clears error state and re-renders children. Useful for transient errors (network failures, race conditions) that may resolve on retry.
 
@@ -195,7 +195,7 @@ class ErrorBoundary extends Component<Props, State> {
 
 reset method clears error state, triggering re-render of children. Fallback function receives error and reset callback. Users can retry without full page reload. Reset button labeled descriptively ("Reload profile" not generic "Try again").
 
-### Granular Error Boundaries for Isolated Failures
+## Granular Error Boundaries for Isolated Failures
 
 Wrap independent sections in separate error boundaries to prevent single component failure from affecting unrelated UI sections. Dashboard with multiple widgets should wrap each widget in error boundary. One failing widget doesn't crash entire dashboard.
 
@@ -232,7 +232,7 @@ function WidgetError({ name }: { name: string }) {
 
 Each widget isolated by boundary. UserStatsWidget error doesn't affect ActivityFeedWidget. Users see partial dashboard with working widgets. Failed widgets display helpful error messages. Granular boundaries enable precise error reporting per component.
 
-### Error Boundaries Cannot Catch These Errors
+## Error Boundaries Cannot Catch These Errors
 
 Error boundaries have limitations: event handlers, asynchronous code (setTimeout, fetch), server-side rendering errors, and errors thrown in error boundary itself. Event handler errors require try/catch. Async errors caught in promise catch blocks or try/catch with async/await. SSR errors handled by Next.js error.tsx files.
 
@@ -284,7 +284,7 @@ useEffect(() => {
 
 Event handlers must use try/catch internally. Async operations need explicit error handling. Error boundaries complement (not replace) traditional error handling.
 
-### Integration with Error Tracking Services
+## Integration with Error Tracking Services
 
 Error boundaries integrate with Sentry, Rollbar, or Bugsnag to report production errors. componentDidCatch sends errors to tracking service with user context, component stack, and custom metadata. Enables monitoring production error rates and prioritizing fixes.
 
@@ -328,7 +328,7 @@ class ErrorBoundary extends Component<Props, State> {
 
 Sentry.captureException sends error with component stack. Sentry.showReportDialog lets users provide feedback. Tags identify errors caught by boundary. Contexts attach React-specific information.
 
-### Root-Level Error Boundary
+## Root-Level Error Boundary
 
 Wrap entire Next.js application in root-level error boundary to catch unhandled errors in any component. Place in root layout (App Router) or _app.tsx (Pages Router). Provides last-resort error handling preventing complete application crash.
 
@@ -361,7 +361,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
 Root boundary catches all unhandled component errors. Fallback provides minimal UI for recovery. Users can reload application without browser refresh. Combine with Next.js error.tsx for complete error handling coverage.
 
-### Error Boundaries vs Next.js error.tsx
+## Error Boundaries vs Next.js error.tsx
 
 Next.js App Router error.tsx files handle errors during server rendering and in server components. Error boundaries handle errors in client components during browser rendering. Both are needed: error.tsx for SSR failures, error boundaries for CSR failures. error.tsx is client component, Error Boundary is class component.
 

@@ -22,7 +22,7 @@ App Router adoption shows 67% across analyzed codebases: helix-dot-com-next (v15
 
 ## Async Server Components
 
-### Direct Data Fetching in Components
+## Direct Data Fetching in Components
 
 App Router Server Components use async functions to fetch data without lifecycle methods.
 
@@ -55,7 +55,7 @@ export default async function BlogPage() {
 
 **Source Evidence:** helix-dot-com-next implements this pattern across 48 page components. policy-node uses it in 70 page routes including complex catch-all patterns.
 
-### Component-Level Revalidation
+## Component-Level Revalidation
 
 ```typescript
 // app/products/page.tsx
@@ -83,7 +83,7 @@ export default async function ProductPage({ params }: { params: { id: string } }
 
 ## generateStaticParams Pattern
 
-### Defining Static Paths
+## Defining Static Paths
 
 `generateStaticParams` replaces Pages Router's `getStaticPaths` for static generation.
 
@@ -121,7 +121,7 @@ export default async function BlogPost({ params }: { params: { slug: string } })
 
 **Default Behavior:** Pages not returned by `generateStaticParams` render on first request, then cached. No need for `fallback: 'blocking'` configuration.
 
-### Catch-All Route Patterns
+## Catch-All Route Patterns
 
 Dynamic segments with `[...slug]` syntax support multi-level paths.
 
@@ -180,7 +180,7 @@ export default async function Page({
 
 ## generateMetadata Pattern
 
-### SEO Metadata Generation
+## SEO Metadata Generation
 
 `generateMetadata` function enables dynamic meta tags with data fetching.
 
@@ -228,7 +228,7 @@ export default async function BlogPost({ params }: { params: { slug: string } })
 
 **Request Deduplication:** React automatically deduplicates identical `fetchPost(params.slug)` calls in `generateMetadata` and page component within same render. Single network request, multiple consumers.
 
-### Metadata Helper Utility
+## Metadata Helper Utility
 
 ```typescript
 // utils/buildMetadata.ts
@@ -286,7 +286,7 @@ export default function buildMetaData({
 
 ## Parallel Data Fetching
 
-### Multiple Concurrent Requests
+## Multiple Concurrent Requests
 
 Server Components enable parallel data fetching without waterfalls.
 
@@ -338,7 +338,7 @@ export default async function ResourcePage() {
 
 ## Streaming with Suspense
 
-### Progressive Page Rendering
+## Progressive Page Rendering
 
 App Router supports streaming Server Components with Suspense boundaries.
 
@@ -395,7 +395,7 @@ async function Analytics() {
 
 ## Loading States
 
-### loading.tsx Pattern
+## loading.tsx Pattern
 
 App Router provides conventional `loading.tsx` files for route-level loading UI.
 
@@ -426,7 +426,7 @@ export default async function BlogPage() {
 
 ## Server-Only Data Access
 
-### Direct Database Queries
+## Direct Database Queries
 
 Server Components enable direct database access without API route intermediaries.
 
@@ -465,7 +465,7 @@ export const db = new PrismaClient()
 
 ## Migration Comparison: Pages Router vs App Router
 
-### Before (Pages Router)
+## Before (Pages Router)
 ```typescript
 // pages/blog/[slug].tsx
 import type { GetStaticProps, GetStaticPaths } from 'next'
@@ -496,7 +496,7 @@ export default function BlogPost({ post }) {
 }
 ```
 
-### After (App Router)
+## After (App Router)
 ```typescript
 // app/blog/[slug]/page.tsx
 import { notFound } from 'next/navigation'
@@ -529,7 +529,7 @@ export default async function BlogPost({ params }: { params: { slug: string } })
 
 ## Anti-Patterns to Avoid
 
-### Client Component Data Fetching
+## Client Component Data Fetching
 
 Using `'use client'` for data fetching loses Server Component benefits.
 
@@ -555,7 +555,7 @@ export default async function BlogPage() {
 }
 ```
 
-### Missing Revalidation Configuration
+## Missing Revalidation Configuration
 
 Pages without revalidation remain static after build, requiring full redeployment for updates.
 
@@ -575,7 +575,7 @@ export default async function BlogPage() {
 }
 ```
 
-### Duplicate Fetch Calls Without Deduplication
+## Duplicate Fetch Calls Without Deduplication
 
 Manual deduplication when React handles it automatically.
 

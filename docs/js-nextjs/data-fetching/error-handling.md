@@ -22,7 +22,7 @@ All analyzed codebases show extensive error handling with 4060+ try/catch blocks
 
 ## Try/Catch Pattern Universality
 
-### Basic Error Boundaries
+## Basic Error Boundaries
 
 All projects wrap async data fetching in try/catch blocks to prevent unhandled promise rejections.
 
@@ -58,7 +58,7 @@ export default async function ResourcePage() {
 
 **Source Evidence:** helix-dot-com-next (v15) implements try/catch in 100% of server components with data fetching. Zero instances of unguarded async/await observed.
 
-### notFound() Error Pattern
+## notFound() Error Pattern
 
 Next.js provides `notFound()` function for 404 error scenarios, preferred over throwing generic errors.
 
@@ -88,7 +88,7 @@ export default async function BlogPost({ params }: { params: { slug: string } })
 
 ## Timeout Management
 
-### AbortController Pattern
+## AbortController Pattern
 
 Production-grade fetch wrappers implement timeouts using AbortController to prevent hanging requests.
 
@@ -163,7 +163,7 @@ export default async function fetchGraphQL<T>(
 
 ## Retry Logic with Exponential Backoff
 
-### Network Error Retry Pattern
+## Network Error Retry Pattern
 
 Transient network errors benefit from automatic retries with increasing delays between attempts.
 
@@ -227,7 +227,7 @@ export default async function fetchGraphQL<T>(
 
 ## GraphQL Error Handling
 
-### Error Response Structure
+## Error Response Structure
 
 GraphQL APIs return errors in structured format alongside data, requiring specific parsing.
 
@@ -285,7 +285,7 @@ export default async function fetchGraphQL<T>(query: string): Promise<T> {
 - **Execution errors:** Null field violations, resolver failures (extensions has debug info)
 - **Authorization errors:** Insufficient permissions for field access
 
-### Partial Data Handling
+## Partial Data Handling
 
 GraphQL can return partial data alongside errors, requiring careful null handling.
 
@@ -306,7 +306,7 @@ const firstPage = result.pages[0].title // Safe access
 
 ## Structured Error Logging
 
-### Production-Grade Logger Integration
+## Production-Grade Logger Integration
 
 Sophisticated error handling includes structured logging for observability.
 
@@ -363,7 +363,7 @@ logger.error(`Failed to fetch GraphQL query "${queryName}"`, {
 
 ## Error.tsx Boundary Pattern
 
-### App Router Error Handling UI
+## App Router Error Handling UI
 
 Next.js App Router requires `error.tsx` files to handle component errors.
 
@@ -405,7 +405,7 @@ export default function Error({
 - `digest` property contains error hash for logging correlation
 - Located at segment level (app/error.tsx, app/blog/error.tsx, etc.)
 
-### Granular Error Boundaries
+## Granular Error Boundaries
 
 Nested error.tsx files provide granular error recovery without breaking entire app.
 
@@ -430,7 +430,7 @@ app/
 
 ## Pages Router Error Handling
 
-### getStaticProps Error Pattern
+## getStaticProps Error Pattern
 
 Pages Router errors in `getStaticProps` cause build failures unless handled gracefully.
 
@@ -474,7 +474,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
 
 ## Anti-Patterns to Avoid
 
-### Silent Error Swallowing
+## Silent Error Swallowing
 
 Catching errors without logging or user feedback hides production issues.
 
@@ -502,7 +502,7 @@ export default async function Page() {
 }
 ```
 
-### Missing Timeout Configuration
+## Missing Timeout Configuration
 
 Fetch without timeout can hang indefinitely during network issues.
 
@@ -521,7 +521,7 @@ try {
 }
 ```
 
-### Retrying Non-Retriable Errors
+## Retrying Non-Retriable Errors
 
 Retrying HTTP 404 or validation errors wastes resources and delays failure.
 
@@ -534,7 +534,7 @@ const isTransient = error.message.includes('ETIMEDOUT') || error.name === 'Abort
 const shouldRetry = attemptNumber < retries && isTransient
 ```
 
-### Generic Error Messages
+## Generic Error Messages
 
 Non-descriptive errors hinder debugging in production.
 

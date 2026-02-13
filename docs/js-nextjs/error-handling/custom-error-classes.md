@@ -16,7 +16,7 @@ last_updated: "2026-02-11"
 
 Custom error classes extending the built-in Error class provide type-safe error handling with domain-specific properties like HTTP status codes. Next.js API routes benefit from custom errors that store status codes (400, 404, 500) as readonly properties, enabling type guards to distinguish between error types and return appropriate HTTP responses. Policy-node implements this pattern across 3+ API routes with MunicipalityError, MunicipalitySearchError, and PhraseError classes.
 
-### Why Custom Error Classes Over Generic Errors
+## Why Custom Error Classes Over Generic Errors
 
 Generic Error objects lack domain context and HTTP status codes. A thrown `new Error('Not found')` requires string parsing to determine if it represents 404, 400, or 500 status. Custom error classes store status codes as properties, making error handling type-safe and eliminating magic string comparisons. Source confidence: 33% (policy-node only, helix and kariusdx use generic errors or no error handling).
 
@@ -55,7 +55,7 @@ try {
 
 Generic errors require brittle string matching. Custom errors enable instanceof type guards and direct status code access. Tests verify error types without string inspection. Refactoring error messages doesn't break error handling logic.
 
-### Custom Error Class Implementation Pattern
+## Custom Error Class Implementation Pattern
 
 Policy-node's custom error classes follow consistent pattern: extend Error, store readonly statusCode property, set error name for debugging, and accept message + statusCode constructor parameters. Readonly statusCode prevents accidental mutation. Setting this.name enables stack traces to display custom error name instead of generic "Error".
 
@@ -83,7 +83,7 @@ export { MunicipalityError }
 
 Constructor accepts message (required) and statusCode (defaults to 500). Readonly statusCode enforces immutability. Error.captureStackTrace preserves stack trace pointing to throw site rather than constructor. this.name = 'MunicipalityError' ensures error.name property reflects custom class name in logs and debuggers.
 
-### Using Custom Errors in API Routes
+## Using Custom Errors in API Routes
 
 API routes throw custom errors with specific status codes during validation, not-found checks, and server failures. Catch blocks use instanceof type guards to distinguish custom errors from generic errors. Custom errors return error.statusCode to NextResponse, generic errors default to 500.
 
@@ -135,7 +135,7 @@ export async function GET(
 
 validateSlug throws 400 error for invalid format. Not-found check throws 404 error. Type guard `error instanceof MunicipalityError` enables specific error handling. Generic errors (database failures, unexpected exceptions) fall through to 500 response. Logging includes status code for debugging.
 
-### Domain-Specific Error Classes
+## Domain-Specific Error Classes
 
 Create separate error classes per domain or API route group. MunicipalityError for municipality-related errors, PhraseError for translation errors, MetricError for metrics API. Domain-specific errors improve error logs, enable domain-specific error handling, and document API error contracts.
 
@@ -184,7 +184,7 @@ try {
 
 PhraseError stores locale property for debugging. Error logs include locale context. Domain-specific properties enable richer error responses. Tests can assert on domain properties: `expect(error.locale).toBe('fr-CA')`.
 
-### Extracting Errors to Shared Module
+## Extracting Errors to Shared Module
 
 Policy-node duplicates error classes across 3 API route files. Best practice: extract custom errors to shared `@/errors` directory, export all errors from index file, import where needed. DRY principle prevents inconsistent error definitions. Centralized location documents all application error types.
 
@@ -238,7 +238,7 @@ import { MunicipalityError, PhraseError } from '@/errors'
 
 BaseApiError defines shared properties (statusCode, context). Subclasses inherit base behavior. context property stores arbitrary debugging data (userId, requestId, timestamp). Single import statement (`from '@/errors'`) imports all error types.
 
-### Custom Errors with Additional Metadata
+## Custom Errors with Additional Metadata
 
 Extend custom errors with metadata for observability: timestamp, requestId, userId, operationName. Metadata aids debugging, correlates errors across microservices, and integrates with error tracking services (Sentry, Rollbar). Avoid including sensitive data (passwords, tokens) in error metadata.
 

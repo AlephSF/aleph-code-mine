@@ -22,7 +22,7 @@ Batching adoption shows 33% across analyzed codebases: policy-node implements so
 
 ## The Build-Time Performance Problem
 
-### Concurrent Request Overload
+## Concurrent Request Overload
 
 Static site generation with `generateStaticParams` creates concurrent requests that can overwhelm GraphQL APIs.
 
@@ -56,7 +56,7 @@ export default async function Page({ params }) {
 
 ## Batching Strategy
 
-### Time-Window Batch Collection
+## Time-Window Batch Collection
 
 Batching collects queries within small time windows before executing them concurrently with controlled parallelism.
 
@@ -111,7 +111,7 @@ class GraphQLBatcher {
 
 ## Batch Execution Logic
 
-### Concurrent Execution with Promise.allSettled
+## Concurrent Execution with Promise.allSettled
 
 Batch execution runs all queries concurrently while handling individual failures gracefully.
 
@@ -182,7 +182,7 @@ class GraphQLBatcher {
 
 ## Global Resolver Registry
 
-### Cross-Batch Promise Resolution
+## Cross-Batch Promise Resolution
 
 Global registry maps query IDs to promise resolvers, enabling batch execution to fulfill original promises.
 
@@ -218,7 +218,7 @@ if (resolver) {
 
 ## Single Query Execution with Retry
 
-### Individual Query Fetch Logic
+## Individual Query Fetch Logic
 
 Each query in batch executes with retry logic and timeout management.
 
@@ -318,7 +318,7 @@ const graphqlBatcher = new GraphQLBatcher()
 
 ## Fetch Wrapper Integration
 
-### Transparent Batching API
+## Transparent Batching API
 
 Batching wrapper provides same interface as non-batched fetch, enabling drop-in replacement.
 
@@ -348,7 +348,7 @@ export default async function fetchGraphQLOptimized<T>(
 - `useBatching` parameter allows per-query opt-out
 - Async import of original fetch wrapper for preview mode
 
-### Usage in Page Components
+## Usage in Page Components
 
 ```typescript
 // app/[lang]/[...slug]/page.tsx
@@ -378,7 +378,7 @@ export default async function Page({ params }) {
 
 ## Performance Impact
 
-### Build Time Optimization
+## Build Time Optimization
 
 Batching dramatically improves build times for large static sites.
 
@@ -405,7 +405,7 @@ Batching dramatically improves build times for large static sites.
 
 ## When to Use Batching
 
-### Use Case Criteria
+## Use Case Criteria
 
 **Batching Benefits:**
 - Large static sites (500+ pages)
@@ -423,7 +423,7 @@ Batching dramatically improves build times for large static sites.
 
 ## Configuration Options
 
-### Tuning Batch Parameters
+## Tuning Batch Parameters
 
 ```typescript
 // lib/graphQL/fetchOptimized.ts
@@ -460,7 +460,7 @@ class GraphQLBatcher {
 
 ## Anti-Patterns to Avoid
 
-### Batching All Requests Including Preview
+## Batching All Requests Including Preview
 
 Preview mode requires fresh draft content, batching defeats purpose.
 
@@ -492,7 +492,7 @@ export default async function fetchGraphQLOptimized<T>(
 }
 ```
 
-### Memory Leaks in Global Registry
+## Memory Leaks in Global Registry
 
 Forgetting to clean up resolved promises causes memory growth.
 
@@ -512,7 +512,7 @@ if (resolver) {
 }
 ```
 
-### Infinite Batch Window
+## Infinite Batch Window
 
 Not setting timeout causes batch to never execute.
 
@@ -542,7 +542,7 @@ async addToBatch<T>(query: string): Promise<T> {
 }
 ```
 
-### Using Batching for REST APIs
+## Using Batching for REST APIs
 
 Batching is GraphQL-specific optimization, doesn't apply to REST.
 

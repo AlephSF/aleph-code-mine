@@ -22,7 +22,7 @@ Route handler adoption shows 67% across analyzed codebases with App Router: heli
 
 ## Basic Route Handler Pattern
 
-### File-Based API Routes
+## File-Based API Routes
 
 Route handlers use `route.ts` or `route.js` files within the `app` directory structure to define API endpoints.
 
@@ -49,7 +49,7 @@ export async function GET() {
 
 ## HTTP Method Handlers
 
-### Supported Method Exports
+## Supported Method Exports
 
 Route handlers export async functions named after HTTP methods.
 
@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
 
 ## NextRequest and NextResponse APIs
 
-### Request Object Methods
+## Request Object Methods
 
 NextRequest extends Web Request API with Next.js-specific utilities.
 
@@ -126,7 +126,7 @@ export async function GET(request: NextRequest) {
 - `formData()` - Parse form data
 - `text()` - Parse text body
 
-### Response Object Methods
+## Response Object Methods
 
 NextResponse extends Web Response API with convenience methods.
 
@@ -162,7 +162,7 @@ export async function POST(request: NextRequest) {
 
 ## Dynamic Route Handlers
 
-### Path Parameters in Routes
+## Path Parameters in Routes
 
 Route handlers support dynamic segments with `[param]` syntax.
 
@@ -212,7 +212,7 @@ export async function DELETE(
 - Second parameter provides `params` object
 - Type-safe with TypeScript generics
 
-### Catch-All Route Handlers
+## Catch-All Route Handlers
 
 ```typescript
 // app/api/[...path]/route.ts
@@ -233,7 +233,7 @@ export async function GET(
 
 ## Preview Mode Route Handlers
 
-### Draft Mode Enable/Disable Pattern
+## Draft Mode Enable/Disable Pattern
 
 Route handlers commonly implement preview mode endpoints for CMS integration.
 
@@ -284,7 +284,7 @@ export async function GET() {
 
 ## Webhook Route Handlers
 
-### CMS Revalidation Webhooks
+## CMS Revalidation Webhooks
 
 Route handlers process CMS webhooks for on-demand revalidation.
 
@@ -341,7 +341,7 @@ export async function POST(request: NextRequest) {
 
 ## CORS Configuration
 
-### Cross-Origin Request Handling
+## Cross-Origin Request Handling
 
 Route handlers implement CORS headers for external API access.
 
@@ -381,7 +381,7 @@ export async function OPTIONS(request: NextRequest) {
 
 ## Route Handler Caching
 
-### Default Cache Behavior
+## Default Cache Behavior
 
 Route handlers have different default cache behavior based on HTTP method.
 
@@ -407,7 +407,7 @@ export async function GET() {
 - Override with `export const dynamic = 'force-dynamic'`
 - Set Cache-Control headers for CDN caching
 
-### Manual Cache Control
+## Manual Cache Control
 
 ```typescript
 // app/api/posts/route.ts
@@ -426,7 +426,7 @@ export async function GET() {
 
 ## Migration from Pages Router API Routes
 
-### Before (Pages Router)
+## Before (Pages Router)
 ```typescript
 // pages/api/hello.ts
 import type { NextApiRequest, NextApiResponse } from 'next'
@@ -444,7 +444,7 @@ export default async function handler(
 }
 ```
 
-### After (App Router)
+## After (App Router)
 ```typescript
 // app/api/hello/route.ts
 import { NextResponse } from 'next/server'
@@ -465,7 +465,7 @@ export async function GET() {
 
 ## Error Handling in Route Handlers
 
-### Try/Catch with Proper Status Codes
+## Try/Catch with Proper Status Codes
 
 ```typescript
 // app/api/posts/[id]/route.ts
@@ -509,7 +509,7 @@ export async function GET(
 
 ## Anti-Patterns to Avoid
 
-### Missing Method Handlers
+## Missing Method Handlers
 
 Implementing only GET without POST when both are needed.
 
@@ -534,7 +534,7 @@ export async function POST(request: NextRequest) {
 }
 ```
 
-### Not Validating Request Input
+## Not Validating Request Input
 
 Accepting request body without validation.
 
@@ -569,7 +569,7 @@ export async function POST(request: NextRequest) {
 }
 ```
 
-### Forgetting CORS Headers
+## Forgetting CORS Headers
 
 External API access blocked without CORS headers.
 
@@ -601,7 +601,7 @@ export async function OPTIONS() {
 }
 ```
 
-### Coexisting page.tsx and route.ts
+## Coexisting page.tsx and route.ts
 
 Cannot have both in same directory (build error).
 

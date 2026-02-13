@@ -22,7 +22,7 @@ All analyzed codebases implement Pages Router patterns with 100% adoption across
 
 ## getStaticProps Pattern
 
-### Static Generation with Data
+## Static Generation with Data
 
 `getStaticProps` runs at build time to fetch data and pass it as props to page components.
 
@@ -78,7 +78,7 @@ export default function BlogPost({ post }: BlogPostProps) {
 
 **Source Evidence:** kariusdx-next implements getStaticProps in 14 pages with 100% ISR adoption (all include `revalidate: 10`). Zero pure static pages without revalidation observed.
 
-### Incremental Static Regeneration
+## Incremental Static Regeneration
 
 ISR enables static pages to update after deployment without full rebuild.
 
@@ -109,7 +109,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
 
 ## getStaticPaths Pattern
 
-### Defining Static Generation Paths
+## Defining Static Generation Paths
 
 `getStaticPaths` specifies which dynamic route parameters to pre-render at build time.
 
@@ -150,7 +150,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
 - `paths` array determines pre-rendered pages
 - `fallback` determines behavior for non-pre-rendered paths
 
-### Fallback Options
+## Fallback Options
 
 **`fallback: false`** (strict pre-rendering)
 - Only paths in `paths` array are valid
@@ -217,7 +217,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
 
 ## getServerSideProps Pattern
 
-### Server-Side Rendering on Every Request
+## Server-Side Rendering on Every Request
 
 `getServerSideProps` runs on every request to provide fresh props via SSR.
 
@@ -280,7 +280,7 @@ export default function Dashboard({ user, stats }: DashboardProps) {
 
 **Source Evidence:** policy-node uses getServerSideProps in 22 pages for preview mode and WordPress draft content. helix uses it in 17 cases for Sanity preview. kariusdx uses it in 12 pages for authenticated routes.
 
-### Preview Mode with getServerSideProps
+## Preview Mode with getServerSideProps
 
 ```typescript
 // pages/blog/[slug].tsx
@@ -316,7 +316,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params, preview =
 
 ## Catch-All Routes
 
-### Multi-Level Dynamic Paths
+## Multi-Level Dynamic Paths
 
 `[...slug]` syntax captures multiple path segments.
 
@@ -366,7 +366,7 @@ export default function Page({ page }) {
 
 **Source Evidence:** kariusdx-next uses catch-all for all content pages. Single `pages/[...slug].tsx` handles entire site structure (except hardcoded routes like `/404`).
 
-### Optional Catch-All
+## Optional Catch-All
 
 `[[...slug]]` syntax matches root path plus any depth.
 
@@ -394,7 +394,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
 
 ## Reusable getStaticProps Wrapper
 
-### Abstraction Pattern for Common Logic
+## Abstraction Pattern for Common Logic
 
 Projects extract shared getStaticProps logic into reusable functions.
 
@@ -454,7 +454,7 @@ export default function Page({ pageData, globalData, preview }) {
 
 ## Context Object Properties
 
-### Available Context Parameters
+## Available Context Parameters
 
 ```typescript
 export const getStaticProps: GetStaticProps = async (context) => {
@@ -491,7 +491,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
 ## API Routes Pattern
 
-### Server-Side Logic in Pages Router
+## Server-Side Logic in Pages Router
 
 API routes provide server-side endpoints for mutations, webhooks, and client-side data fetching.
 
@@ -528,7 +528,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
 ## Anti-Patterns to Avoid
 
-### Fetching Data in Component
+## Fetching Data in Component
 
 Client-side data fetching in Pages Router components loses SSG/SSR benefits.
 
@@ -557,7 +557,7 @@ export default function BlogPost({ post }) {
 }
 ```
 
-### Missing notFound Handling
+## Missing notFound Handling
 
 Rendering missing data without 404 status harms SEO and user experience.
 
@@ -583,7 +583,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
 }
 ```
 
-### Mixing SSG and SSR
+## Mixing SSG and SSR
 
 Cannot export both `getStaticProps` and `getServerSideProps` from same page.
 
@@ -602,7 +602,7 @@ export const getStaticProps: GetStaticProps = async () => { /* ... */ }
 export const getServerSideProps: GetServerSideProps = async () => { /* ... */ }
 ```
 
-### Forgetting fallback in getStaticPaths
+## Forgetting fallback in getStaticPaths
 
 Dynamic routes with getStaticProps require getStaticPaths.
 

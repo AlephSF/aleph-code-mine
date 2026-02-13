@@ -22,7 +22,7 @@ All analyzed codebases (helix-dot-com-next, kariusdx-next, policy-node) implemen
 
 ## App Router Revalidation Pattern
 
-### Segment-Level Configuration
+## Segment-Level Configuration
 
 App Router projects (Next.js v13+) define revalidation at the route segment level using a named export constant.
 
@@ -42,7 +42,7 @@ export default async function BlogPost({ params }: { params: { slug: string } })
 - Overrides parent segment revalidation if more frequent
 - Minimum recommended: 10 seconds (production-tested threshold)
 
-### Source Evidence
+## Source Evidence
 
 **helix-dot-com-next (v15):** 116 revalidate exports across App Router pages. Most common value: 10 seconds for Sanity CMS content.
 
@@ -66,7 +66,7 @@ export default async function Page({ params }) {
 
 ## Pages Router Revalidation Pattern
 
-### Return Object Configuration
+## Return Object Configuration
 
 Pages Router projects (Next.js v12-v13) define revalidation in `getStaticProps` return object.
 
@@ -92,7 +92,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
 - Combined with `fallback: 'blocking'` in getStaticPaths for new pages
 - Co-located with data fetching logic
 
-### Source Evidence
+## Source Evidence
 
 **kariusdx-next (v12):** 23 revalidate configurations in getStaticProps functions. Standard pattern uses reusable wrapper:
 
@@ -123,7 +123,7 @@ const getStaticPropsWithPreview: GetStaticProps = async ({ params, preview = fal
 
 ## Revalidation Interval Guidelines
 
-### Choosing Revalidation Timing
+## Choosing Revalidation Timing
 
 Content volatility determines appropriate revalidation intervals across analyzed codebases.
 
@@ -149,7 +149,7 @@ Content volatility determines appropriate revalidation intervals across analyzed
 
 ## Fetch-Level Revalidation Override
 
-### Custom Fetch Wrapper Pattern
+## Custom Fetch Wrapper Pattern
 
 Projects implement fetch wrappers that override segment-level revalidation for specific queries.
 
@@ -189,7 +189,7 @@ export async function sanityFetch<T>({
 
 ## Tag-Based Revalidation
 
-### On-Demand Cache Invalidation
+## On-Demand Cache Invalidation
 
 App Router supports tag-based revalidation for targeted cache clearing without waiting for time-based intervals.
 
@@ -227,7 +227,7 @@ export async function POST(request: NextRequest) {
 
 ## Anti-Patterns to Avoid
 
-### Missing Revalidation Configuration
+## Missing Revalidation Configuration
 
 Pages without revalidation behave as pure static generation, requiring full rebuilds for updates.
 
@@ -247,7 +247,7 @@ export default async function StaticPage() {
 }
 ```
 
-### Overly Aggressive Revalidation
+## Overly Aggressive Revalidation
 
 Sub-10-second revalidation intervals observed in 0% of analyzed production code due to server load concerns.
 
@@ -259,7 +259,7 @@ export const revalidate = 1
 export const revalidate = 10
 ```
 
-### Conflicting Revalidation Times
+## Conflicting Revalidation Times
 
 Fetch-level revalidation less frequent than page-level causes confusion and unexpected caching behavior.
 
@@ -285,7 +285,7 @@ async function getData() {
 
 ## Migration Path: Pages Router to App Router
 
-### Before (Pages Router)
+## Before (Pages Router)
 ```typescript
 // pages/blog/[slug].tsx
 export const getStaticProps: GetStaticProps = async ({ params }) => {
@@ -305,7 +305,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
 }
 ```
 
-### After (App Router)
+## After (App Router)
 ```typescript
 // app/blog/[slug]/page.tsx
 export const revalidate = 10

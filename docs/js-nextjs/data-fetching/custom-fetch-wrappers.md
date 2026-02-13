@@ -22,7 +22,7 @@ All analyzed codebases (helix-dot-com-next, kariusdx-next, policy-node) implemen
 
 ## Sanity CMS Fetch Wrapper
 
-### Basic Pattern with Cache Control
+## Basic Pattern with Cache Control
 
 Sanity-based projects wrap the Sanity client with custom fetch logic that integrates Next.js caching primitives.
 
@@ -78,7 +78,7 @@ export async function sanityFetch<QueryResponse>({
 
 **Source Evidence:** helix-dot-com-next uses this pattern across 48 async server component fetch calls. Zero instances of raw `client.fetch()` outside wrapper.
 
-### Usage in Server Components
+## Usage in Server Components
 
 ```typescript
 // app/(frontend)/resources/page.tsx
@@ -120,7 +120,7 @@ export default async function ResourcePage() {
 
 ## GraphQL Fetch Wrapper with Retry Logic
 
-### Advanced Pattern with Timeout and Exponential Backoff
+## Advanced Pattern with Timeout and Exponential Backoff
 
 GraphQL-based projects implement sophisticated wrappers with timeout management, automatic retries, and detailed error logging.
 
@@ -279,7 +279,7 @@ export default async function fetchGraphQL<T>(
 
 ## Pages Router Wrapper Pattern
 
-### Reusable getStaticProps Function
+## Reusable getStaticProps Function
 
 Pages Router projects abstract `getStaticProps` logic into reusable wrapper functions that handle common concerns.
 
@@ -355,7 +355,7 @@ export default function Page({ pageData, globalData }) {
 
 ## GraphQL Batching Wrapper
 
-### Performance Optimization Pattern
+## Performance Optimization Pattern
 
 High-traffic projects implement request batching to reduce concurrent GraphQL requests during static generation.
 
@@ -471,7 +471,7 @@ export default async function fetchGraphQLOptimized<T>(
 
 ## Anti-Patterns to Avoid
 
-### Direct Client Usage Without Wrapper
+## Direct Client Usage Without Wrapper
 
 Raw Sanity or GraphQL client usage bypasses centralized caching and error handling.
 
@@ -493,7 +493,7 @@ export default async function Page() {
 }
 ```
 
-### Missing Type Safety
+## Missing Type Safety
 
 Wrappers without generics lose TypeScript inference benefits.
 
@@ -509,7 +509,7 @@ export async function fetchData<T>(query: string): Promise<T> {
 }
 ```
 
-### Synchronous Error Handling
+## Synchronous Error Handling
 
 Wrappers that throw synchronously prevent graceful error recovery in components.
 
@@ -531,7 +531,7 @@ export async function fetchData(query: string) {
 }
 ```
 
-### Hardcoded Configuration
+## Hardcoded Configuration
 
 Wrappers with hardcoded timeouts and retry logic prevent environment-specific tuning.
 
