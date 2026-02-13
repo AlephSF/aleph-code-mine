@@ -9,7 +9,7 @@ audience: "frontend"
 complexity: "advanced"
 doc_type: "standard"
 source_confidence: "57%"
-last_updated: "2026-02-12"
+last_updated: "2026-02-13"
 ---
 
 # Build Tool Configuration: webpack, Laravel Mix, Gulp
@@ -24,7 +24,7 @@ Build tools automate asset compilation, minification, and optimization. **57% of
 
 webpack bundles JavaScript, compiles SCSS, optimizes images, generates asset manifest with cache-busting hashes.
 
-### Basic webpack.config.js
+## Basic webpack.config.js
 
 ```javascript
 const path = require('path');
@@ -77,7 +77,7 @@ module.exports = {
 - `MiniCssExtractPlugin`: Extracts CSS to separate files
 - `CleanWebpackPlugin`: Removes old builds before new build
 
-### package.json Scripts
+## package.json Scripts
 
 ```json
 {
@@ -98,7 +98,7 @@ module.exports = {
 
 Laravel Mix wraps webpack with simpler API. Single configuration file (`webpack.mix.js`) replaces complex webpack config.
 
-### webpack.mix.js Example (airbnb-careers)
+## webpack.mix.js Example (airbnb-careers)
 
 ```javascript
 const mix = require('laravel-mix');
@@ -121,7 +121,7 @@ if (!mix.inProduction()) {
 - Automatic BrowserSync setup
 - Less configuration overhead
 
-### package.json Scripts
+## package.json Scripts
 
 ```json
 {
@@ -139,7 +139,7 @@ if (!mix.inProduction()) {
 
 Gulp task runner for asset compilation. Less common in modern themes, replaced by webpack/Mix.
 
-### gulpfile.js Example (pressbnb)
+## gulpfile.js Example (pressbnb)
 
 ```javascript
 const gulp = require('gulp');

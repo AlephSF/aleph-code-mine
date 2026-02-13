@@ -9,7 +9,7 @@ audience: "frontend"
 complexity: "intermediate"
 doc_type: "standard"
 source_confidence: "29%"
-last_updated: "2026-02-12"
+last_updated: "2026-02-13"
 ---
 
 # Blade Templating Engine for WordPress Themes
@@ -63,7 +63,7 @@ resources/views/
 
 Blade's most powerful feature - define base layout once, extend in child templates via `@extends` and `@section` directives. Eliminates duplicate header/footer code across templates.
 
-### Base Layout (resources/views/layouts/app.blade.php)
+## Base Layout (resources/views/layouts/app.blade.php)
 
 ```blade
 <!doctype html>
@@ -102,7 +102,7 @@ Blade's most powerful feature - define base layout once, extend in child templat
 - `@yield('content')`: Content injection point
 - `@if (App\display_sidebar())`: Conditional sidebar
 
-### Child Template (resources/views/front-page.blade.php)
+## Child Template (resources/views/front-page.blade.php)
 
 ```blade
 @extends('layouts.app')
@@ -155,7 +155,7 @@ Blade's most powerful feature - define base layout once, extend in child templat
 
 Blade automatically escapes output via `{{ }}` syntax, preventing XSS attacks. Use `{!! !!}` **only** for trusted WordPress hooks and HTML output.
 
-### Escaped Output (Default - XSS Safe)
+## Escaped Output (Default - XSS Safe)
 
 ```blade
 {{-- Automatic escaping with {{ }} --}}
@@ -174,7 +174,7 @@ Blade automatically escapes output via `{{ }}` syntax, preventing XSS attacks. U
 - Objects with `__toString()`: Same escaping
 - Already escaped: No double-escaping
 
-### Unescaped Output (Trusted HTML Only)
+## Unescaped Output (Trusted HTML Only)
 
 ```blade
 {{-- Unescaped output with {!! !!} - USE CAREFULLY --}}
@@ -207,7 +207,7 @@ Blade automatically escapes output via `{{ }}` syntax, preventing XSS attacks. U
 
 Blade provides clean control structure syntax without `<?php ?>` tags. All PHP control structures available via `@directive` syntax.
 
-### Conditionals
+## Conditionals
 
 ```blade
 @if($featuredImage)
@@ -240,7 +240,7 @@ Blade provides clean control structure syntax without `<?php ?>` tags. All PHP c
 @endif
 ```
 
-### Loops
+## Loops
 
 ```blade
 {{-- Array/collection loops --}}
@@ -313,7 +313,7 @@ Blade provides clean control structure syntax without `<?php ?>` tags. All PHP c
 
 Break templates into reusable partials via `@include` directive. Partials receive all variables from parent scope plus additional data via second parameter.
 
-### Header Partial (resources/views/partials/header.blade.php)
+## Header Partial (resources/views/partials/header.blade.php)
 
 ```blade
 <header class="site-header">
@@ -361,7 +361,7 @@ Break templates into reusable partials via `@include` directive. Partials receiv
 @include('partials.header')
 ```
 
-### Content Partial with Data (resources/views/partials/post-card.blade.php)
+## Content Partial with Data (resources/views/partials/post-card.blade.php)
 
 ```blade
 <article class="post-card {{ $cardClass ?? '' }}">
@@ -425,7 +425,7 @@ Break templates into reusable partials via `@include` directive. Partials receiv
 
 Blade integrates with WordPress template hierarchy, hooks, and functions via special syntax for unescaped output and PHP execution.
 
-### WordPress Hooks
+## WordPress Hooks
 
 ```blade
 {{-- wp_head() and wp_footer() hooks --}}
@@ -448,7 +448,7 @@ Blade integrates with WordPress template hierarchy, hooks, and functions via spe
 
 **Why `@php()` not `{!! !!}`:** Hooks output directly to buffer, don't return values. `@php(wp_head())` executes function, `{!! wp_head() !!}` would try to escape null return value.
 
-### WordPress Functions
+## WordPress Functions
 
 ```blade
 {{-- Escaped output (safe) --}}
@@ -482,7 +482,7 @@ Blade integrates with WordPress template hierarchy, hooks, and functions via spe
 @endwhile
 ```
 
-### Custom PHP
+## Custom PHP
 
 ```blade
 {{-- Inline PHP --}}
@@ -524,7 +524,7 @@ Blade integrates with WordPress template hierarchy, hooks, and functions via spe
 
 Blade templates for custom Gutenberg blocks registered via ACF `acf_register_block_type()` with Blade render callback.
 
-### Block Registration (app/setup.php)
+## Block Registration (app/setup.php)
 
 ```php
 add_action('acf/init', function () {
@@ -551,7 +551,7 @@ add_action('acf/init', function () {
 });
 ```
 
-### Block Template (resources/views/blocks/thekelsey-slideshow.blade.php)
+## Block Template (resources/views/blocks/thekelsey-slideshow.blade.php)
 
 ```blade
 <div class="slideshow-block {{ $block['className'] ?? '' }}" id="{{ $block['id'] }}">
@@ -606,7 +606,7 @@ add_action('acf/init', function () {
 
 Create custom page templates with `Template Name:` comment in Blade file. WordPress detects and shows in Page Attributes dropdown.
 
-### Template with Blade Syntax (resources/views/template-fullwidth.blade.php)
+## Template with Blade Syntax (resources/views/template-fullwidth.blade.php)
 
 ```blade
 {{--
@@ -668,7 +668,7 @@ Create custom page templates with `Template Name:` comment in Blade file. WordPr
 
 Blade compiles templates to optimized PHP on first render, caches compiled output. Subsequent renders use cached PHP with zero compilation overhead.
 
-### Compilation Process
+## Compilation Process
 
 1. **First Request:** `front-page.blade.php` → PHP compilation → Cache storage → Execute → Render
 2. **Subsequent Requests:** Read cached PHP → Execute → Render (no compilation)
@@ -699,7 +699,7 @@ Blade compiles templates to optimized PHP on first render, caches compiled outpu
 - Cached renders: 0ms overhead (identical to hand-written PHP)
 - Memory: Minimal (compiled PHP stored on disk)
 
-### Cache Clearing
+## Cache Clearing
 
 **Automatic:** Template file modification timestamp triggers recompilation
 **Manual:** Delete `wp-content/uploads/cache/` contents

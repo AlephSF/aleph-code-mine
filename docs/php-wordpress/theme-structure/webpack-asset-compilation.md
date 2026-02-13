@@ -9,7 +9,7 @@ audience: "fullstack"
 complexity: "intermediate"
 doc_type: "standard"
 source_confidence: "100%"
-last_updated: "2026-02-12"
+last_updated: "2026-02-13"
 ---
 
 # Webpack Asset Compilation in WordPress Sage Themes
@@ -62,7 +62,13 @@ dist/
 
 Webpack generates `assets-manifest.json` mapping source filenames to versioned output paths, enabling automatic cache invalidation when assets change.
 
-**Generated Manifest (dist/assets-manifest.json):**
+**Cache Invalidation:** Hash changes only when source files change, enabling far-future expires headers (1 year) on CDN.
+
+**Source Confidence:** 100% (both Presser and Kelsey use identical manifest pattern)
+
+## Generated Manifest Structure
+
+Webpack outputs JSON manifest mapping logical asset names to versioned filenames with hash query parameters:
 
 ```json
 {
@@ -73,7 +79,9 @@ Webpack generates `assets-manifest.json` mapping source filenames to versioned o
 }
 ```
 
-**PHP Helper Function (Sage's asset_path()):**
+## PHP Asset Path Helper Function
+
+Sage themes include `asset_path()` helper function that reads manifest and returns versioned URLs:
 
 ```php
 // vendor/roots/sage-lib/src/assets.php
@@ -90,7 +98,9 @@ function asset_path($filename) {
 }
 ```
 
-**Enqueueing Assets (app/setup.php):**
+## WordPress Asset Enqueuing
+
+WordPress enqueue functions use `asset_path()` to load versioned assets with automatic cache busting:
 
 ```php
 add_action('wp_enqueue_scripts', function () {
@@ -102,15 +112,15 @@ add_action('wp_enqueue_scripts', function () {
 }, 100);
 ```
 
-**Cache Invalidation:** Hash changes only when source files change, enabling far-future expires headers (1 year) on CDN.
-
-**Source Confidence:** 100% (both Presser and Kelsey use identical manifest pattern)
-
 ## SCSS Compilation Pipeline
 
 Webpack processes SCSS through sass-loader → postcss-loader → css-extraction, applying autoprefixer, cssnano, and source maps.
 
-**Loader Configuration (Presser - Modern):**
+**Pipeline:** sass-loader (SCSS → CSS) → postcss-loader (autoprefixer + cssnano) → MiniCssExtractPlugin (extract to .css file)
+
+## SCSS Loader Chain Configuration
+
+Webpack configures four loaders in reverse execution order for SCSS compilation:
 
 ```javascript
 // webpack.config.js
@@ -153,7 +163,9 @@ module: {
 },
 ```
 
-**SCSS Entry Point (resources/assets/styles/main.scss):**
+## SCSS Entry Point Structure
+
+Sage themes organize SCSS imports with variables/mixins first, then base styles, layouts, and components:
 
 ```scss
 // Import variables and mixins first
@@ -174,29 +186,33 @@ module: {
 @use 'components/cards';
 ```
 
-**PostCSS Processing:**
+## Autoprefixer Vendor Prefix Injection
 
-1. **Autoprefixer:** Adds vendor prefixes for browser compatibility
-   ```scss
-   // Input:
-   .element { display: flex; }
+PostCSS autoprefixer adds browser-specific vendor prefixes for CSS properties requiring compatibility shims:
 
-   // Output:
-   .element {
-     display: -webkit-box;
-     display: -ms-flexbox;
-     display: flex;
-   }
-   ```
+```scss
+// Input:
+.element { display: flex; }
 
-2. **CSSNano:** Minifies CSS (production only)
-   ```css
-   /* Before: 45 KB */
-   .button { background-color: #3498db; border-radius: 4px; }
+// Output:
+.element {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+}
+```
 
-   /* After: 32 KB (29% reduction) */
-   .button{background-color:#3498db;border-radius:4px}
-   ```
+## CSSNano Minification
+
+CSSNano minifies production CSS by removing whitespace, comments, and optimizing declarations (29% size reduction measured):
+
+```css
+/* Before: 45 KB */
+.button { background-color: #3498db; border-radius: 4px; }
+
+/* After: 32 KB (29% reduction) */
+.button{background-color:#3498db;border-radius:4px}
+```
 
 **Source Maps:** Enabled in development for debugging compiled CSS back to source SCSS files.
 
@@ -206,7 +222,15 @@ module: {
 
 Babel transpiles modern JavaScript (ES2015+) to ES5 for browser compatibility, with polyfills for unsupported features.
 
-**Babel Configuration (Presser - Modern):**
+**Bundle Size Impact:**
+- Without polyfills: 45 KB (modern browsers only)
+- With polyfills: 78 KB (+73%, supports IE11)
+
+**Source Confidence:** 100% (Presser uses Babel 7, Kelsey uses Buble - lighter alternative)
+
+## Babel Preset Configuration
+
+Babel preset-env targets last 2 browser versions with automatic polyfill injection for used features only:
 
 ```javascript
 // babel.config.cjs
@@ -223,7 +247,9 @@ module.exports = {
 };
 ```
 
-**Webpack Babel Loader:**
+## Webpack Babel Loader Integration
+
+Webpack applies babel-loader to JavaScript files with caching enabled for faster subsequent builds:
 
 ```javascript
 // webpack.config.js
@@ -243,7 +269,9 @@ module: {
 },
 ```
 
-**Transpilation Example:**
+## ES2015+ to ES5 Transpilation Example
+
+Babel converts async/await syntax to regeneratorRuntime polyfill for IE11 compatibility:
 
 ```javascript
 // Source (resources/assets/scripts/main.js):
@@ -268,7 +296,9 @@ var fetchPosts = function() {
 };
 ```
 
-**Polyfills (automatically injected via useBuiltIns: 'usage'):**
+## Automatic Polyfill Injection
+
+Babel analyzes source code and injects only required polyfills based on features used:
 
 ```javascript
 // Only includes polyfills for features used in source code:
@@ -277,17 +307,22 @@ import "core-js/modules/es.array.filter";
 import "regenerator-runtime/runtime";
 ```
 
-**Bundle Size Impact:**
-- Without polyfills: 45 KB (modern browsers only)
-- With polyfills: 78 KB (+73%, supports IE11)
-
-**Source Confidence:** 100% (Presser uses Babel 7, Kelsey uses Buble - lighter alternative)
-
 ## Development vs Production Builds
 
 Webpack applies environment-specific optimizations, with development prioritizing fast rebuilds and production prioritizing bundle size.
 
-**Environment Detection:**
+**Build Time Comparison (Presser):**
+
+| Environment | Build Time | Bundle Size (JS) | Bundle Size (CSS) |
+|-------------|------------|------------------|-------------------|
+| Development | 3.2s | 198 KB | 142 KB |
+| Production | 12.8s | 82 KB (59% smaller) | 61 KB (57% smaller) |
+
+**Source Confidence:** 100% (measured from Presser build logs)
+
+## Environment-Specific Webpack Configuration
+
+Webpack detects NODE_ENV environment variable to enable production optimizations (minification, tree shaking):
 
 ```javascript
 // webpack.config.js
@@ -311,7 +346,9 @@ export default {
 };
 ```
 
-**Development Build Features:**
+## Development Build Characteristics
+
+Development builds prioritize fast rebuild times (2-3 seconds) with source maps and unminified bundles:
 
 ```bash
 # Start webpack watch mode
@@ -325,7 +362,9 @@ yarn start
 # - Console logs preserved
 ```
 
-**Production Build Features:**
+## Production Build Optimizations
+
+Production builds apply aggressive minification, tree shaking, and console.log removal (60% size reduction):
 
 ```bash
 # Build optimized bundles
@@ -338,15 +377,6 @@ yarn build:production
 # - Tree shaking (dead code elimination)
 # - Build time: 8-15 seconds
 ```
-
-**Build Time Comparison (Presser):**
-
-| Environment | Build Time | Bundle Size (JS) | Bundle Size (CSS) |
-|-------------|------------|------------------|-------------------|
-| Development | 3.2s | 198 KB | 142 KB |
-| Production | 12.8s | 82 KB (59% smaller) | 61 KB (57% smaller) |
-
-**Source Confidence:** 100% (measured from Presser build logs)
 
 ## BrowserSync for Live Reload
 
@@ -407,7 +437,16 @@ if (module.hot) {
 
 Webpack separates vendor libraries from application code for improved caching and parallel loading.
 
-**Split Chunks Configuration (Presser):**
+**Caching Benefits:**
+- **Vendors bundle:** Changes rarely, cached for 1 year
+- **Main bundle:** Changes frequently, cached for 1 day
+- **Result:** Repeat visitors only re-download 25 KB instead of 80 KB
+
+**Source Confidence:** 100% (Presser implements vendor splitting, Kelsey uses basic optimization)
+
+## Vendor Bundle Split Configuration
+
+Webpack splitChunks extracts node_modules into separate vendors.js bundle for long-term caching:
 
 ```javascript
 // webpack.config.js
@@ -430,7 +469,9 @@ optimization: {
 },
 ```
 
-**Output Structure:**
+## Split Bundle Output Structure
+
+Webpack generates three separate bundles for main application code, vendor libraries, and webpack runtime:
 
 ```
 dist/scripts/
@@ -439,7 +480,9 @@ dist/scripts/
 └── runtime.js?abc123        # Webpack runtime (2 KB)
 ```
 
-**Enqueue Order (app/setup.php):**
+## WordPress Enqueue Order
+
+WordPress enqueues vendor bundle first with main bundle depending on vendors for proper load order:
 
 ```php
 // Vendors loaded first (cached long-term)
@@ -449,13 +492,9 @@ wp_enqueue_script('sage/vendors.js', asset_path('scripts/vendors.js'), [], null,
 wp_enqueue_script('sage/main.js', asset_path('scripts/main.js'), ['sage/vendors.js'], null, true);
 ```
 
-**Caching Benefits:**
+## Tree Shaking Dead Code Elimination
 
-- **Vendors bundle:** Changes rarely (only when dependencies updated), cached for 1 year
-- **Main bundle:** Changes frequently (every feature), cached for 1 day
-- **Result:** Repeat visitors only re-download 25 KB (main) instead of 80 KB (combined)
-
-**Tree Shaking (Dead Code Elimination):**
+Webpack removes unused exports when importing from ES modules (93% size reduction with lodash-es):
 
 ```javascript
 // Source: Import entire lodash library
@@ -469,13 +508,17 @@ const result = compact([0, 1, false, 2, '', 3]);
 // Bundle size: 70 KB → 5 KB (93% reduction)
 ```
 
-**Source Confidence:** 100% (Presser implements vendor splitting, Kelsey uses basic optimization)
-
 ## Image and Font Asset Handling
 
 Webpack processes images and fonts through file-loader, copying assets to `dist/` with hash-based naming for cache invalidation.
 
-**File Loader Configuration:**
+**Pattern:** Small images (<8KB) inline as base64 (reduce HTTP requests), large images load separately with cache-busting hashes.
+
+**Source Confidence:** 100% (both themes use file-loader for assets)
+
+## Asset Resource Loader Configuration
+
+Webpack asset/resource loader handles images and fonts with automatic hash injection and base64 inlining for small files:
 
 ```javascript
 // webpack.config.js
@@ -504,7 +547,9 @@ module: {
 },
 ```
 
-**Image Usage in JavaScript:**
+## JavaScript Image Imports
+
+JavaScript imports images as module exports resolving to versioned dist URLs:
 
 ```javascript
 // resources/assets/scripts/main.js
@@ -514,7 +559,9 @@ document.querySelector('.header__logo').src = logo;
 // Output: src="/dist/images/logo.a1b2c3d4.svg"
 ```
 
-**Image Usage in SCSS:**
+## SCSS Background Image References
+
+SCSS url() references automatically resolve to hashed dist paths during compilation:
 
 ```scss
 // resources/assets/styles/components/_hero.scss
@@ -524,7 +571,9 @@ document.querySelector('.header__logo').src = logo;
 }
 ```
 
-**Font Declaration:**
+## Web Font @font-face Declarations
+
+SCSS @font-face declarations reference font files with automatic hash injection for cache busting:
 
 ```scss
 // resources/assets/styles/common/_fonts.scss
@@ -537,7 +586,9 @@ document.querySelector('.header__logo').src = logo;
 }
 ```
 
-**Inline Images (<8KB):**
+## Base64 Inline Images
+
+Webpack inlines images smaller than 8KB as base64 data URLs to reduce HTTP requests:
 
 ```scss
 // Small icon (3 KB):
@@ -547,15 +598,17 @@ document.querySelector('.header__logo').src = logo;
 .icon { background: url('data:image/svg+xml;base64,PHN2ZyB3aWR0...'); }
 ```
 
-**Pattern:** Small images inline as base64 (reduce HTTP requests), large images load separately with cache-busting hashes.
-
-**Source Confidence:** 100% (both themes use file-loader for assets)
-
 ## Linting Integration (ESLint + Stylelint)
 
 Webpack enforces code quality standards during compilation using ESLint for JavaScript and Stylelint for SCSS.
 
-**ESLint Webpack Plugin (Presser - Modern):**
+**Pattern:** Development builds show warnings, production builds fail on errors. Forces code quality before deployment.
+
+**Source Confidence:** 100% (Presser uses ESLint 9 + Stylelint 16, Kelsey uses legacy versions)
+
+## Webpack Linter Plugin Configuration
+
+Webpack integrates ESLint and Stylelint plugins with environment-specific error handling (fail on error in production only):
 
 ```javascript
 // webpack.config.js
@@ -577,7 +630,9 @@ const plugins = [
 ];
 ```
 
-**ESLint Configuration (eslint.config.cjs):**
+## ESLint JavaScript Rules
+
+ESLint 9 flat config defines browser globals and WordPress-specific rules for JavaScript linting:
 
 ```javascript
 // eslint.config.cjs (Presser - ESLint 9 flat config)
@@ -604,7 +659,9 @@ export default [
 ];
 ```
 
-**Stylelint Configuration (.stylelintrc.cjs):**
+## Stylelint SCSS Rules
+
+Stylelint extends standard SCSS config with custom selector naming patterns (camelCase with BEM):
 
 ```javascript
 // .stylelintrc.cjs
@@ -619,7 +676,9 @@ module.exports = {
 };
 ```
 
-**Build Output with Linting Errors:**
+## Linting Error Output Example
+
+Webpack build output displays linting errors with file locations and rule names for quick fixing:
 
 ```bash
 $ yarn build
@@ -636,15 +695,15 @@ resources/assets/styles/components/_button.scss
 Build failed with 2 errors and 1 warning.
 ```
 
-**Pattern:** Development builds show warnings, production builds fail on errors. Forces code quality before deployment.
-
-**Source Confidence:** 100% (Presser uses ESLint 9 + Stylelint 16, Kelsey uses legacy versions)
-
 ## npm Scripts and Build Commands
 
 Sage themes standardize build commands in `package.json` for consistent developer experience across projects.
 
-**Standard npm Scripts (Presser):**
+**Source Confidence:** 100% (identical script structure across both themes)
+
+## Package.json Build Scripts
+
+Sage themes define standard npm scripts for development, production builds, linting, and cleaning:
 
 ```json
 {
@@ -664,9 +723,10 @@ Sage themes standardize build commands in `package.json` for consistent develope
 }
 ```
 
-**Common Workflows:**
+## Development Watch Mode
 
-**Development:**
+Development watch mode starts webpack with file watching and BrowserSync for live reloading (2-3 second rebuilds):
+
 ```bash
 yarn start
 # - Watches for file changes
@@ -675,7 +735,10 @@ yarn start
 # - Shows linting warnings
 ```
 
-**Production Build:**
+## Production Build Command
+
+Production build command enables minification, tree shaking, and removes console logs (8-15 second build time):
+
 ```bash
 yarn build:production
 # - Minifies JavaScript and CSS
@@ -685,14 +748,20 @@ yarn build:production
 # - Build time: 8-15 seconds
 ```
 
-**Clean Build:**
+## Clean Rebuild Workflow
+
+Clean rebuild removes old dist folder before rebuilding to eliminate stale artifacts:
+
 ```bash
 yarn rmdist && yarn build:production
 # - Removes old dist/ folder
 # - Rebuilds from scratch
 ```
 
-**Lint Only:**
+## Linting Commands
+
+Linting commands run ESLint and Stylelint without compilation for fast code quality checks (1-2 seconds):
+
 ```bash
 yarn lint
 # - Runs ESLint + Stylelint
@@ -700,7 +769,10 @@ yarn lint
 # - Fast: 1-2 seconds
 ```
 
-**Auto-fix Linting Issues:**
+## Auto-fix Linting Issues
+
+Auto-fix commands automatically correct fixable linting violations while preserving manual-only issues:
+
 ```bash
 yarn lint:scripts:fix
 yarn lint:styles:fix
@@ -708,13 +780,23 @@ yarn lint:styles:fix
 # - Preserves manual-fix-only issues
 ```
 
-**Source Confidence:** 100% (identical script structure across both themes)
-
 ## Performance Optimization Techniques
 
 Production webpack builds apply aggressive optimizations to reduce bundle sizes and improve load times.
 
-**Terser JavaScript Minification:**
+**Performance Results (Presser Production):**
+
+| Optimization | Before | After | Improvement |
+|--------------|--------|-------|-------------|
+| JavaScript minification | 198 KB | 82 KB | 59% smaller |
+| CSS minification | 142 KB | 61 KB | 57% smaller |
+| Console log removal | 82 KB | 78 KB | 5% smaller |
+| Tree shaking | 78 KB | 72 KB | 8% smaller |
+| **Total** | **340 KB** | **143 KB** | **58% reduction** |
+
+## Terser JavaScript Minification
+
+Terser minifier removes console logs, debugger statements, comments, and applies compression (59% size reduction):
 
 ```javascript
 // webpack.config.js
@@ -737,7 +819,9 @@ optimization: {
 },
 ```
 
-**CSS Minification with CSSNano:**
+## CSSNano CSS Minification
+
+CSSNano minifies CSS by removing comments, normalizing whitespace, and optimizing color values (57% size reduction):
 
 ```javascript
 // webpack.config.js
@@ -759,7 +843,9 @@ optimization: {
 },
 ```
 
-**Cache Loader for Faster Rebuilds:**
+## Cache Loader for Faster Rebuilds
+
+Cache-loader stores compiled output to disk enabling faster subsequent builds by skipping unchanged files:
 
 ```javascript
 // webpack.config.js
@@ -776,16 +862,6 @@ module: {
 },
 ```
 
-**Performance Results (Presser Production):**
-
-| Optimization | Before | After | Improvement |
-|--------------|--------|-------|-------------|
-| JavaScript minification | 198 KB | 82 KB | 59% smaller |
-| CSS minification | 142 KB | 61 KB | 57% smaller |
-| Console log removal | 82 KB | 78 KB | 5% smaller |
-| Tree shaking | 78 KB | 72 KB | 8% smaller |
-| **Total** | **340 KB** | **143 KB** | **58% reduction** |
-
 **Gzip Compression (server-side):**
 
 | Asset | Uncompressed | Gzipped | Compression |
@@ -800,27 +876,29 @@ module: {
 
 Common webpack errors and resolutions from production Sage theme development.
 
-**Issue 1: "Module not found: Error: Can't resolve 'sass'"**
+**Source Confidence:** 100% (documented in Presser/Kelsey development notes)
 
-**Cause:** Missing sass package (dart-sass required for modern SCSS)
+## Module Not Found Sass Error
+
+Webpack fails with "Module not found: Error: Can't resolve 'sass'" when dart-sass package missing:
 
 **Solution:**
 ```bash
 yarn add sass sass-loader --dev
 ```
 
-**Issue 2: "TypeError: MiniCssExtractPlugin is not a constructor"**
+## MiniCssExtractPlugin Constructor Error
 
-**Cause:** Webpack 5 requires updated MiniCssExtractPlugin version
+Webpack 5 throws "TypeError: MiniCssExtractPlugin is not a constructor" with outdated plugin version:
 
 **Solution:**
 ```bash
 yarn add mini-css-extract-plugin@^2.0.0 --dev
 ```
 
-**Issue 3: "BrowserSync not injecting CSS changes"**
+## BrowserSync CSS Injection Failure
 
-**Cause:** Incorrect BrowserSync proxy configuration
+BrowserSync fails to inject CSS changes when proxy URL points to BrowserSync port instead of WordPress server:
 
 **Solution:**
 ```javascript
@@ -831,9 +909,9 @@ new BrowserSyncPlugin({
 })
 ```
 
-**Issue 4: "Webpack build hangs at 95% emitting"**
+## Webpack Build Hangs at 95%
 
-**Cause:** File permissions or disk space issues
+Webpack build freezes at 95% emitting phase due to file permission or disk space issues:
 
 **Solution:**
 ```bash
@@ -847,9 +925,9 @@ df -h
 yarn build:production
 ```
 
-**Issue 5: "ESLint: Failed to load plugin '@typescript-eslint'"**
+## ESLint TypeScript Plugin Error
 
-**Cause:** TypeScript ESLint plugin missing (not used in project)
+ESLint fails with "Failed to load plugin '@typescript-eslint'" when TypeScript plugin configured but not installed:
 
 **Solution:**
 ```javascript
@@ -860,17 +938,15 @@ export default [
 ];
 ```
 
-**Issue 6: "assets-manifest.json not found"**
+## Assets Manifest Not Found Error
 
-**Cause:** Webpack build not run before WordPress activation
+WordPress theme throws "assets-manifest.json not found" when activated before running webpack build:
 
 **Solution:**
 ```bash
 yarn build
 # Must run before activating theme in WordPress
 ```
-
-**Source Confidence:** 100% (documented in Presser/Kelsey development notes)
 
 ## Related Patterns
 

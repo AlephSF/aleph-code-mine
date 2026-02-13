@@ -9,7 +9,7 @@ audience: "backend"
 complexity: "advanced"
 doc_type: "standard"
 source_confidence: "29%"
-last_updated: "2026-02-12"
+last_updated: "2026-02-13"
 ---
 
 # MVC Controllers Pattern with SoberWP for WordPress Themes
@@ -31,7 +31,7 @@ Controllers provide data to views without template logic, returning arrays/objec
 
 Controllers extend `Sober\Controller\Controller` base class, placed in `app/Controllers/` directory with PSR-4 `App\Controllers` namespace. Public methods automatically available as variables in corresponding Blade templates.
 
-### Base Controller (app/Controllers/App.php)
+## Base Controller (app/Controllers/App.php)
 
 ```php
 <?php
@@ -117,7 +117,7 @@ class App extends Controller
 - Static methods accessible without controller instance
 - All child controllers inherit methods
 
-### Template-Specific Controller (app/Controllers/FrontPage.php)
+## Template-Specific Controller (app/Controllers/FrontPage.php)
 
 ```php
 <?php
@@ -190,7 +190,7 @@ class FrontPage extends Controller
 - Methods execute once per request, results cached
 - Inherits `siteName()`, `siteDescription()`, `title()` from `App` controller
 
-### Archive Controller (app/Controllers/Archive.php)
+## Archive Controller (app/Controllers/Archive.php)
 
 ```php
 <?php
@@ -259,7 +259,7 @@ class Archive extends Controller
 }
 ```
 
-### Single Post Controller (app/Controllers/SinglePost.php)
+## Single Post Controller (app/Controllers/SinglePost.php)
 
 ```php
 <?php
@@ -349,7 +349,7 @@ SoberWP Controller automatically binds controllers to templates based on WordPre
 
 Controller public methods become Blade variables accessible via `$methodName` syntax. Method names converted from camelCase to $camelCase variable.
 
-### Controller Method → Blade Variable
+## Controller Method → Blade Variable
 
 ```php
 // app/Controllers/FrontPage.php
@@ -400,7 +400,7 @@ public function ctaSection() {
 
 Controllers support both static methods (called explicitly) and instance methods (auto-bound to variables). Use static for utility functions called from within templates, instance for data binding.
 
-### Static Methods (Explicit Calls)
+## Static Methods (Explicit Calls)
 
 ```php
 // app/Controllers/App.php
@@ -423,7 +423,7 @@ public static function formatDate($date)
 <time>{{ App\formatDate($post->post_date) }}</time>
 ```
 
-### Instance Methods (Auto-Binding)
+## Instance Methods (Auto-Binding)
 
 ```php
 // app/Controllers/FrontPage.php
@@ -446,7 +446,7 @@ public function featuredPosts()
 
 ## Advanced Controller Patterns
 
-### Returning Collections
+## Returning Collections
 
 ```php
 // app/Controllers/Archive.php
@@ -481,7 +481,7 @@ public function posts()
 @endforeach
 ```
 
-### Conditional Data Loading
+## Conditional Data Loading
 
 ```php
 // app/Controllers/Page.php
@@ -499,7 +499,7 @@ public function sidebar()
 }
 ```
 
-### Nested Data Structures
+## Nested Data Structures
 
 ```php
 // app/Controllers/FrontPage.php
@@ -555,7 +555,7 @@ public function homeData()
 
 Controllers execute once per request, results cached in memory. Expensive queries run once regardless of how many times variable accessed in template.
 
-### Efficient Data Fetching
+## Efficient Data Fetching
 
 ```php
 // app/Controllers/Archive.php
@@ -588,7 +588,7 @@ public function posts()
 }
 ```
 
-### Lazy Loading
+## Lazy Loading
 
 ```php
 // app/Controllers/SinglePost.php
@@ -621,7 +621,7 @@ public function comments()
 
 Controllers improve testability by isolating business logic from views. Unit test controller methods without rendering templates.
 
-### PHPUnit Test Example
+## PHPUnit Test Example
 
 ```php
 <?php
@@ -656,7 +656,7 @@ class FrontPageControllerTest extends TestCase
 
 ## Common Patterns
 
-### Pagination
+## Pagination
 
 ```php
 // app/Controllers/Archive.php
@@ -673,7 +673,7 @@ public function pagination()
 }
 ```
 
-### Breadcrumbs
+## Breadcrumbs
 
 ```php
 // app/Controllers/App.php (base controller)
@@ -703,7 +703,7 @@ public static function breadcrumbs()
 }
 ```
 
-### Sidebar Configuration
+## Sidebar Configuration
 
 ```php
 // app/Controllers/App.php (base controller)

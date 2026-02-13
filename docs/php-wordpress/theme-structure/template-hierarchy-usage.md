@@ -9,7 +9,7 @@ audience: "frontend"
 complexity: "beginner"
 doc_type: "standard"
 source_confidence: "100%"
-last_updated: "2026-02-12"
+last_updated: "2026-02-13"
 ---
 
 # WordPress Template Hierarchy in Blade vs PHP Themes
@@ -22,7 +22,7 @@ Template hierarchy checks files in specific order: most-specific → least-speci
 
 ## Template Hierarchy by Request Type
 
-### Homepage
+## Homepage
 
 ```
 Hierarchy (in order checked):
@@ -36,7 +36,7 @@ Hierarchy (in order checked):
 - `home.php`: Blog posts index
 - `index.php`: Ultimate fallback
 
-### Single Post
+## Single Post
 
 ```
 Hierarchy (in order checked):
@@ -51,7 +51,7 @@ Hierarchy (in order checked):
 - Post slug "hello-world": `single-post-hello-world.php` → `single-post.php` → `single.php`
 - Custom post type "career": `single-career.php` → `single.php`
 
-### Page
+## Page
 
 ```
 Hierarchy (in order checked):
@@ -68,7 +68,7 @@ Hierarchy (in order checked):
 - Page ID 42: `page-42.php` → `page.php`
 - Full Width template: `template-fullwidth.php` (selected in Page Attributes)
 
-### Category Archive
+## Category Archive
 
 ```
 Hierarchy (in order checked):
@@ -83,7 +83,7 @@ Hierarchy (in order checked):
 - Category slug "news": `category-news.php` → `category.php` → `archive.php`
 - Category ID 6: `category-6.php` → `category.php`
 
-### Tag Archive
+## Tag Archive
 
 ```
 Hierarchy (in order checked):
@@ -94,7 +94,7 @@ Hierarchy (in order checked):
 5. index.php / index.blade.php
 ```
 
-### Custom Taxonomy Archive
+## Custom Taxonomy Archive
 
 ```
 Hierarchy (in order checked):
@@ -108,7 +108,7 @@ Hierarchy (in order checked):
 **Example (genre taxonomy, term "action"):**
 `taxonomy-genre-action.php` → `taxonomy-genre.php` → `taxonomy.php` → `archive.php`
 
-### Custom Post Type Archive
+## Custom Post Type Archive
 
 ```
 Hierarchy (in order checked):
@@ -120,7 +120,7 @@ Hierarchy (in order checked):
 **Example (careers CPT):**
 `archive-career.php` → `archive.php`
 
-### Author Archive
+## Author Archive
 
 ```
 Hierarchy (in order checked):
@@ -131,7 +131,7 @@ Hierarchy (in order checked):
 5. index.php / index.blade.php
 ```
 
-### Date Archive
+## Date Archive
 
 ```
 Hierarchy (in order checked):
@@ -140,7 +140,7 @@ Hierarchy (in order checked):
 3. index.php / index.blade.php
 ```
 
-### Search Results
+## Search Results
 
 ```
 Hierarchy (in order checked):
@@ -148,7 +148,7 @@ Hierarchy (in order checked):
 2. index.php / index.blade.php
 ```
 
-### 404 Error
+## 404 Error
 
 ```
 Hierarchy (in order checked):
@@ -156,7 +156,7 @@ Hierarchy (in order checked):
 2. index.php / index.blade.php
 ```
 
-### Attachment (Media)
+## Attachment (Media)
 
 ```
 Hierarchy (in order checked):
@@ -169,7 +169,7 @@ Hierarchy (in order checked):
 
 ## Blade vs PHP Template Files
 
-### Traditional PHP Template
+## Traditional PHP Template
 
 ```php
 <!-- single.php -->
@@ -191,7 +191,7 @@ Hierarchy (in order checked):
 <?php get_footer(); ?>
 ```
 
-### Blade Template (Equivalent)
+## Blade Template (Equivalent)
 
 ```blade
 {{-- single.blade.php --}}
@@ -224,7 +224,7 @@ Hierarchy (in order checked):
 
 Both Blade and PHP themes use Template Name comment to register custom page templates.
 
-### PHP Custom Template
+## PHP Custom Template
 
 ```php
 <?php
@@ -245,7 +245,7 @@ get_header();
 <?php get_footer(); ?>
 ```
 
-### Blade Custom Template
+## Blade Custom Template
 
 ```blade
 {{--
@@ -268,7 +268,7 @@ get_header();
 
 WordPress conditional tags determine which template loads.
 
-### Conditional Tags
+## Conditional Tags
 
 | Condition | Function | Template |
 |-----------|----------|----------|
@@ -302,7 +302,7 @@ WordPress conditional tags determine which template loads.
 
 Break templates into reusable parts via `get_template_part()` (PHP) or `@include()` (Blade).
 
-### PHP Template Parts
+## PHP Template Parts
 
 ```php
 <!-- archive.php -->
@@ -316,7 +316,7 @@ Break templates into reusable parts via `get_template_part()` (PHP) or `@include
 <?php endwhile; ?>
 ```
 
-### Blade Template Parts
+## Blade Template Parts
 
 ```blade
 {{-- archive.blade.php --}}

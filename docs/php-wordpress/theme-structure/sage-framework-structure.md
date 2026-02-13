@@ -9,7 +9,7 @@ audience: "fullstack"
 complexity: "intermediate"
 doc_type: "standard"
 source_confidence: "29%"
-last_updated: "2026-02-12"
+last_updated: "2026-02-13"
 ---
 
 # Sage Framework MVC Architecture for WordPress Themes
@@ -70,7 +70,7 @@ kelsey/
 
 Sage uses Composer PSR-4 autoloading to organize PHP classes into namespaces, eliminating manual `require` statements. All classes in `app/` directory use `App\` namespace and autoload on demand.
 
-### Composer Configuration
+## Composer Configuration
 
 ```json
 {
@@ -223,7 +223,7 @@ if (version_compare('4.7.0', get_bloginfo('version'), '>=')) {
 
 Sage externalizes configuration into dedicated files loaded by Dependency Injection Container. Configuration accessed via `config()` helper throughout theme.
 
-### config/assets.php - Asset Manifest
+## config/assets.php - Asset Manifest
 
 ```php
 <?php
@@ -251,7 +251,7 @@ wp_enqueue_style('sage/main.css', asset_path('styles/main.css'), false, null);
 wp_enqueue_script('sage/main.js', asset_path('scripts/main.js'), ['jquery'], null, true);
 ```
 
-### config/theme.php - Theme Support
+## config/theme.php - Theme Support
 
 ```php
 <?php
@@ -271,7 +271,7 @@ return [
 ];
 ```
 
-### config/view.php - Blade Engine
+## config/view.php - Blade Engine
 
 ```php
 <?php
@@ -293,7 +293,7 @@ return [
 
 Controllers provide data to views, separating business logic from presentation. Sage uses `soberwp/controller` package to bind controller methods to WordPress template hierarchy automatically.
 
-### Base Controller (app/Controllers/App.php)
+## Base Controller (app/Controllers/App.php)
 
 ```php
 <?php
@@ -339,7 +339,7 @@ class App extends Controller
 
 **Base Controller:** Loaded for **all** templates, provides global data.
 
-### Template-Specific Controller (app/Controllers/FrontPage.php)
+## Template-Specific Controller (app/Controllers/FrontPage.php)
 
 ```php
 <?php
@@ -599,7 +599,7 @@ Sage uses webpack for asset compilation with scripts for development (watch mode
 
 Sage includes ESLint (JavaScript), Stylelint (CSS/SCSS), PHPCS (PHP), and EditorConfig for consistent code formatting across team. All linting runs on `yarn test` before deployment.
 
-### .editorconfig
+## .editorconfig
 
 ```ini
 root = true
@@ -616,7 +616,7 @@ insert_final_newline = true
 trim_trailing_whitespace = false
 ```
 
-### phpcs.xml
+## phpcs.xml
 
 ```xml
 <?xml version="1.0"?>
@@ -634,7 +634,7 @@ trim_trailing_whitespace = false
 
 **Run:** `composer test` or `vendor/bin/phpcs`
 
-### .eslintrc.js
+## .eslintrc.js
 
 ```javascript
 module.exports = {
@@ -653,7 +653,7 @@ module.exports = {
 
 **Run:** `yarn lint:scripts`
 
-### .stylelintrc.js
+## .stylelintrc.js
 
 ```javascript
 module.exports = {

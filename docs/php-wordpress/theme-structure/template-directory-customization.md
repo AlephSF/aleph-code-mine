@@ -9,7 +9,7 @@ audience: "fullstack"
 complexity: "advanced"
 doc_type: "standard"
 source_confidence: "100%"
-last_updated: "2026-02-12"
+last_updated: "2026-02-13"
 ---
 
 # WordPress Template Directory Customization for Sage Themes

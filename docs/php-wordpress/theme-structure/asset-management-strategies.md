@@ -9,7 +9,7 @@ audience: "fullstack"
 complexity: "intermediate"
 doc_type: "standard"
 source_confidence: "57%"
-last_updated: "2026-02-12"
+last_updated: "2026-02-13"
 ---
 
 # Asset Management Strategies: webpack vs Manual Enqueue
@@ -24,7 +24,7 @@ WordPress themes use two primary asset management strategies: **webpack build pi
 
 ## Webpack Asset Pipeline (57% - 8 themes)
 
-### Configuration Structure
+## Configuration Structure
 
 ```
 resources/assets/
@@ -45,7 +45,15 @@ resources/assets/
 └── fonts/
 ```
 
-### webpack.config.js Example
+## webpack.config.js Example
+
+Sage themes use webpack for asset compilation with hash-based cache busting, SCSS compilation, and BrowserSync live reload integration.
+
+**Components:** Entry points, loaders (Babel, SCSS, file-loader), plugins (CleanWebpack, MiniCssExtract, Manifest, BrowserSync), optimization (code splitting)
+
+## Complete Webpack Configuration
+
+Webpack configuration includes entry points, loaders for JavaScript/SCSS/images, plugins for optimization, and code splitting for vendor bundles:
 
 ```javascript
 const path = require('path');
@@ -131,7 +139,7 @@ module.exports = {
 };
 ```
 
-### Asset Manifest Pattern
+## Asset Manifest Pattern
 
 **Generated Manifest (dist/assets.json):**
 ```json
@@ -169,7 +177,7 @@ add_action('wp_enqueue_scripts', function () {
 
 **Result:** URLs automatically use hashed filenames for cache-busting.
 
-### npm Scripts
+## npm Scripts
 
 ```json
 {
@@ -184,7 +192,7 @@ add_action('wp_enqueue_scripts', function () {
 **Development:** `yarn start` - Watch mode + BrowserSync
 **Production:** `yarn build:production` - Minification + optimization
 
-### Performance Benefits
+## Performance Benefits
 
 **Minification:**
 - CSS: 487 KB → 134 KB (72% reduction)
@@ -201,7 +209,7 @@ vendor.js (node_modules dependencies)
 
 ## Manual wp_enqueue Pattern (43% - 6 themes)
 
-### Directory Structure
+## Directory Structure
 
 ```
 css/
@@ -212,7 +220,7 @@ js/
 └── custom-admin.js   # Admin JavaScript
 ```
 
-### Manual Enqueue (functions.php)
+## Manual Enqueue (functions.php)
 
 ```php
 /**
@@ -256,7 +264,7 @@ function site_scripts() {
 add_action('wp_enqueue_scripts', 'site_scripts');
 ```
 
-### Versioning Strategies
+## Versioning Strategies
 
 **1. Manual Version (Basic):**
 ```php
@@ -284,7 +292,7 @@ wp_enqueue_style('styles',
 );
 ```
 
-### Limitations
+## Limitations
 
 - **No minification:** CSS/JS served uncompressed in production
 - **No concatenation:** Multiple HTTP requests (10+ files common)

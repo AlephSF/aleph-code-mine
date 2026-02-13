@@ -9,7 +9,7 @@ audience: "fullstack"
 complexity: "beginner"
 doc_type: "standard"
 source_confidence: "50%"
-last_updated: "2026-02-12"
+last_updated: "2026-02-13"
 ---
 
 # Traditional WordPress Theme Organization with inc/ Directory Pattern
@@ -243,7 +243,7 @@ register_nav_menus(array(
 
 Separate feature-specific code into dedicated files in `inc/` directory, loaded via `require` in `functions.php`. Each file handles single responsibility (CPT registration, widgets, customizer, helpers).
 
-### CPT Registration (inc/careers-setup.php)
+## CPT Registration (inc/careers-setup.php)
 
 ```php
 <?php
@@ -282,7 +282,7 @@ add_action('init', 'register_careers_cpt');
 
 **Pattern:** One file per CPT or taxonomy. Prevents `functions.php` from becoming monolithic.
 
-### Custom Functions (inc/custom-functions.php)
+## Custom Functions (inc/custom-functions.php)
 
 ```php
 <?php
@@ -343,7 +343,7 @@ function calculate_reading_time($content) {
 
 **Pattern:** Reusable functions called from templates, not WordPress hooks.
 
-### Template Tags (inc/template-tags.php)
+## Template Tags (inc/template-tags.php)
 
 ```php
 <?php
@@ -433,7 +433,7 @@ function display_social_share() {
 <?php get_footer(); ?>
 ```
 
-### Theme Customizer (inc/customizer.php)
+## Theme Customizer (inc/customizer.php)
 
 ```php
 <?php
@@ -500,7 +500,7 @@ add_action('customize_register', 'customize_register');
 <?php endif; ?>
 ```
 
-### Custom Widgets (inc/widgets/recent-posts-widget.php)
+## Custom Widgets (inc/widgets/recent-posts-widget.php)
 
 ```php
 <?php
@@ -595,7 +595,7 @@ add_action('widgets_init', 'register_custom_recent_posts_widget');
 
 WordPress template hierarchy determines which template file loads. Traditional themes place all templates in root directory with specific filenames that WordPress recognizes.
 
-### Archive Template (archive.php)
+## Archive Template (archive.php)
 
 ```php
 <?php get_header(); ?>
@@ -671,7 +671,7 @@ WordPress template hierarchy determines which template file loads. Traditional t
 
 **Template Hierarchy:** WordPress checks for specific templates in order: `category-{slug}.php`, `category-{id}.php`, `category.php`, `archive.php`, `index.php`.
 
-### Single Post Template (single.php)
+## Single Post Template (single.php)
 
 ```php
 <?php get_header(); ?>
@@ -761,7 +761,7 @@ WordPress template hierarchy determines which template file loads. Traditional t
 <?php get_footer(); ?>
 ```
 
-### Page Template (page.php)
+## Page Template (page.php)
 
 ```php
 <?php get_header(); ?>
@@ -796,7 +796,7 @@ WordPress template hierarchy determines which template file loads. Traditional t
 <?php get_footer(); ?>
 ```
 
-### Custom Page Template (template-fullwidth.php)
+## Custom Page Template (template-fullwidth.php)
 
 ```php
 <?php
@@ -839,7 +839,7 @@ get_header();
 
 Break repeated markup into reusable template parts loaded via `get_template_part()`. Reduces duplication and improves maintainability.
 
-### Using Template Parts
+## Using Template Parts
 
 ```php
 // archive.php
@@ -857,7 +857,7 @@ Break repeated markup into reusable template parts loaded via `get_template_part
 <?php endwhile; ?>
 ```
 
-### Template Part File (content.php)
+## Template Part File (content.php)
 
 ```php
 <article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
@@ -890,7 +890,7 @@ Break repeated markup into reusable template parts loaded via `get_template_part
 </article>
 ```
 
-### Custom Post Type Template Part (content-career.php)
+## Custom Post Type Template Part (content-career.php)
 
 ```php
 <article id="post-<?php the_ID(); ?>" <?php post_class('career-listing'); ?>>

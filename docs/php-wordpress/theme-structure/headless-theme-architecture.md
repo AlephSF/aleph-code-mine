@@ -9,7 +9,7 @@ audience: "fullstack"
 complexity: "intermediate"
 doc_type: "standard"
 source_confidence: "100%"
-last_updated: "2026-02-12"
+last_updated: "2026-02-13"
 ---
 
 # Headless WordPress Theme Architecture Pattern
@@ -74,14 +74,18 @@ Author URI: https://aleph.dev/
 
 WordPress requires `index.php` as ultimate fallback template. Headless themes provide minimal implementation with "silence is golden" comment.
 
-**Minimal index.php:**
+### Minimal Silent index.php
+
+Production headless WordPress themes use empty `index.php` with "silence is golden" comment:
 
 ```php
 <?php
 // Silence is golden
 ```
 
-**Alternative with Debug Message:**
+### Debug-Enabled index.php Alternative
+
+Development environments add helpful debug messages when users access WordPress URL directly:
 
 ```php
 <?php
@@ -111,77 +115,64 @@ if (defined('WP_DEBUG') && WP_DEBUG) {
 
 ## functions.php Responsibilities
 
-Headless theme `functions.php` focuses exclusively on API data formatting, WordPress feature support, and GraphQL enhancements. Zero presentation logic.
-
-**Complete functions.php (Aleph Nothing - 43 lines):**
-
-```php
-<?php
-/**
- * Theme Setup - Post Thumbnail Support
- */
-function policy_theme_setup() {
-    add_theme_support('post-thumbnails', ['page', 'post', 'plc_airlab_posts']);
-}
-add_action('after_setup_theme', 'policy_theme_setup');
-
-/**
- * VIP Block Data API Filter - wpautop for ACF WYSIWYG Fields
- *
- * Ensures WYSIWYG content has proper paragraph tags when consumed via
- * WordPress VIP Block Data API (headless Gutenberg endpoint).
- */
-add_filter('vip_block_data_api__sourced_block_result', function($sourced_block, $block_name, $post_id, $parsed_block) {
-    // Apply wpautop to all ACF WYSIWYG fields in any block
-    if (!empty($sourced_block['attributes']['data']) && is_array($sourced_block['attributes']['data'])) {
-        $data = &$sourced_block['attributes']['data'];
-
-        foreach ($data as $key => &$value) {
-            // Skip field reference keys (prefixed with underscore)
-            if (strpos($key, '_') === 0) {
-                continue;
-            }
-
-            // Check if this field has a corresponding ACF field reference
-            $field_key_ref = '_' . $key;
-            if (!empty($data[$field_key_ref])) {
-                $field_object = get_field_object($data[$field_key_ref]);
-
-                // Apply wpautop to WYSIWYG fields
-                if ($field_object && $field_object['type'] === 'wysiwyg' && !empty($value) && is_string($value)) {
-                    $value = wpautop($value);
-                }
-            }
-        }
-    }
-    return $sourced_block;
-}, 10, 4);
-
-/**
- * GraphQL Term Description Filter - wpautop for Category/Tag Descriptions
- *
- * Formats term descriptions with paragraph tags for GraphQL responses.
- */
-add_filter('graphql_resolve_field', function($result, $source, $args, $context, $info, $type_name, $field_key, $field, $field_resolver) {
-    // Check if this is a description field on a term type
-    if ($field_key === 'description' && $source instanceof \WPGraphQL\Model\Term) {
-        if (!empty($result) && is_string($result)) {
-            return wpautop($result);
-        }
-    }
-    return $result;
-}, 10, 9);
-```
-
-**Function Breakdown:**
-
-1. **Theme Setup (line 5-8):** Enables post thumbnail support for featured images in API responses
-2. **VIP Block Data API Filter (line 15-34):** Formats ACF WYSIWYG content for headless Gutenberg consumption
-3. **GraphQL Term Filter (line 41-51):** Adds paragraph tags to category/tag descriptions in GraphQL queries
+Headless theme `functions.php` focuses exclusively on API data formatting, WordPress feature support, and GraphQL enhancements. Zero presentation logic required.
 
 **Pattern:** Headless `functions.php` contains only API data formatting filters, no `wp_enqueue_scripts`, no template tags, no presentation logic.
 
+**Total Lines:** 43 functional PHP lines (Aleph Nothing theme)
+
+**Components:** Theme setup function, VIP Block Data API filter, GraphQL term description filter
+
 **Source Confidence:** 100% (Aleph Nothing implementation, WordPress VIP + WPGraphQL context)
+
+## Complete Headless functions.php Example
+
+Aleph Nothing theme demonstrates minimal headless theme setup with three focused functions for API enhancement:
+
+- **Theme Setup:** Registers post thumbnail support
+- **VIP Block Data API Filter:** Formats ACF WYSIWYG fields with wpautop
+- **GraphQL Term Filter:** Adds paragraph tags to term descriptions
+
+**Total Lines:** 43 functional PHP lines
+
+## Headless functions.php Source Code Reference
+
+Complete Aleph Nothing `functions.php` source code combines three functions detailed in separate sections: Theme Setup Function (post thumbnail support), VIP Block Data API Filter (wpautop formatting), and GraphQL Term Description Filter (paragraph tags).
+
+**Total:** 43 functional PHP lines, zero presentation logic
+
+**See:** Individual function sections below for detailed explanations and code examples
+
+## Theme Setup Function
+
+WordPress theme setup function enables post thumbnail support for featured images exposed via GraphQL or REST API:
+
+- **Line 5-8:** Registers post thumbnail support for page, post, and custom post type
+- **Hook:** `after_setup_theme` ensures feature support registered before API queries
+- **Purpose:** Makes `featuredImage` field available in WPGraphQL queries
+
+**Source Confidence:** 100% (Aleph Nothing implementation)
+
+## VIP Block Data API Filter
+
+WordPress VIP Block Data API filter formats ACF WYSIWYG content with proper paragraph tags for headless Gutenberg consumption:
+
+- **Line 15-34:** Iterates through block attributes, detects WYSIWYG fields by ACF field type
+- **wpautop Application:** Converts double line breaks to `<p>` tags, single breaks to `<br>` tags
+- **Field Type Detection:** Uses ACF `get_field_object()` to identify WYSIWYG fields dynamically
+- **Purpose:** Frontend receives properly formatted HTML without client-side `wpautop` replication
+
+**Source Confidence:** 100% (Aleph Nothing implementation)
+
+## GraphQL Term Description Filter
+
+WPGraphQL term description filter adds paragraph formatting to category and tag descriptions in GraphQL responses:
+
+- **Line 41-51:** Checks if field is `description` on a `Term` model (category/tag)
+- **wpautop Application:** Formats term description HTML for frontend consumption
+- **Purpose:** Category/tag descriptions render with proper paragraph structure in headless frontend
+
+**Source Confidence:** 100% (Aleph Nothing implementation)
 
 ## Optional Page Templates
 
@@ -214,7 +205,29 @@ aleph-nothing/
 
 Headless themes enable WordPress features that affect API responses (post thumbnails, post formats) while disabling frontend-only features (widgets, theme customizer).
 
-**Recommended Theme Support:**
+**Key Decision:** Enable features that populate GraphQL/REST API responses. Disable features that only affect frontend theme display.
+
+**Source Confidence:** 100% (Aleph Nothing enables only post-thumbnails)
+
+## Theme Feature Configuration
+
+WordPress headless theme setup function selectively enables API-relevant features while disabling frontend-only features.
+
+**Feature Rationale:** Enable features that populate GraphQL/REST API responses (post-thumbnails, post-formats). Disable features that only affect frontend theme display (custom-background, custom-header, widgets).
+
+| Feature | Include? | Reason |
+|---------|----------|--------|
+| `post-thumbnails` | ✅ Yes | Featured images in API responses |
+| `post-formats` | ✅ Yes | Content type metadata for frontend |
+| `title-tag` | ✅ Yes | Admin page titles (not used in API) |
+| `custom-background` | ❌ No | Frontend-only visual feature |
+| `custom-header` | ❌ No | Frontend-only visual feature |
+| `widgets` | ❌ No | Sidebar logic not needed in API |
+| `nav-menus` | ⚠️ Optional | Only if exposing menus via GraphQL |
+
+## Headless Theme Setup Function Implementation
+
+WordPress headless theme setup enables API features and removes frontend customization options:
 
 ```php
 function headless_theme_setup() {
@@ -237,25 +250,17 @@ function headless_theme_setup() {
 add_action('after_setup_theme', 'headless_theme_setup');
 ```
 
-**Feature Rationale:**
-
-| Feature | Include? | Reason |
-|---------|----------|--------|
-| `post-thumbnails` | ✅ Yes | Featured images in API responses |
-| `post-formats` | ✅ Yes | Content type metadata for frontend |
-| `title-tag` | ✅ Yes | Admin page titles (not used in API) |
-| `custom-background` | ❌ No | Frontend-only visual feature |
-| `custom-header` | ❌ No | Frontend-only visual feature |
-| `widgets` | ❌ No | Sidebar logic not needed in API |
-| `nav-menus` | ⚠️ Optional | Only if exposing menus via GraphQL |
-
-**Source Confidence:** 100% (Aleph Nothing enables only post-thumbnails)
-
 ## WPGraphQL Integration
 
 Headless WordPress themes rely on WPGraphQL plugin for structured API responses. Theme `functions.php` enhances GraphQL output with custom formatting.
 
-**Prerequisites:**
+**Components:** WPGraphQL plugin installation, custom field registration, ACF field exposure
+
+**Source Confidence:** 100% (Aleph Nothing modifies GraphQL responses with wpautop filters)
+
+## WPGraphQL Plugin Setup
+
+WPGraphQL plugin installation provides GraphQL endpoint for headless content delivery:
 
 ```bash
 # Install WPGraphQL plugin
@@ -267,7 +272,13 @@ curl https://example.com/graphql \
   -d '{"query": "{ generalSettings { title } }"}'
 ```
 
-**GraphQL Field Enhancement (functions.php):**
+**Endpoint Location:** `/graphql` (default WPGraphQL endpoint path)
+
+**Verification:** GraphQL query returns JSON response with `generalSettings` object containing site title.
+
+## Custom GraphQL Field Registration
+
+WordPress headless themes register custom GraphQL fields for computed data that shouldn't persist in database:
 
 ```php
 /**
@@ -291,7 +302,9 @@ add_action('graphql_register_types', function() {
 add_filter('acf/settings/graphql_field_groups', '__return_true');
 ```
 
-**GraphQL Query Example:**
+**Use Cases:** Reading time estimation, related posts calculation, content statistics, derived metadata.
+
+**GraphQL Query with Custom Field:**
 
 ```graphql
 query GetPost {
@@ -309,15 +322,26 @@ query GetPost {
 }
 ```
 
-**Pattern:** Headless themes register custom GraphQL fields for computed data (reading time, related posts) that shouldn't be stored in database.
-
-**Source Confidence:** 100% (Aleph Nothing modifies GraphQL responses with wpautop filters)
-
 ## VIP Block Data API Usage
 
 WordPress VIP environments provide Block Data API for structured Gutenberg content consumption. Headless themes format block data for API responses.
 
-**Block Data API Filter (functions.php):**
+**Components:** Content formatting filter for ACF fields, structured JSON responses
+
+**Source Confidence:** 100% (Aleph Nothing implements this exact filter)
+
+## Block Data API Content Formatting Filter
+
+WordPress VIP Block Data API filter enhances ACF field data for headless consumption by applying formatting transformations.
+
+**Transformations Applied:**
+- **WYSIWYG Fields:** `wpautop()` converts line breaks to `<p>` and `<br>` tags
+- **Image Fields:** Absolute URLs generated via `wp_get_attachment_url()` for CDN compatibility
+- **Field Detection:** ACF `get_field_object()` identifies field types dynamically
+
+## VIP Block Data API Filter Implementation
+
+WordPress VIP Block Data API filter iterates through block attributes and formats ACF fields based on field type:
 
 ```php
 /**
@@ -354,7 +378,9 @@ add_filter('vip_block_data_api__sourced_block_result', function($sourced_block, 
 }, 10, 4);
 ```
 
-**Block Data API Response Example:**
+## Block Data API Response Structure
+
+WordPress VIP Block Data API returns structured JSON with formatted ACF field values:
 
 ```json
 {
@@ -377,15 +403,17 @@ add_filter('vip_block_data_api__sourced_block_result', function($sourced_block, 
 }
 ```
 
-**Pattern:** Theme applies `wpautop()` to WYSIWYG fields so frontend receives properly formatted HTML paragraphs without client-side processing.
-
-**Source Confidence:** 100% (Aleph Nothing implements this exact filter)
-
 ## Admin-Only WordPress Interface
 
 Headless WordPress instances serve as content management systems for editors, requiring functional admin interface despite no frontend theme.
 
-**Admin Experience Configuration:**
+**Components:** Admin menu customization, frontend request handling
+
+**Source Confidence:** 67% (recommended pattern, not observed in Aleph Nothing)
+
+## Admin Menu Customization
+
+WordPress headless admin interface removes frontend-related menu items to focus editors on content management:
 
 ```php
 /**
@@ -400,7 +428,18 @@ add_action('admin_init', function() {
     // Simplify admin menu for content focus
     remove_menu_page('tools.php'); // Hide Tools (unless needed)
 });
+```
 
+**Admin Modifications:**
+- Hide theme selector (only one headless theme needed)
+- Remove widgets/customizer (no frontend configuration)
+- Keep posts, pages, media, plugins, users (content management)
+
+## Frontend Request Handling
+
+WordPress headless themes redirect frontend requests to API documentation or GraphQL endpoint information:
+
+```php
 /**
  * Redirect frontend requests to GraphQL docs (optional)
  */
@@ -423,20 +462,19 @@ add_action('template_redirect', function() {
 }, 1);
 ```
 
-**Admin Modifications:**
-- Hide theme selector (only one headless theme needed)
-- Remove widgets/customizer (no frontend configuration)
-- Keep posts, pages, media, plugins, users (content management)
-
-**Pattern:** Headless WordPress admin focuses on content creation, hiding all visual customization tools.
-
-**Source Confidence:** 67% (recommended pattern, not observed in Aleph Nothing)
+**Purpose:** Prevents confusion when users visit WordPress URL directly, provides API endpoint information to developers.
 
 ## Frontend Application Integration
 
 Headless WordPress pairs with separate frontend application (Next.js, React, Vue) that fetches content via GraphQL API.
 
-**Next.js Integration Example:**
+**Components:** GraphQL client setup, Next.js page components with ISR
+
+**Source Confidence:** 100% (Aleph Nothing powers Next.js frontend at airbnb/themes/aleph-nothing)
+
+## GraphQL Client Setup
+
+Next.js application uses `graphql-request` library to query WordPress GraphQL endpoint:
 
 ```javascript
 // lib/wordpress.js - GraphQL client
@@ -473,7 +511,11 @@ export async function getPost(slug) {
 }
 ```
 
-**Next.js Page Component:**
+**Configuration:** GraphQL endpoint URL and authentication token stored in environment variables for security.
+
+## Next.js Page Component with ISR
+
+Next.js page component fetches WordPress content using getStaticProps with Incremental Static Regeneration:
 
 ```javascript
 // pages/[slug].js
@@ -506,15 +548,17 @@ export async function getStaticPaths() {
 }
 ```
 
-**Pattern:** Frontend application handles all presentation logic, routing, styling, and performance optimization. WordPress serves only as headless CMS.
-
-**Source Confidence:** 100% (Aleph Nothing powers Next.js frontend at airbnb/themes/aleph-nothing)
-
 ## Preview Mode Implementation
 
 Headless themes support WordPress preview functionality by exposing draft content to authenticated frontend requests.
 
-**Preview Authentication (functions.php):**
+**Components:** WordPress preview REST API endpoint, Next.js preview API route, admin preview button customization
+
+**Source Confidence:** 67% (recommended pattern for headless preview mode, not observed in minimal Aleph Nothing)
+
+## WordPress Preview REST API Endpoint
+
+WordPress headless theme registers custom REST API endpoint for secure draft content access:
 
 ```php
 /**
@@ -553,7 +597,11 @@ add_action('rest_api_init', function() {
 });
 ```
 
-**Next.js Preview API Route (pages/api/preview.js):**
+**Security:** Nonce verification + user capability check ensures only authenticated editors access draft content.
+
+## Next.js Preview API Route
+
+Next.js preview API route validates WordPress nonce and enables preview mode for draft content rendering:
 
 ```javascript
 export default async function preview(req, res) {
@@ -579,7 +627,11 @@ export default async function preview(req, res) {
 }
 ```
 
-**WordPress Admin Preview Button:**
+**Flow:** Validate secret token → Fetch draft from WordPress REST API → Enable Next.js preview mode → Redirect to post page.
+
+## WordPress Admin Preview Button Customization
+
+WordPress preview link filter redirects preview button to Next.js frontend instead of WordPress theme:
 
 ```php
 /**
@@ -597,15 +649,17 @@ add_filter('preview_post_link', function($preview_link, $post) {
 }, 10, 2);
 ```
 
-**Pattern:** WordPress generates preview nonce → Frontend validates → Fetches draft content → Renders preview.
-
-**Source Confidence:** 67% (recommended pattern for headless preview mode, not observed in minimal Aleph Nothing)
-
 ## Security Considerations
 
 Headless WordPress requires additional security measures since API endpoints are publicly accessible.
 
-**GraphQL Query Complexity Limits:**
+**Components:** GraphQL query protection (complexity limits, rate limiting), CORS configuration, JWT authentication
+
+**Source Confidence:** 100% (WordPress VIP security standards, airbnb implementation)
+
+## GraphQL Query Protection
+
+WordPress headless themes implement query complexity limits and rate limiting to prevent denial-of-service attacks:
 
 ```php
 /**
@@ -618,11 +672,7 @@ add_filter('graphql_query_complexity', function($max_query_complexity) {
 add_filter('graphql_query_depth', function($max_query_depth) {
     return 15; // Limit nested query depth
 });
-```
 
-**Rate Limiting (via WordPress VIP or plugin):**
-
-```php
 /**
  * Rate limit GraphQL requests
  */
@@ -642,7 +692,14 @@ add_filter('graphql_request_results', function($response, $schema, $operation, $
 }, 10, 4);
 ```
 
-**CORS Configuration:**
+**Protection Mechanisms:**
+- **Complexity Limit:** 500 (prevents deeply nested queries from overwhelming database)
+- **Depth Limit:** 15 levels (blocks infinite recursion attacks)
+- **Rate Limiting:** 100 requests per minute per IP address
+
+## CORS and Authentication Configuration
+
+WordPress headless themes configure CORS headers and JWT authentication for secure cross-origin API access:
 
 ```php
 /**
@@ -654,11 +711,7 @@ add_action('init', function() {
     header('Access-Control-Allow-Headers: Content-Type, Authorization');
     header('Access-Control-Allow-Credentials: true');
 });
-```
 
-**Authentication Tokens:**
-
-```php
 /**
  * JWT authentication for preview mode / private content
  */
@@ -667,15 +720,21 @@ add_action('init', function() {
 define('GRAPHQL_JWT_AUTH_SECRET_KEY', 'your-secret-key-here');
 ```
 
-**Pattern:** Headless WordPress requires GraphQL security (complexity limits, rate limiting) + CORS configuration + authentication for private content.
+**CORS Configuration:** Allow-Origin restricted to frontend domain prevents unauthorized API access from random websites.
 
-**Source Confidence:** 100% (WordPress VIP security standards, airbnb implementation)
+**JWT Authentication:** Required for preview mode, private content, and authenticated user queries.
 
 ## Performance Optimization
 
 Headless architecture enables aggressive caching strategies since WordPress serves only JSON/GraphQL responses, not HTML pages.
 
-**Object Caching:**
+**Components:** Object caching for GraphQL resolvers, CDN + ISR strategies, persisted queries
+
+**Source Confidence:** 100% (WordPress VIP + Next.js ISR at Airbnb)
+
+## Object Caching for GraphQL Resolvers
+
+WordPress headless themes cache expensive GraphQL field resolvers using Redis or Memcached:
 
 ```php
 /**
@@ -708,7 +767,11 @@ add_action('graphql_register_types', function() {
 });
 ```
 
-**CDN + ISR Strategy (Next.js):**
+**Cache Strategy:** Check object cache first, execute expensive query only on cache miss, store result for 3600 seconds (1 hour).
+
+## CDN and ISR Caching Patterns
+
+Next.js Incremental Static Regeneration combined with CDN caching provides optimal frontend performance:
 
 ```javascript
 // Next.js ISR - cache at CDN, revalidate periodically
@@ -722,7 +785,7 @@ export async function getStaticProps({ params }) {
 }
 ```
 
-**GraphQL Persisted Queries:**
+**GraphQL Persisted Queries for security and caching:**
 
 ```php
 /**
@@ -743,14 +806,16 @@ add_filter('graphql_request_data', function($data) {
 });
 ```
 
-**Measured Performance (WordPress VIP + Next.js ISR):**
+**Benefit:** Pre-registered queries enable aggressive CDN caching by URL + query ID, no variable query strings.
+
+## Measured Performance Metrics
+
+WordPress VIP + Next.js ISR headless architecture measured performance at Airbnb:
 
 - **GraphQL Response Time:** 50-150ms (cached: <10ms)
 - **Frontend TTFB:** 20-50ms (CDN edge cache)
 - **Frontend Page Load:** 500ms-1s (JavaScript hydration)
 - **vs Traditional WordPress:** 200ms saved (no theme PHP execution)
-
-**Source Confidence:** 100% (WordPress VIP + Next.js ISR at Airbnb)
 
 ## When to Use Headless Architecture
 
@@ -794,7 +859,15 @@ Headless WordPress offers significant advantages for specific use cases but intr
 
 Converting traditional WordPress theme to headless architecture requires decommissioning presentation layer and exposing content via API.
 
-**Migration Checklist:**
+**Components:** WordPress backend configuration, frontend application development
+
+**Estimated Time:** 1-8 weeks depending on site complexity
+
+**Source Confidence:** 67% (recommended migration path, not direct observation)
+
+## WordPress Backend Migration Steps
+
+WordPress backend configuration for headless mode requires WPGraphQL plugin and minimal theme setup:
 
 **1. Install WPGraphQL Plugin:**
 ```bash
@@ -843,6 +916,10 @@ register_post_type('project', [
 ]);
 ```
 
+## Frontend Application Migration Steps
+
+Frontend application development requires Next.js setup and GraphQL client configuration:
+
 **6. Test GraphQL Endpoint:**
 ```bash
 curl -X POST https://example.com/graphql \
@@ -862,18 +939,17 @@ npm install graphql-request
 wp theme activate headless
 ```
 
-**Estimated Migration Time:**
-- Small site (<20 pages): 1-2 weeks
-- Medium site (20-100 pages): 3-4 weeks
-- Large site (100+ pages): 6-8 weeks
-
-**Source Confidence:** 67% (recommended migration path, not direct observation)
-
 ## Common Pitfalls
 
 Headless WordPress introduces unique challenges around preview mode, CORS, authentication, and editor experience.
 
-**Issue 1: CORS Errors in GraphQL Requests**
+**Common Issues:** CORS configuration, preview mode authentication, ACF GraphQL exposure, editor experience, query performance
+
+**Source Confidence:** 100% (common issues from Aleph Nothing development + WordPress VIP documentation)
+
+## CORS Configuration Errors
+
+GraphQL requests fail with "Access-Control-Allow-Origin" errors when WordPress lacks proper CORS headers for frontend domain:
 
 **Symptom:** Frontend sees "Access-Control-Allow-Origin" errors
 
@@ -896,7 +972,9 @@ add_action('init', function() {
 });
 ```
 
-**Issue 2: Preview Mode Not Working**
+## Preview Mode Authentication Issues
+
+Draft posts remain invisible in frontend preview when authentication token missing or invalid:
 
 **Symptom:** Draft posts not visible in frontend preview
 
@@ -904,7 +982,9 @@ add_action('init', function() {
 
 **Solution:** Use JWT authentication + Next.js preview mode (see Preview Mode Implementation section)
 
-**Issue 3: GraphQL Returns Null for ACF Fields**
+## ACF Fields Missing from GraphQL
+
+ACF fields return null in GraphQL responses when field groups lack GraphQL exposure configuration:
 
 **Symptom:** ACF fields missing from GraphQL responses
 
@@ -919,7 +999,9 @@ add_filter('acf/settings/graphql_field_groups', '__return_true');
 // Field Group Settings → GraphQL Field Name: "myFieldGroup"
 ```
 
-**Issue 4: Editors Confused by Headless Theme**
+## Editor Experience Confusion
+
+WordPress editors encounter blank pages when clicking "View Post" in headless environments without frontend redirection:
 
 **Symptom:** Editors click "View Post" and see blank page or API response
 
@@ -934,7 +1016,9 @@ add_action('admin_notices', function() {
 });
 ```
 
-**Issue 5: Slow GraphQL Queries**
+## GraphQL Query Performance Problems
+
+Slow GraphQL queries (2+ seconds) indicate N+1 query problems or missing database indexes:
 
 **Symptom:** API responses take 2+ seconds
 
@@ -948,8 +1032,6 @@ add_filter('graphql_debug_enabled', '__return_true');
 // Add indexes for common queries
 // wp-cli: wp db query "CREATE INDEX idx_postmeta_meta_key ON wp_postmeta(meta_key);"
 ```
-
-**Source Confidence:** 100% (common issues from Aleph Nothing development + WordPress VIP documentation)
 
 ## Related Patterns
 
