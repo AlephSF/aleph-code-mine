@@ -28,7 +28,7 @@ rules:
         </MyContext.Provider>
       )
     severity: INFO
-    languages: [typescript, tsx]
+    languages: [typescript]
     metadata:
       category: hooks-state
       subcategory: performance

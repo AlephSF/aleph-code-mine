@@ -6,7 +6,7 @@ rules:
       Use descriptive names that communicate purpose, not implementation.
       Example: Use 'PressReleaseList' instead of 'TPressReleaseDocs'.
     severity: WARNING
-    languages: [typescript, tsx]
+    languages: [typescript]
     metadata:
       category: typescript-conventions
       subcategory: naming-patterns

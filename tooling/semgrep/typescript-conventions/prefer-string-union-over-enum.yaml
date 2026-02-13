@@ -16,7 +16,7 @@ rules:
       - Better IDE autocomplete
       - No reverse mapping complexity
     severity: WARNING
-    languages: [typescript, tsx]
+    languages: [typescript]
     metadata:
       category: typescript-conventions
       subcategory: type-definitions

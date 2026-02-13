@@ -10,7 +10,6 @@ rules:
     severity: ERROR
     languages:
       - typescript
-      - tsx
     patterns:
       - pattern: import $STYLES from "./$FILE.scss"
       - pattern-not: import $STYLES from "./$FILE.module.scss"

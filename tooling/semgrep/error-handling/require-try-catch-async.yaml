@@ -59,7 +59,6 @@ rules:
     severity: WARNING
     languages:
       - typescript
-      - tsx
     metadata:
       category: error-handling
       confidence: HIGH

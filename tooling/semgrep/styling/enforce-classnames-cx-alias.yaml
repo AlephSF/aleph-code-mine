@@ -12,7 +12,6 @@ rules:
     severity: WARNING
     languages:
       - typescript
-      - tsx
     patterns:
       - pattern-either:
           - pattern: import $NAME from 'classnames'

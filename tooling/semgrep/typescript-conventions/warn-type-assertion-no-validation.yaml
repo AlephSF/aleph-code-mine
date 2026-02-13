@@ -28,7 +28,7 @@ rules:
 
       Only use assertions when you have runtime guarantees TypeScript cannot infer.
     severity: INFO
-    languages: [typescript, tsx]
+    languages: [typescript]
     metadata:
       category: typescript-conventions
       subcategory: type-safety

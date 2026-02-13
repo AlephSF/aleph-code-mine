@@ -1,57 +1,58 @@
 rules:
   - id: warn-silent-error-suppression
-    pattern-either:
-      # Empty catch block
-      - pattern: |
-          try {
+    patterns:
+      - pattern-either:
+          # Empty catch block
+          - pattern: |
+              try {
+                ...
+              } catch ($ERROR) {
+              }
+          # Catch block with only commented-out logging
+          - pattern: |
+              try {
+                ...
+              } catch ($ERROR) {
+                // console.error(...)
+              }
+          # Catch block that returns undefined/null without logging
+          - pattern: |
+              try {
+                ...
+              } catch ($ERROR) {
+                return undefined
+              }
+          - pattern: |
+              try {
+                ...
+              } catch ($ERROR) {
+                return null
+              }
+          # Catch block that only does optional chaining without logging
+          - pattern: |
+              try {
+                ...
+              } catch ($ERROR) {
+                $VAR?.$PROP
+              }
+      - pattern-not-inside: |
+          catch ($ERROR) {
             ...
-          } catch ($ERROR) {
-          }
-      # Catch block with only commented-out logging
-      - pattern: |
-          try {
+            console.error(...)
             ...
-          } catch ($ERROR) {
-            // console.error(...)
           }
-      # Catch block that returns undefined/null without logging
-      - pattern: |
-          try {
+      - pattern-not-inside: |
+          catch ($ERROR) {
             ...
-          } catch ($ERROR) {
-            return undefined
-          }
-      - pattern: |
-          try {
+            logger.error(...)
             ...
-          } catch ($ERROR) {
-            return null
           }
-      # Catch block that only does optional chaining without logging
-      - pattern: |
-          try {
+      - pattern-not-inside: |
+          catch ($ERROR) {
             ...
-          } catch ($ERROR) {
-            $VAR?.$PROP
+            Sentry.captureException(...)
+            ...
           }
-    pattern-not-inside: |
-      catch ($ERROR) {
-        ...
-        console.error(...)
-        ...
-      }
-    pattern-not-inside: |
-      catch ($ERROR) {
-        ...
-        logger.error(...)
-        ...
-      }
-    pattern-not-inside: |
-      catch ($ERROR) {
-        ...
-        Sentry.captureException(...)
-        ...
-      }
     paths:
       include:
         - "app/**/*.ts"
@@ -105,7 +106,6 @@ rules:
     severity: ERROR
     languages:
       - typescript
-      - tsx
       - javascript
     metadata:
       category: error-handling

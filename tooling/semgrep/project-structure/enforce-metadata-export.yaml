@@ -25,7 +25,6 @@ rules:
     severity: WARNING
     languages:
       - typescript
-      - tsx
     patterns:
       - pattern-not-inside: export const metadata = ...
       - pattern: export default function $LAYOUT({ children }) { ... }

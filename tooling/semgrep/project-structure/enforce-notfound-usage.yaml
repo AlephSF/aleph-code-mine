@@ -26,7 +26,6 @@ rules:
     severity: WARNING
     languages:
       - typescript
-      - tsx
     patterns:
       - pattern: |
           if (!$DATA) {

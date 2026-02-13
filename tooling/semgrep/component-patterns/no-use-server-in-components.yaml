@@ -19,7 +19,6 @@ rules:
         import { createUser } from '../actions'
     languages:
       - typescript
-      - tsx
     severity: ERROR
     paths:
       include:

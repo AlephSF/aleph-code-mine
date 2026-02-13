@@ -23,7 +23,6 @@ rules:
         const Button = ({ text }: ButtonProps) => { ... }
     languages:
       - typescript
-      - tsx
     severity: WARNING
     metadata:
       category: typescript

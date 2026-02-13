@@ -27,7 +27,6 @@ rules:
     severity: INFO
     languages:
       - typescript
-      - tsx
     patterns:
       - pattern-either:
           - pattern: export const getStaticProps = ...

@@ -32,7 +32,7 @@ rules:
         return () => window.removeEventListener('resize', handler)
       }, [])
     severity: WARNING
-    languages: [typescript, tsx]
+    languages: [typescript]
     metadata:
       category: hooks-state
       subcategory: memory-leaks

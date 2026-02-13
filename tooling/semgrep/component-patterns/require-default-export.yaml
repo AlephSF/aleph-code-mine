@@ -21,7 +21,6 @@ rules:
         const Button = () => { ... }; export default Button
     languages:
       - typescript
-      - tsx
     severity: ERROR
     paths:
       include:
