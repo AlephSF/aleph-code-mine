@@ -9,7 +9,7 @@ audience: "backend"
 complexity: "advanced"
 doc_type: "standard"
 source_confidence: "33%"
-last_updated: "2026-02-12"
+last_updated: "2026-02-13"
 ---
 
 ## Overview
@@ -54,60 +54,31 @@ Kariusdx replaces default `PublishAction` with `SetSlugAndPublishAction` for all
 
 ## Auto-Slug on Publish
 
-Kariusdx implements custom publish action that auto-generates slug from title if not manually set. Pattern prevents publishing documents without slugs.
+Kariusdx implements custom publish action that auto-generates slug from title if not manually set.
 
 **Custom Publish Action:**
 
 ```javascript
 // schemas/actions/setSlugAndPublishAction.js
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useDocumentOperation, useValidationStatus } from '@sanity/react-hooks'
-import sanityClient from '@sanity/client'
 
 export default function SetSlugAndPublishAction(props) {
   const { isValidating, markers } = useValidationStatus(props.id, props.type)
-  const [canPublish, allowPublish] = useState(false)
   const { patch, publish } = useDocumentOperation(props.id, props.type)
   const [isPublishing, setIsPublishing] = useState(false)
 
-  useEffect(() => {
-    if (publish.disabled) {
-      allowPublish(false)
-      return
-    }
-    if (!isValidating) {
-      if (markers.length === 0) {
-        allowPublish(true)
-      } else {
-        allowPublish(false)
-      }
-    }
-    if (isPublishing && !props.draft) {
-      setIsPublishing(false)
-    }
-  }, [publish.disabled, isValidating, props.draft])
-
   return {
-    disabled: !canPublish,
+    disabled: isValidating || markers.length > 0,
     label: isPublishing ? 'Publishing...' : 'Publish',
     onHandle: async () => {
       setIsPublishing(true)
 
-      const slug =
-        props.draft.slug?.current ||
-        props.draft.title
-          ?.toLowerCase()
-          .replace(/\s+/g, '-')
-          .slice(0, 200)
+      const slug = props.draft.slug?.current ||
+        props.draft.title?.toLowerCase().replace(/\s+/g, '-').slice(0, 200)
 
       if (slug) {
-        patch.execute([
-          {
-            set: {
-              slug: { _type: 'slug', current: slug },
-            },
-          },
-        ])
+        patch.execute([{ set: { slug: { _type: 'slug', current: slug } } }])
       }
 
       publish.execute()
@@ -118,95 +89,64 @@ export default function SetSlugAndPublishAction(props) {
 ```
 
 **Key Features:**
-
-1. **Validation check** - Action disabled until document passes all validation rules
-2. **Auto-slug generation** - Converts title to lowercase, replaces spaces with hyphens, limits to 200 characters
-3. **Async patch** - Sets slug field via `patch.execute()` before calling `publish.execute()`
-4. **Loading state** - Button shows "Publishing..." during operation
-
-Kariusdx applies this action to all document types (pages, news, press releases, videos, events).
+- Validation check before enabling publish
+- Auto-generates slug from title (lowercase, hyphenated)
+- Patches slug field before publishing
 
 ## Hierarchical Path Calculation
 
-Kariusdx extends auto-slug action to calculate full paths for hierarchical page structures. Pattern maintains parent-child page relationships and updates all descendants when parent path changes.
+Kariusdx extends auto-slug to calculate full paths for hierarchical page structures and update all descendants.
 
-**Hierarchical Path Logic:**
+**Path Calculation Logic:**
 
 ```javascript
 if (props.type === 'page') {
-  const parentQuery = '*[_id == $id][0]'
-  const parentQueryParams = {
-    id: props.draft.parentPage?._ref || '',
-  }
-  let parentPageId = null
-  await client.fetch(parentQuery, parentQueryParams).then((parentPage) => {
-    parentPageId = parentPage?._id
-    ancestorPath = parentPage?.pagePath || parentPage?.slug?.current
+  const parentPage = await client.fetch('*[_id == $id][0]', {
+    id: props.draft.parentPage?._ref || ''
   })
+
+  const ancestorPath = parentPage?.pagePath || parentPage?.slug?.current
   const fullPath = `${ancestorPath ? ancestorPath + '/' : '/'}${slug}`
 
-  patch.execute([
-    {
-      set: {
-        slug: { _type: 'slug', current: slug },
-        pagePath: fullPath,
-      },
+  patch.execute([{
+    set: {
+      slug: { _type: 'slug', current: slug },
+      pagePath: fullPath,
     },
-  ])
+  }])
 
-  await updateChildPagePaths(props.id, fullPath, parentPageId)
+  await updateChildPagePaths(props.id, fullPath, parentPage?._id)
 }
 ```
 
-**Recursive Child Update:**
+**Path Examples:**
+- `/about` + `team` → `/about/team`
+- `/about/team` + `engineering` → `/about/team/engineering`
+
+## Recursive Child Path Updates
+
+Function recursively updates all descendant page paths when parent changes:
 
 ```javascript
 const updateChildPagePaths = async (basePageId, basePagePath, parentPageId) => {
-  const pageRefQuery = `*[_type=='page' && _id == $id][0]{
-      _id,
-      "relatedPages": *[_type=='page' && references(^._id)]
-    }`
-  const pageRefQueryParams = { id: basePageId || '' }
+  const { relatedPages } = await client.fetch(
+    '*[_type=="page" && _id == $id][0]{ _id, "relatedPages": *[_type=="page" && references(^._id)] }',
+    { id: basePageId }
+  )
 
-  try {
-    const { relatedPages } = await client.fetch(pageRefQuery, pageRefQueryParams)
-    const childPages =
-      relatedPages?.length > 0 &&
-      relatedPages.filter((refPage) => refPage._id !== parentPageId)
+  const childPages = relatedPages?.filter((p) => p._id !== parentPageId)
 
-    if (childPages && childPages.length > 0 && basePagePath) {
-      const childPathUpdates = childPages.map((childPage) => {
-        const newChildPagePath = `${basePagePath}/${childPage.slug.current}`
-        if (newChildPagePath !== childPage.pagePath) {
-          return client
-            .patch(childPage._id)
-            .set({ pagePath: newChildPagePath })
-            .commit()
-            .then((res) => {
-              updateChildPagePaths(childPage._id, newChildPagePath, basePageId)
-            })
-            .catch((err) => {
-              console.error('Update failed: ', err.message)
-            })
-        }
-      })
-      return await Promise.all(childPathUpdates)
-    }
-  } catch (error) {
-    console.error('An error occurred: ', error)
+  if (childPages?.length > 0) {
+    await Promise.all(childPages.map((child) => {
+      const newPath = `${basePagePath}/${child.slug.current}`
+      return client.patch(child._id).set({ pagePath: newPath }).commit()
+        .then(() => updateChildPagePaths(child._id, newPath, basePageId))
+    }))
   }
 }
 ```
 
-**Path Calculation Examples:**
-
-| Parent Path | Child Slug | Calculated Path |
-|-------------|------------|-----------------|
-| `/about` | `team` | `/about/team` |
-| `/about/team` | `engineering` | `/about/team/engineering` |
-| `/` | `contact` | `/contact` |
-
-Pattern recursively updates grandchildren and great-grandchildren when parent path changes. Critical for maintaining correct URLs in hierarchical site structures.
+Pattern recursively updates grandchildren and great-grandchildren.
 
 ## Custom Actions for Singletons
 

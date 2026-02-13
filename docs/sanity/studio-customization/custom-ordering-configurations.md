@@ -9,7 +9,7 @@ audience: "backend"
 complexity: "beginner"
 doc_type: "standard"
 source_confidence: "33%"
-last_updated: "2026-02-12"
+last_updated: "2026-02-13"
 ---
 
 ## Overview
@@ -149,7 +149,7 @@ Chain `->` operators for nested reference traversal: `document → author → co
 
 Ripplecom uses 13 orderings across 7 document types. Common patterns:
 
-### Date-Based Orderings (Most Common)
+## Date-Based Orderings (Most Common)
 
 ```typescript
 // Blog posts, press releases, events
@@ -169,7 +169,7 @@ orderings: [
 
 Descending order (newest first) as default for time-series content.
 
-### Alphabetical Orderings
+## Alphabetical Orderings
 
 ```typescript
 // People, categories, tags
@@ -189,7 +189,7 @@ orderings: [
 
 Bidirectional alphabetical sort for taxonomy and reference documents.
 
-### Priority Orderings
+## Priority Orderings
 
 ```typescript
 // Featured content, pinned posts

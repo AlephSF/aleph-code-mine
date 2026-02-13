@@ -9,7 +9,7 @@ audience: "fullstack"
 complexity: "advanced"
 doc_type: "standard"
 source_confidence: "33%"
-last_updated: "2026-02-12"
+last_updated: "2026-02-13"
 ---
 
 ## Overview
@@ -177,7 +177,7 @@ URL `https://ripple.com/insights/bitcoin-surge` with route `/insights/:slug` ext
 
 ## Custom Preview Locations
 
-Preview locations provide multiple URLs per document. Useful for documents with conditional rendering (thank you pages, multi-language content, A/B test variants).
+Preview locations provide multiple URLs per document for conditional rendering (thank you pages, multi-language).
 
 **defineLocations Pattern:**
 
@@ -188,62 +188,29 @@ presentationTool({
   resolve: {
     locations: {
       leadGeneration: defineLocations({
-        select: {
-          title: 'title',
-          slug: 'slug.current',
-          thankYouPageEnabled: 'thankYouPage.enabled',
-        },
+        select: { title: 'title', slug: 'slug.current', thankYouPageEnabled: 'thankYouPage.enabled' },
         resolve: (doc) => {
-          if (!doc?.slug) {
-            return undefined
-          }
-
-          const locations = [
-            {
-              title: doc?.title || 'Untitled',
-              href: `/lp/${doc?.slug}`,
-            },
-          ]
+          const locations = [{ title: doc?.title, href: `/lp/${doc?.slug}` }]
 
           if (doc?.thankYouPageEnabled) {
-            locations.push({
-              title: `Thank You Page - ${doc?.title || 'Untitled'}`,
-              href: `/lp/thank-you-${doc?.slug}`,
-            })
+            locations.push({ title: `Thank You - ${doc?.title}`, href: `/lp/thank-you-${doc?.slug}` })
           }
 
-          return {
-            locations,
-            message: 'Lead Generation page(s) available',
-          }
+          return { locations, message: 'Lead Generation page(s) available' }
         },
       }),
       blogPost: defineLocations({
-        select: {
-          title: 'title',
-          slug: 'slug.current',
-        },
-        resolve: (doc) => {
-          if (!doc?.slug) {
-            return undefined
-          }
-
-          return {
-            locations: [
-              {
-                title: doc?.title || 'Untitled',
-                href: `/insights/${doc?.slug}`,
-              },
-            ],
-          }
-        },
+        select: { title: 'title', slug: 'slug.current' },
+        resolve: (doc) => ({
+          locations: [{ title: doc?.title, href: `/insights/${doc?.slug}` }]
+        }),
       }),
     },
   },
 })
 ```
 
-Ripplecom defines 5 location resolvers (leadGeneration, blogPost, caseStudy, pressRelease, thankYouPage). `leadGeneration` returns 2 locations when thank you page is enabled. Content editors see a dropdown in Presentation Tool to switch between locations.
+Content editors see a dropdown in Presentation Tool to switch between locations.
 
 **Location Resolver Requirements:**
 
@@ -254,7 +221,7 @@ Ripplecom defines 5 location resolvers (leadGeneration, blogPost, caseStudy, pre
 
 ## Draft Mode Integration (Next.js)
 
-Presentation Tool requires Next.js draft mode API route to bypass static generation and show unpublished content.
+Presentation Tool requires Next.js draft mode API route to bypass static generation.
 
 **API Route:**
 
@@ -279,7 +246,7 @@ export async function GET(request: Request) {
 }
 ```
 
-Route validates preview URL secret (prevents unauthorized draft mode access), enables draft mode, and redirects to the requested URL. Presentation Tool calls this route before loading preview iframe.
+Route validates preview URL secret, enables draft mode, and redirects.
 
 **Draft Mode Content Fetching:**
 

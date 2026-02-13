@@ -9,7 +9,7 @@ audience: "backend"
 complexity: "intermediate"
 doc_type: "standard"
 source_confidence: "33%"
-last_updated: "2026-02-12"
+last_updated: "2026-02-13"
 ---
 
 ## Overview
@@ -220,7 +220,7 @@ Validation logic: in-person events require `location`, virtual events require `m
 
 ## Cross-Field Validation
 
-Validate field values against other fields in same document.
+Validate field values against other fields in the document.
 
 **Date Range Validation:**
 
@@ -228,25 +228,15 @@ Validate field values against other fields in same document.
 export default defineType({
   name: 'event',
   fields: [
-    {
-      name: 'startDate',
-      type: 'datetime',
-      validation: (Rule) => Rule.required(),
-    },
+    { name: 'startDate', type: 'datetime', validation: (Rule) => Rule.required() },
     {
       name: 'endDate',
       type: 'datetime',
       validation: (Rule) =>
         Rule.required().custom((value, context) => {
-          const { document } = context
-          const start = new Date(document.startDate)
           const end = new Date(value)
-
-          if (end <= start) {
-            return 'End date must be after start date'
-          }
-
-          return true
+          const start = new Date(context.document.startDate)
+          return end <= start ? 'End date must be after start date' : true
         }),
     },
   ],
@@ -455,7 +445,7 @@ Helix only uses custom validation for slug uniqueness. Other projects (kariusdx,
 **Anti-Pattern 1: Synchronous API calls**
 
 ```typescript
-// ❌ BAD: Blocks Studio UI
+// ❌ BAD
 validation: (Rule) =>
   Rule.custom((value) => {
     const result = fetch(`https://api.example.com/validate?value=${value}`)
@@ -474,11 +464,10 @@ validation: (Rule) =>
 **Anti-Pattern 2: No error handling**
 
 ```typescript
-// ❌ BAD: Crashes Studio on network errors
+// ❌ BAD
 validation: (Rule) =>
   Rule.custom(async (value, context) => {
-    const client = context.getClient()
-    const result = await client.fetch(query)
+    const result = await context.getClient().fetch(query)
     return result ? true : 'Not found'
   })
 
@@ -486,12 +475,10 @@ validation: (Rule) =>
 validation: (Rule) =>
   Rule.custom(async (value, context) => {
     try {
-      const client = context.getClient()
-      const result = await client.fetch(query)
+      const result = await context.getClient().fetch(query)
       return result ? true : 'Not found'
     } catch (error) {
-      console.error('Validation error:', error)
-      return true // Allow save on validation errors
+      return true // Allow save on errors
     }
   })
 ```
