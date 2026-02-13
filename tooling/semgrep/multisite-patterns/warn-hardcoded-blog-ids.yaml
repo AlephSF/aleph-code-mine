@@ -1,0 +1,100 @@
+rules:
+  - id: hardcoded-blog-id-in-conditional
+    pattern-either:
+      - pattern: get_current_blog_id() === $NUM
+      - pattern: get_current_blog_id() == $NUM
+      - pattern: $NUM === get_current_blog_id()
+      - pattern: $NUM == get_current_blog_id()
+    message: |
+      Hardcoded blog ID detected. Use named constants for maintainability.
+
+      Define blog ID constants in wp-config.php or constants file:
+        define('BLOG_ID_POLICY', 20);
+        define('BLOG_ID_NEWSROOM', 4);
+
+      Then use named constants:
+        if (get_current_blog_id() === BLOG_ID_POLICY) { ... }
+
+      Benefits: Self-documenting, single source of truth, easier refactoring.
+    severity: WARNING
+    languages: [php]
+    metadata:
+      category: maintainability
+      confidence: HIGH
+      impact: MEDIUM
+      subcategory: [audit]
+      technology: [wordpress-multisite]
+
+  - id: hardcoded-blog-id-in-switch-to-blog
+    pattern: switch_to_blog($NUM)
+    message: |
+      switch_to_blog() called with magic number. Use named constant instead.
+
+      Define:
+        define('BLOG_ID_NEWSROOM', 4);
+
+      Use:
+        switch_to_blog(BLOG_ID_NEWSROOM);
+
+      This makes code self-documenting and easier to maintain.
+    severity: WARNING
+    languages: [php]
+    metadata:
+      category: maintainability
+      confidence: HIGH
+      impact: LOW
+
+  - id: blog-id-variable-without-comment
+    patterns:
+      - pattern: $VAR = $NUM;
+      - metavariable-regex:
+          metavariable: $VAR
+          regex: .*blog.*id.*
+      - pattern-not-inside: |
+          // ... $VAR ...
+          $VAR = $NUM;
+    message: |
+      Blog ID assignment without explanatory comment.
+      Document which site this blog ID represents.
+
+      Example:
+        $news_blog_id = 4; // Newsroom blog (news.example.com)
+    severity: INFO
+    languages: [php]
+    metadata:
+      category: maintainability
+      confidence: MEDIUM
+
+  - id: multiple-blog-id-checks-suggest-constants
+    patterns:
+      - pattern-either:
+          - pattern: |
+              if (get_current_blog_id() === $A) { ... }
+              ...
+              if (get_current_blog_id() === $B) { ... }
+          - pattern: |
+              if (get_current_blog_id() == $A) { ... }
+              ...
+              if (get_current_blog_id() == $B) { ... }
+      - metavariable-comparison:
+          metavariable: $A
+          comparison: $A != $B
+    message: |
+      Multiple blog ID checks detected in same file.
+      Strongly consider centralizing blog IDs as constants.
+
+      Define in wp-config.php:
+        define('BLOG_ID_MAIN', 1);
+        define('BLOG_ID_NEWSROOM', 4);
+        define('BLOG_ID_CAREERS', 8);
+        define('BLOG_ID_POLICY', 20);
+
+      Use consistently:
+        if (get_current_blog_id() === BLOG_ID_MAIN) { ... }
+        if (get_current_blog_id() === BLOG_ID_NEWSROOM) { ... }
+    severity: WARNING
+    languages: [php]
+    metadata:
+      category: maintainability
+      confidence: HIGH
+      impact: MEDIUM

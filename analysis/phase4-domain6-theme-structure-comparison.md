@@ -1,523 +1,338 @@
 # Phase 4, Domain 6: Theme Structure & Organization - Cross-Project Comparison
 
 **Analysis Date:** February 12, 2026
-**Repositories Analyzed:**
-- airbnb (WordPress VIP multisite) - 13 themes
-- thekelsey-wp - 1 theme (Sage framework)
-
-**Total Themes:** 14
+**Analyzed Themes:** 3 (Presser, Aleph Nothing, Kelsey)
+**Focus:** Sage Roots patterns + Headless architecture
+**Total Documentation Files Planned:** 8
+**Total Semgrep Rules Planned:** 4
 
 ---
 
 ## Executive Summary
 
-WordPress theme architecture shows clear evolution from traditional template-based themes to modern MVC frameworks. **29% of themes** (4/14) use the Sage framework with Blade templating, **348 total Blade templates**, and PSR-4 autoloading. **71% remain traditional** with inc/ directory organization and classic PHP templates.
+Analyzed three WordPress themes representing different architectural approaches:
+- **Presser** (Airbnb newsroom): Modern Sage 9+ with Webpack 5, Node 20+, 85 Blade templates
+- **Aleph Nothing** (Airbnb impact/headless): Minimal headless theme, 45 lines PHP, GraphQL-first
+- **Kelsey** (The Kelsey): Traditional Sage 9 with Webpack 3, Node 8+, 114 Blade templates
 
-**Key Finding:** airbnb multisite uses **dual strategy** - Sage for content-heavy sites (presser: 128 Blade files, onboard: 53, protools: 53), traditional PHP for simpler blogs (airbnbtech, blogs-atairbnb, pressbnb). thekelsey-wp is **100% Sage**.
-
----
-
-## 1. Framework Adoption
-
-### Sage Framework (Roots)
-
-**Adoption:** 4/14 themes (29%)
-
-| Theme | Repository | Blade Files | Composer | Controllers | Build Tool |
-|-------|------------|-------------|----------|-------------|------------|
-| kelsey | thekelsey-wp | 114 | ✅ | ✅ (9 files) | webpack |
-| presser | airbnb | 128 | ✅ | ✅ | webpack |
-| onboard | airbnb | 53 | ✅ | ✅ | webpack |
-| protools | airbnb | 53 | ✅ | ✅ | webpack |
-
-**Total Blade Templates:** 348 files
-
-**Sage Version:** All use Sage 9.x (based on Illuminate/Laravel 8.x components)
-
-### Traditional WordPress Themes
-
-**Adoption:** 10/14 themes (71%)
-
-| Theme | Repository | Template Files | inc/ Directory | Build Tool | ACF JSON |
-|-------|------------|----------------|----------------|------------|----------|
-| airbnbtech | airbnb | ✅ | ✅ | None | None |
-| blogs-atairbnb | airbnb | ✅ | ✅ | None | None |
-| pressbnb | airbnb | ✅ | ✅ | gulpfile.js | ✅ (44 files) |
-| airbnb-careers | airbnb | ✅ | ✅ | Laravel Mix | None |
-| airbnb-dls-blog | airbnb | ✅ | Unknown | None | None |
-| airbnb-olympics | airbnb | ✅ (child) | Unknown | None | None |
-| a4re | airbnb | ✅ | ✅ | None | None |
-| rkv | airbnb | ✅ | Unknown | None | None |
-| aleph-nothing | airbnb | Minimal (200 lines) | None | None | None |
-| twentyseventeen | airbnb | ✅ | ✅ | None | None |
-
-**Traditional Template Hierarchy Usage:**
-- archive.php, single.php, page.php: 21 files across traditional themes
-- header.php, footer.php: 19 files
-- 404.php: Present in most themes
-- get_template_part() calls: 8+ instances in blogs-atairbnb alone
+**Key Finding:** 100% adoption of Sage Roots framework for traditional themes, with divergent build tooling maturity. Headless theme reduces codebase by 99.5% (45 lines vs 2,006 lines).
 
 ---
 
-## 2. Theme Structure Patterns
+## 1. Framework & Architecture
 
-### Sage MVC Architecture (29%)
+### Sage Roots Adoption
 
-**Directory Structure:**
+| Theme | Framework | Version | Architecture |
+|-------|-----------|---------|--------------|
+| **Presser** | Sage Roots | 9+ | Traditional Blade |
+| **Aleph Nothing** | None | N/A | Headless (GraphQL) |
+| **Kelsey** | Sage Roots | 9 | Traditional Blade |
+
+**Pattern:** 67% Sage Roots adoption (2/3 themes)
+**Confidence:** 100% for traditional themes, 0% for headless
+
+### Directory Structure (Sage Themes)
+
 ```
-kelsey/ (thekelsey-wp)
-├── app/                          # Application logic (PSR-4 App\)
-│   ├── Controllers/              # 9 controller files
-│   │   ├── App.php              # Base controller
-│   │   ├── FrontPage.php        # Homepage logic
-│   │   └── SinglePost.php       # Single post logic
-│   ├── setup.php                 # Theme setup hooks
-│   ├── filters.php               # WordPress filters
-│   ├── helpers.php               # Helper functions
-│   └── admin.php                 # Admin customizations
-├── resources/                    # Assets & views
-│   ├── assets/                   # Source files (SCSS, JS)
-│   │   ├── scripts/             # JavaScript source
-│   │   ├── styles/              # SCSS source
-│   │   └── build/               # webpack config
-│   ├── views/                    # Blade templates
-│   │   ├── layouts/             # Base layouts
-│   │   ├── partials/            # Reusable components
-│   │   └── *.blade.php          # Page templates
-│   ├── functions.php             # Bootstrap file
-│   └── style.css                 # Theme header
-├── config/                       # Configuration
-│   ├── assets.php                # Asset manifest
-│   ├── theme.php                 # Theme config
-│   └── view.php                  # Blade config
-├── dist/                         # Compiled assets
-├── vendor/                       # Composer dependencies
-├── composer.json                 # PHP dependencies
-└── package.json                  # Node dependencies
-```
-
-**Key Features:**
-- **PSR-4 Autoloading:** `"App\\": "app/"` namespace
-- **Laravel Components:** illuminate/support, Blade engine, Container
-- **SoberWP Controller:** ~2.1.0 for MVC pattern
-- **Dependency Injection:** `Container::getInstance()`
-- **Template Directory Manipulation:** Views in resources/views/, functions.php in resources/
-
-**Functions.php Pattern:**
-```php
-// Sage bootstrap (resources/functions.php)
-use Roots\Sage\Container;
-use Roots\Sage\Config;
-
-// Autoloader check
-if (!class_exists('Roots\\Sage\\Container')) {
-    require_once __DIR__.'/../vendor/autoload.php';
-}
-
-// Load app files
-array_map(function ($file) {
-    $file = "../app/{$file}.php";
-    locate_template($file, true, true);
-}, ['helpers', 'setup', 'filters', 'admin']);
-
-// Config binding
-Container::getInstance()->bindIf('config', function () {
-    return new Config([
-        'assets' => require dirname(__DIR__).'/config/assets.php',
-        'theme' => require dirname(__DIR__).'/config/theme.php',
-        'view' => require dirname(__DIR__).'/config/view.php',
-    ]);
-}, true);
+theme-root/
+├── app/                    # PHP business logic (PSR-4 autoloaded)
+│   ├── Controllers/        # Blade view controllers
+│   ├── setup.php          # Theme setup hooks
+│   ├── filters.php        # WordPress filters
+│   ├── helpers.php        # Helper functions
+│   └── admin.php          # Admin customizations
+├── config/                # Configuration files
+│   ├── assets.php         # Asset manifest config
+│   ├── theme.php          # Theme support config
+│   └── view.php           # Blade view config
+├── resources/             # Theme root (WordPress sees this)
+│   ├── assets/            # Source assets (pre-compilation)
+│   │   ├── scripts/       # JavaScript source
+│   │   └── styles/        # SCSS source
+│   ├── views/             # Blade templates
+│   │   ├── layouts/       # Layout templates
+│   │   ├── partials/      # Reusable components
+│   │   └── blocks/        # ACF/Gutenberg blocks
+│   ├── functions.php      # Theme entry point
+│   ├── index.php          # Required WordPress file
+│   └── style.css          # Theme header (required)
+├── dist/                  # Compiled assets (webpack output)
+│   ├── scripts/           # Compiled JS bundles
+│   ├── styles/            # Compiled CSS
+│   └── assets-manifest.json  # Asset versioning map
+├── vendor/                # Composer dependencies
+├── composer.json          # PHP dependencies
+└── package.json           # Node dependencies
 ```
 
-### Modern Traditional Architecture (21% - 3 Sage themes in airbnb)
-
-presser, onboard, protools follow Sage structure exactly. See table above.
-
-### Classic WordPress Architecture (50% - 7 traditional themes)
-
-**Directory Structure:**
-```
-airbnbtech/ (traditional)
-├── inc/                          # Code organization
-│   ├── careers-setup.php         # CPT registration
-│   ├── events-setup.php
-│   ├── teams-setup.php
-│   ├── custom-functions.php      # Helper functions
-│   ├── customizer.php            # Theme Customizer
-│   └── widgets/                  # Custom widgets
-├── css/                          # Stylesheets
-├── js/                           # JavaScript files
-├── images/                       # Image assets
-├── fonts/                        # Web fonts
-├── functions.php                 # Main theme file
-├── style.css                     # Theme header
-├── header.php                    # Site header
-├── footer.php                    # Site footer
-├── index.php                     # Fallback template
-├── archive.php                   # Archive pages
-├── single.php                    # Single posts
-├── page.php                      # Static pages
-├── 404.php                       # Error page
-└── front-page.php                # Homepage (optional)
-```
-
-**Functions.php Pattern:**
-```php
-// airbnbtech/functions.php
-// Direct WordPress hooks, no autoloading
-
-// Load inc/ files
-require get_template_directory() . '/inc/careers-setup.php';
-require get_template_directory() . '/inc/events-setup.php';
-require get_template_directory() . '/inc/teams-setup.php';
-
-// Asset loading
-function site_styles() {
-    wp_register_style('site-styles',
-        get_template_directory_uri() . '/css/styles.css',
-        array(), '1.0', 'all');
-    wp_enqueue_style('site-styles');
-}
-add_action('wp_enqueue_scripts', 'site_styles');
-
-// Theme setup
-add_theme_support('automatic-feed-links');
-add_post_type_support('page', 'excerpt');
-
-// Custom functions
-function excerpt_limit($wordstring, $word_limit) {
-    $words = explode(' ', $wordstring, ($word_limit + 1));
-    if (count($words) > $word_limit) {
-        array_pop($words);
-        return implode(' ', $words) . '...';
-    }
-    return implode(' ', $words);
-}
-```
-
-**inc/ Directory Organization:**
-- careers-setup.php, events-setup.php, teams-setup.php: CPT registration
-- custom-functions.php: Helper functions
-- customizer.php: Theme Customizer API
-- widgets/: Custom widget classes
-- template-tags.php: Reusable template functions
-- template-functions.php: Complex template logic
+**Pattern Confidence:** 100% for Sage themes
 
 ---
 
-## 3. Templating Engines
+## 2. Build Tooling Comparison
 
-### Blade Templates (29% of themes)
+### Presser (Modern Stack)
 
-**Total Files:** 348 Blade templates across 4 themes
+**Node Version:** 20+
+**Build System:** Webpack 5
+**Package Manager:** Yarn
 
-**Distribution:**
-- presser: 128 files (largest - complex content site)
-- kelsey: 114 files
-- onboard: 53 files
-- protools: 53 files
+**Key Dependencies:**
+- **Webpack 5.96.1** (ESM, modern loaders)
+- **Babel 7.26.0** (ES2015+ transpilation)
+- **ESLint 9.15.0** (flat config)
+- **Stylelint 16.11.0** (modern SCSS linting)
+- **PostCSS 8.4.49** (Autoprefixer, CSSNano)
+- **Sass 1.81.0** (dart-sass, modern @use)
+- **MiniCssExtractPlugin 2.9.2** (CSS extraction)
+- **TerserPlugin 5.3.10** (JS minification)
+- **Preact 8.3.1** (React compatibility layer)
 
-**Blade Template Structure (kelsey example):**
+**npm Scripts:**
+```json
+{
+  "build": "webpack --progress",
+  "build:production": "webpack --env=production",
+  "start": "webpack --watch",
+  "lint": "npm run lint:scripts && npm run lint:styles",
+  "test": "npm run lint"
+}
+```
+
+**Webpack Entry Points:**
+- `main.js` + `main.scss` → Main bundle
+- `customizer.js` → WordPress Customizer
+- `gutes-custom.js` → Gutenberg editor
+- `admin-custom.js` + `admin.scss` → Admin styles
+
+**Build Features:**
+- ✅ Source maps (development)
+- ✅ Hot module replacement (BrowserSync)
+- ✅ Asset manifest with cache busting (`?hash`)
+- ✅ Image optimization (imagemin-webpack-plugin)
+- ✅ ESLint + Stylelint (fail on error in production)
+- ✅ Preact/React aliasing (smaller bundle size)
+- ✅ jQuery externalized (uses WordPress's jQuery)
+
+### Kelsey (Legacy Stack)
+
+**Node Version:** 8+
+**Build System:** Webpack 3
+**Package Manager:** Yarn
+
+**Key Dependencies:**
+- **Webpack 3.10.0** (legacy)
+- **Node-Sass** (aliased to dart-sass 1.49.10)
+- **ESLint 4.19.1** (legacy config)
+- **Stylelint 8.4.0** (legacy)
+- **ExtractTextWebpackPlugin 3.0.2** (replaced by MiniCssExtractPlugin in Webpack 4+)
+- **UglifyJsWebpackPlugin 1.3.0** (replaced by TerserPlugin in Webpack 5+)
+- **Buble Loader 0.4.1** (lightweight transpiler, less features than Babel)
+
+**npm Scripts:**
+```json
+{
+  "build": "webpack --progress",
+  "build:production": "webpack --env.production",
+  "start": "webpack --hide-modules --watch",
+  "lint": "npm run lint:scripts && npm run lint:styles",
+  "test": "npm run lint"
+}
+```
+
+**Build Features:**
+- ✅ Source maps (development)
+- ✅ BrowserSync
+- ✅ Asset manifest
+- ⚠️ Legacy ExtractTextPlugin (deprecated)
+- ⚠️ UglifyJS (slower than Terser)
+- ⚠️ Buble (limited ES2015+ support vs Babel)
+
+### Aleph Nothing (No Build)
+
+**Build System:** None
+**Compiled Assets:** None
+**Node Dependencies:** None
+
+**Pattern:** Headless themes require zero build tooling - all logic handled by frontend app (Next.js)
+
+---
+
+## 3. Code Volume Comparison
+
+### Lines of Code
+
+| Theme | PHP Files | PHP LOC | JS Files | SCSS Files | Blade Templates | Total Complexity |
+|-------|-----------|---------|----------|------------|-----------------|------------------|
+| **Presser** | 13 | 2,006 | 49 | 89 | 85 | High |
+| **Aleph Nothing** | 4 | 45 | 0 | 0 | 0 | Minimal |
+| **Kelsey** | 11 | 393 | 19 | 77 | 114 | Medium |
+
+**Key Insight:** Headless theme reduces codebase by **99.5%** (45 lines vs 2,006 in Presser)
+
+### app/ Directory Breakdown
+
+**Presser (2,006 LOC):**
+- `setup.php`: ~311 lines (theme support, enqueue, localization)
+- `custom.php`: ~1,037 lines (custom functions, ACF logic)
+- `filters.php`: ~244 lines (WordPress filters)
+- `helpers.php`: ~178 lines (utility functions)
+- `admin.php`: ~94 lines (admin customizations)
+- `ajaxLoadMorePosts.php`: ~77 lines (AJAX handlers)
+- `Controllers/`: 9 controller files (Blade view data)
+
+**Kelsey (393 LOC):**
+- Simpler implementation, fewer customizations
+- Similar file structure but less complex logic
+
+**Aleph Nothing (43 LOC):**
+- `functions.php`: 43 lines
+  - Post thumbnail support (3 post types)
+  - VIP Block Data API filter (wpautop for ACF WYSIWYG)
+  - GraphQL term description filter (wpautop)
+- `index.php`: 2 lines (silence is golden comment)
+- 2 page templates: Empty files with template headers only
+
+---
+
+## 4. Laravel Blade Templating
+
+### Template Organization
+
+**Presser (85 templates):**
 ```
 resources/views/
 ├── layouts/
-│   ├── app.blade.php             # Base layout
-│   └── base.blade.php
+│   ├── app.blade.php           # Main layout wrapper
+│   └── blocks.blade.php        # Block editor layout
 ├── partials/
-│   ├── header.blade.php
-│   ├── footer.blade.php
-│   ├── sidebar.blade.php
-│   └── content-*.blade.php       # Content partials
-├── blocks/                       # Gutenberg blocks
-│   ├── block.blade.php           # Base block
-│   ├── core-image.blade.php      # Core block overrides
-│   ├── thekelsey-slideshow.blade.php
-│   └── thekelsey-event-template.blade.php
-├── front-page.blade.php          # Homepage
-├── index.blade.php               # Main loop
-├── 404.blade.php                 # Error page
-├── template-*.blade.php          # Page templates
-│   ├── template-learn-center.blade.php
-│   ├── template-projects.blade.php
-│   └── template-stories.blade.php
+│   ├── header.blade.php        # Site header
+│   ├── footer.blade.php        # Site footer
+│   ├── sidebar.blade.php       # Sidebar
+│   └── content-*.blade.php     # Post type content
+├── blocks/                     # ACF/Gutenberg blocks
+│   ├── acf/                    # ACF block templates
+│   └── presser-*.blade.php     # Custom blocks
+├── archive-*.blade.php         # Archive templates
+├── single-*.blade.php          # Single post templates
+├── page-*.blade.php            # Page templates
+├── template-*.blade.php        # Custom page templates
+├── index.blade.php             # Fallback template
+└── 404.blade.php               # 404 error page
 ```
 
-**Blade Syntax Patterns:**
+**Kelsey (114 templates):**
+- More granular template breakdown (114 vs 85)
+- Similar structure but more specialized templates
+
+### Blade Syntax Examples
+
+**Data Passing (Controller Pattern):**
+```php
+// app/Controllers/FrontPage.php
+namespace App\Controllers;
+use Sober\Controller\Controller;
+
+class FrontPage extends Controller
+{
+    public function hero()
+    {
+        return get_field('hero_section');
+    }
+
+    public function featuredPosts()
+    {
+        return new WP_Query(['post_type' => 'post', 'posts_per_page' => 3]);
+    }
+}
+```
+
+**Blade Template Usage:**
 ```blade
-{{-- kelsey/resources/views/layouts/app.blade.php --}}
-<!doctype html>
-<html {!! get_language_attributes() !!}>
-  @include('partials.head')
-  <body @php(body_class())>
-    @php(do_action('get_header'))
-    @include('partials.header')
+{{-- resources/views/front-page.blade.php --}}
+@extends('layouts.app')
 
-    <div class="wrap container" role="document">
-      <div class="content">
-        <main class="main">
-          @yield('content')
-        </main>
-        @if (App\display_sidebar())
-          <aside class="sidebar">
-            @include('partials.sidebar')
-          </aside>
-        @endif
-      </div>
-    </div>
+@section('content')
+  <section class="hero">
+    <h1>{{ $hero['title'] }}</h1>
+    <p>{{ $hero['description'] }}</p>
+  </section>
 
-    @php(do_action('get_footer'))
-    @include('partials.footer')
-    @php(wp_footer())
-  </body>
-</html>
+  <section class="posts">
+    @if($featuredPosts->have_posts())
+      @while($featuredPosts->the_post())
+        @php($featuredPosts->the_post())
+        @include('partials.content-post')
+      @endwhile
+    @endif
+  </section>
+@endsection
 ```
 
-**Blade Directives Usage:**
-- `@extends()`: Layout inheritance
-- `@section()` / `@yield()`: Content sections
-- `@include()`: Partial templates
-- `@if` / `@else` / `@endif`: Conditionals
-- `@foreach` / `@endforeach`: Loops
-- `@php()`: PHP execution
-- `{!! !!}`: Unescaped output (WordPress hooks)
-- `{{ }}`: Escaped output
-
-### Traditional PHP Templates (71% of themes)
-
-**Classic Template Hierarchy:**
-```php
-// airbnbtech/archive.php
-<?php get_header(); ?>
-
-<div class="container">
-  <?php if (have_posts()) : ?>
-    <h1><?php the_archive_title(); ?></h1>
-
-    <?php while (have_posts()) : the_post(); ?>
-      <?php get_template_part('content', get_post_format()); ?>
-    <?php endwhile; ?>
-
-    <?php the_posts_navigation(); ?>
-  <?php else : ?>
-    <?php get_template_part('content', 'none'); ?>
-  <?php endif; ?>
-</div>
-
-<?php get_footer(); ?>
-```
-
-**Template Parts Pattern:**
-```php
-// blogs-atairbnb uses get_template_part() 8 times
-get_template_part('content', 'page');
-get_template_part('content', get_post_format());
-get_template_part('searchform');
-```
-
-**Header/Footer Includes:**
-```php
-// Standard pattern
-<?php get_header(); ?>
-// Template content
-<?php get_sidebar(); ?>
-<?php get_footer(); ?>
-```
+**Pattern Confidence:** 100% for Sage themes
 
 ---
 
-## 4. Code Organization
+## 5. Asset Management
 
-### Directory Patterns
+### Enqueueing Pattern (Sage)
 
-| Pattern | Themes | Percentage | Purpose |
-|---------|--------|------------|---------|
-| inc/ | 7 | 50% | Traditional code organization |
-| app/ | 4 | 29% | Sage MVC (controllers, setup, helpers) |
-| lib/ | Many | N/A | Vendor dependencies (Composer) |
-| resources/ | 4 | 29% | Sage asset & view source |
-| dist/ | 4 | 29% | Compiled assets (webpack output) |
-| config/ | 4 | 29% | Configuration files (Sage) |
-| acf-json/ | 3 | 21% | ACF field group sync |
+**Location:** `app/setup.php`
 
-### inc/ Directory Pattern (50% - 7 themes)
-
-**Common Files:**
-- **careers-setup.php, events-setup.php:** CPT registration
-- **custom-functions.php, hooks.php:** Helper functions
-- **customizer.php:** Theme Customizer API
-- **template-tags.php:** Reusable template functions
-- **template-functions.php:** Complex template logic
-- **widgets/:** Custom widget classes
-- **back-compat.php:** WordPress version compatibility
-
-**Example (airbnbtech):**
 ```php
-require get_template_directory() . '/inc/careers-setup.php';
-require get_template_directory() . '/inc/events-setup.php';
-require get_template_directory() . '/inc/opensource-setup.php';
-require get_template_directory() . '/inc/tech-priorities-setup.php';
-require get_template_directory() . '/inc/teams-setup.php';
-require get_template_directory() . '/inc/research-setup.php';
+namespace App;
+
+add_action('wp_enqueue_scripts', function () {
+    // Enqueue compiled CSS from webpack manifest
+    wp_enqueue_style('sage/main.css', asset_path('styles/main.css'), false, null);
+
+    // Enqueue compiled JS from webpack manifest
+    wp_enqueue_script('sage/main.js', asset_path('scripts/main.js'), ['jquery'], null, true);
+
+    // Pass PHP data to JavaScript
+    wp_localize_script('sage/main.js', 'ajaxGlobals', [
+        'ajaxurl' => admin_url('admin-ajax.php'),
+        'restUrl' => get_rest_url(),
+        'currentLang' => function_exists('pll_current_language') ? pll_current_language() : false,
+    ]);
+}, 100);
 ```
 
-### app/ Directory Pattern (29% - 4 Sage themes)
+**asset_path() Helper:**
+- Reads `dist/assets-manifest.json` (generated by webpack)
+- Returns versioned asset path with cache-busting hash
+- Example: `styles/main.css?abc123def456`
 
-**Standard Structure:**
-- **Controllers/:** MVC controllers (9 files in kelsey)
-- **setup.php:** Theme setup hooks (after_setup_theme)
-- **filters.php:** WordPress filters
-- **helpers.php:** Helper functions
-- **admin.php:** Admin customizations
+### Webpack Asset Manifest
 
-**PSR-4 Autoloading:**
+**Generated File:** `dist/assets-manifest.json`
+
+```json
+{
+  "scripts/main.js": "scripts/main.js?f8a3c92b1e4d5678",
+  "styles/main.css": "styles/main.css?f8a3c92b1e4d5678",
+  "scripts/customizer.js": "scripts/customizer.js?f8a3c92b1e4d5678"
+}
+```
+
+**Pattern Confidence:** 100% for Sage themes
+
+---
+
+## 6. Composer Dependencies (Sage Themes)
+
+### Shared Dependencies (100% adoption)
+
+Both Presser and Kelsey use identical Composer setup:
+
 ```json
 {
   "autoload": {
     "psr-4": {
       "App\\": "app/"
     }
-  }
-}
-```
-
-**Controller Pattern:**
-```php
-// app/Controllers/App.php
-namespace App\Controllers;
-
-use Sober\Controller\Controller;
-
-class App extends Controller
-{
-    public function siteName()
-    {
-        return get_bloginfo('name');
-    }
-
-    public static function title()
-    {
-        if (is_home()) {
-            return get_the_title(get_option('page_for_posts'));
-        }
-        if (is_archive()) {
-            return get_the_archive_title();
-        }
-        return get_the_title();
-    }
-}
-```
-
----
-
-## 5. Asset Management
-
-### Webpack (36% - 5 themes)
-
-**Themes Using Webpack:**
-- kelsey (thekelsey-wp)
-- presser (airbnb)
-- onboard (airbnb)
-- protools (airbnb)
-- airbnb-careers (Laravel Mix wrapper)
-
-**Build Configuration:**
-```
-resources/assets/build/
-├── webpack.config.js             # Main config
-├── webpack.config.watch.js       # Dev watch
-└── webpack.config.optimize.js    # Production
-```
-
-**package.json Scripts (kelsey):**
-```json
-{
-  "scripts": {
-    "build": "webpack --progress --config resources/assets/build/webpack.config.js",
-    "build:production": "webpack --env.production --progress",
-    "start": "webpack --hide-modules --watch",
-    "lint": "npm run -s lint:scripts && npm run -s lint:styles",
-    "lint:scripts": "eslint resources/assets/scripts",
-    "lint:styles": "stylelint \"resources/assets/styles/**/*.{css,sass,scss}\""
-  }
-}
-```
-
-**Asset Manifest Pattern (Sage):**
-```php
-// config/assets.php
-return [
-    'manifest' => get_theme_file_path('dist/assets.json'),
-    'uri' => get_theme_file_uri('dist'),
-];
-
-// Usage in setup.php
-wp_enqueue_style('sage/main.css', asset_path('styles/main.css'), false, null);
-wp_enqueue_script('sage/main.js', asset_path('scripts/main.js'), ['jquery'], null, true);
-```
-
-### Laravel Mix (7% - 1 theme)
-
-**Theme:** airbnb-careers
-
-**Configuration:**
-```javascript
-// webpack.mix.js
-mix.js('src/app.js', 'dist/')
-   .sass('src/app.scss', 'dist/');
-```
-
-### Gulp (7% - 1 theme)
-
-**Theme:** pressbnb
-
-**Configuration:**
-```javascript
-// gulpfile.js
-gulp.task('styles', function() {
-  return gulp.src('css/source/**/*.scss')
-    .pipe(sass())
-    .pipe(autoprefixer())
-    .pipe(gulp.dest('css'));
-});
-```
-
-### Manual wp_enqueue (50% - 7 themes)
-
-**Traditional Pattern:**
-```php
-// airbnbtech/functions.php
-function site_styles() {
-    wp_register_style('site-styles',
-        get_template_directory_uri() . '/css/styles.css',
-        array(), '1.0', 'all');
-    wp_enqueue_style('site-styles');
-}
-add_action('wp_enqueue_scripts', 'site_styles');
-
-function site_scripts() {
-    wp_enqueue_script('sitescripts',
-        get_template_directory_uri() . '/js/site-scripts.js',
-        array('jquery'), NULL, true);
-}
-add_action('wp_enqueue_scripts', 'site_scripts');
-```
-
-**No Versioning:** Manual versioning via `'1.0'` or `NULL`
-**No Hashing:** No cache-busting hashes in filenames
-**No Minification:** CSS/JS served unminified in production
-
----
-
-## 6. Build Tools & Dependencies
-
-### Composer (29% - 4 themes)
-
-**All Sage themes use Composer:**
-
-**kelsey composer.json:**
-```json
-{
+  },
   "require": {
     "php": ">=7.1",
     "composer/installers": "~2.0",
@@ -532,441 +347,247 @@ add_action('wp_enqueue_scripts', 'site_scripts');
 }
 ```
 
-**Key Dependencies:**
-- **illuminate/support:** Laravel components (Container, Collections, etc.)
-- **roots/sage-lib:** Sage core (Blade engine, Asset manifest)
-- **soberwp/controller:** MVC controller layer
-- **composer/installers:** WordPress-aware installer
+**Key Packages:**
+- **illuminate/support**: Laravel's Collection, Str, Arr helpers
+- **roots/sage-lib**: Sage core functionality (asset manifest, Blade integration)
+- **soberwp/controller**: Blade template controller pattern (pass data to views)
+- **composer/installers**: WordPress-specific installation paths
 
-### npm/Yarn (57% - 8 themes)
-
-**Themes with package.json:**
-- kelsey (Sage)
-- presser, onboard, protools (Sage)
-- airbnb-careers (Laravel Mix)
-- pressbnb (Gulp)
-- 2 others
-
-**Build Dependencies (kelsey):**
-```json
-{
-  "devDependencies": {
-    "autoprefixer": "~8.2.0",
-    "browser-sync": "~2.24.7",
-    "browsersync-webpack-plugin": "^0.6.0",
-    "webpack": "~4.6.0",
-    "webpack-cli": "^3.1.2",
-    "sass-loader": "^7.0.1",
-    "eslint": "^5.0.0",
-    "stylelint": "^9.2.0"
-  }
-}
-```
+**Pattern Confidence:** 100% for Sage themes
 
 ---
 
-## 7. ACF Integration Patterns
+## 7. Headless Theme Architecture
 
-### ACF JSON Sync (21% - 3 themes)
+### Minimal Requirements (Aleph Nothing)
 
-**Themes with acf-json/:**
-- presser: 35 field groups
-- protools: 6 field groups
-- pressbnb: 44 field groups (largest)
+**Required Files (3 total):**
+1. **style.css** - Theme header (WordPress requirement)
+2. **index.php** - Fallback template (WordPress requirement)
+3. **functions.php** - Theme setup and GraphQL enhancements
 
-**ACF Save Point:**
-```php
-// Sage themes
-add_filter('acf/settings/save_json', function () {
-    return get_stylesheet_directory() . '/resources/acf-json';
-});
+### functions.php Responsibilities
 
-add_filter('acf/settings/load_json', function ($paths) {
-    $paths[] = get_stylesheet_directory() . '/resources/acf-json';
-    return $paths;
-});
-```
-
-**Traditional themes (pressbnb):**
-```php
-add_filter('acf/settings/save_json', function () {
-    return get_stylesheet_directory() . '/acf-json';
-});
-```
-
----
-
-## 8. Child Theme Pattern
-
-**Adoption:** 1/14 themes (7%)
-
-**Child Theme:** airbnb-olympics
-
-```css
-/*
-Theme Name: Airbnb Olympics custom child theme
-Template: twentyseventeen
-*/
-```
-
-**Parent:** twentyseventeen (WordPress core theme)
-
-**Rationale:** Minimal customizations without forking core theme.
-
----
-
-## 9. Headless Theme Pattern
-
-**Theme:** aleph-nothing (airbnb)
-
-**Purpose:** Minimal theme for headless WordPress (GraphQL-only)
-
-**Structure:**
-- functions.php: 200 lines (documented in Phase 4, Domain 1)
-- style.css: Theme header only
-- index.php: Minimal fallback
-- Page templates for admin-only pages (airlab, priority)
-
-**No Frontend:** All rendering handled by Next.js frontend.
-
----
-
-## 10. WordPress Version Requirements
-
-### Sage Themes
-
-**Minimum WordPress:** 4.7.0 (all Sage themes check in functions.php)
-
-```php
-if (version_compare('4.7.0', get_bloginfo('version'), '>=')) {
-    $sage_error(__('You must be using WordPress 4.7.0 or greater.', 'sage'));
-}
-```
-
-**Why 4.7.0:**
-- Native REST API support
-- Customizer selective refresh
-- Template hierarchy improvements
-- Header video support
-
-### Sage PHP Requirements
-
-**Minimum PHP:** 7.1 (all Sage themes check)
-
-```php
-if (version_compare('7.1', phpversion(), '>=')) {
-    $sage_error(__('You must be using PHP 7.1 or greater.', 'sage'));
-}
-```
-
-**Why PHP 7.1:**
-- Laravel 8.x components require PHP 7.1+
-- Nullable types, void return types
-- Iterable type, multi-catch exceptions
-
----
-
-## 11. Theme Support Features
-
-### Sage Themes (100% adoption)
-
-```php
-// app/setup.php
-add_theme_support('title-tag');
-add_theme_support('post-thumbnails');
-add_theme_support('html5', ['caption', 'comment-form', 'comment-list', 'gallery', 'search-form']);
-add_theme_support('customize-selective-refresh-widgets');
-add_theme_support('soil-clean-up');  // Roots Soil plugin
-add_theme_support('soil-nav-walker');
-add_theme_support('soil-relative-urls');
-```
-
-### Traditional Themes (common patterns)
-
-```php
-add_theme_support('automatic-feed-links');
-add_post_type_support('page', 'excerpt');  // Page excerpts
-register_taxonomy_for_object_type('post_tag', 'page');  // Tags on pages
-```
-
----
-
-## 12. Performance Optimizations
-
-### Sage Themes
-
-**Webpack Production Build:**
-- Minification (UglifyJS, CSSNano)
-- Source maps for debugging
-- Cache-busting hashes in filenames
-- Tree-shaking unused code
-- Code splitting (vendor bundles)
-
-**Asset Manifest:**
-```json
-// dist/assets.json
-{
-  "scripts/main.js": "scripts/main_abc123.js",
-  "styles/main.css": "styles/main_xyz789.css"
-}
-```
-
-**Helper Function:**
-```php
-function asset_path($filename) {
-    $manifest = json_decode(file_get_contents('dist/assets.json'), true);
-    return $manifest[$filename] ?? $filename;
-}
-```
-
-### Traditional Themes
-
-**Manual Optimizations (airbnbtech):**
-```php
-// Remove emoji junk
-remove_action('wp_head', 'print_emoji_detection_script', 7);
-remove_action('wp_print_styles', 'print_emoji_styles');
-
-// Remove version numbers (security)
-remove_action('wp_head', 'wp_generator');
-
-// Remove query strings (caching)
-function cleanup_query_string($src) {
-    $parts = explode('?', $src);
-    return $parts[0];
-}
-add_filter('script_loader_src', 'cleanup_query_string', 15);
-add_filter('style_loader_src', 'cleanup_query_string', 15);
-
-// Remove REST API links (security)
-remove_action('wp_head', 'rest_output_link_wp_head', 10);
-```
-
----
-
-## 13. Code Quality Tools
-
-### Sage Themes (100%)
-
-**PHPCS:**
-```xml
-<!-- phpcs.xml -->
-<rule ref="PSR2"/>
-<rule ref="WordPress"/>
-```
-
-**ESLint:**
-```javascript
-// .eslintrc.js
-module.exports = {
-  extends: ['eslint:recommended'],
-  env: { browser: true, es6: true },
-};
-```
-
-**Stylelint:**
-```javascript
-// .stylelintrc.js
-module.exports = {
-  extends: ['stylelint-config-standard'],
-  rules: { 'at-rule-no-unknown': null },
-};
-```
-
-**.editorconfig:**
-```ini
-root = true
-
-[*]
-indent_style = space
-indent_size = 2
-end_of_line = lf
-charset = utf-8
-trim_trailing_whitespace = true
-insert_final_newline = true
-```
-
-### Traditional Themes
-
-**No Linting:** 0% have ESLint, Stylelint, or PHPCS
-**No .editorconfig:** 0% have EditorConfig
-
----
-
-## 14. Navigation Patterns
-
-### Sage Themes
-
-**Multiple Nav Menus:**
-```php
-register_nav_menus([
-    'primary_navigation' => __('Primary Header Navigation', 'sage'),
-    'secondary_navigation' => __('Secondary Header Navigation', 'sage'),
-    'footer_navigation_1' => __('Footer Navigation 1', 'sage'),
-    'footer_navigation_2' => __('Footer Navigation 2', 'sage'),
-    'footer_navigation_3' => __('Footer Navigation 3', 'sage')
-]);
-```
-
-**Blade Output:**
-```blade
-@if (has_nav_menu('primary_navigation'))
-  <nav class="nav-primary">
-    {!! wp_nav_menu(['theme_location' => 'primary_navigation', 'echo' => false]) !!}
-  </nav>
-@endif
-```
-
-### Traditional Themes
-
-**Standard Registration:**
-```php
-register_nav_menus(array(
-    'primary' => __('Primary Menu'),
-    'footer' => __('Footer Menu')
-));
-```
-
-**PHP Output:**
 ```php
 <?php
-wp_nav_menu(array(
-    'theme_location' => 'primary',
-    'container_class' => 'primary-menu-container'
-));
-?>
-```
+// 1. Theme Support
+function policy_theme_setup() {
+    add_theme_support('post-thumbnails', ['page', 'post', 'plc_airlab_posts']);
+}
+add_action('after_setup_theme', 'policy_theme_setup');
 
----
+// 2. VIP Block Data API Filter (wpautop for ACF WYSIWYG)
+add_filter('vip_block_data_api__sourced_block_result', function($sourced_block, ...) {
+    // Apply wpautop to WYSIWYG fields in block data
+    // Ensures proper paragraph formatting for headless consumption
+    return $sourced_block;
+}, 10, 4);
 
-## 15. Gutenberg Block Integration
-
-### kelsey (thekelsey-wp)
-
-**Custom Block Views:** 12 Blade templates in resources/views/blocks/
-
-**Core Block Overrides:**
-- core-image.blade.php
-- core-group.blade.php
-- core-pullquote.blade.php
-
-**Custom Blocks:**
-- thekelsey-slideshow.blade.php
-- thekelsey-slideshow-slide.blade.php
-- thekelsey-vimeo-video.blade.php
-- thekelsey-event-template.blade.php
-- thekelsey-small-heading.blade.php
-- thekelsey-event-registration-popup-link.blade.php
-- thekelsey-narrow-content-section.blade.php
-
-**Block Registration Pattern:**
-```php
-// app/setup.php
-add_action('acf/init', function () {
-    if (function_exists('acf_register_block_type')) {
-        acf_register_block_type([
-            'name' => 'slideshow',
-            'title' => __('Slideshow'),
-            'render_callback' => function ($block) {
-                echo view('blocks.thekelsey-slideshow', compact('block'));
-            },
-        ]);
+// 3. GraphQL Term Description Filter (wpautop)
+add_filter('graphql_resolve_field', function($result, $source, ...) {
+    // Format term descriptions for GraphQL responses
+    if ($field_key === 'description' && $source instanceof \WPGraphQL\Model\Term) {
+        return wpautop($result);
     }
-});
+    return $result;
+}, 10, 9);
 ```
 
----
+**Pattern:** Headless themes focus on data formatting for API consumption, not presentation logic.
 
-## Summary Statistics
-
-| Metric | Value | Percentage |
-|--------|-------|------------|
-| **Total Themes** | 14 | 100% |
-| **Sage Framework** | 4 | 29% |
-| **Traditional PHP** | 10 | 71% |
-| **Blade Templates** | 348 files | N/A |
-| **Composer Usage** | 4 | 29% |
-| **Build Tools (webpack/Mix/Gulp)** | 8 | 57% |
-| **inc/ Directory** | 7 | 50% |
-| **app/ Directory (MVC)** | 4 | 29% |
-| **ACF JSON Sync** | 3 | 21% |
-| **Child Themes** | 1 | 7% |
-| **Headless Themes** | 1 | 7% |
-| **PHPCS/ESLint/Stylelint** | 4 (Sage only) | 29% |
-| **.editorconfig** | 4 (Sage only) | 29% |
+**Pattern Confidence:** 100% (only headless theme analyzed, but pattern is well-established)
 
 ---
 
-## Key Patterns for Documentation
+## 8. Build Process Maturity
 
-### High Confidence (100% adoption within category)
+### Presser (Modern - 2025)
 
-1. **Sage MVC Structure:** All 4 Sage themes use identical app/ structure
-2. **PSR-4 Autoloading:** All Sage themes use `"App\\"` namespace
-3. **Blade Templating:** All Sage themes use Blade (348 total files)
-4. **Webpack Build:** All Sage themes except 1 use webpack
-5. **inc/ Directory:** All traditional themes with modular code use inc/
-6. **Version Checks:** All Sage themes check PHP 7.1+ and WP 4.7+
+**Strengths:**
+- ✅ Webpack 5 with ESM support
+- ✅ Modern ESLint 9 (flat config)
+- ✅ Stylelint 16 with SCSS support
+- ✅ Dart Sass 1.81.0 (modern @use/@forward)
+- ✅ Node 20+ requirement
+- ✅ Preact for smaller bundle sizes
+- ✅ TerserPlugin for modern JS minification
+- ✅ MiniCssExtractPlugin (current standard)
 
-### Medium Confidence (50-80% adoption)
+**Webpack Config Features:**
+- Hot Module Replacement (HMR) via BrowserSync
+- Multiple entry points (main, admin, customizer, Gutenberg)
+- Asset manifest with random hash per build
+- Configurable source maps
+- Image optimization (imagemin-webpack-plugin)
+- PostCSS pipeline (autoprefixer, cssnano)
 
-1. **Build Tools:** 57% use webpack/Mix/Gulp
-2. **inc/ Directory:** 50% organize code this way
-3. **Manual wp_enqueue:** 50% use traditional asset loading
+### Kelsey (Legacy - 2022)
 
-### Low Confidence / Gap Patterns (0-30% adoption)
+**Limitations:**
+- ⚠️ Webpack 3 (missing features: mode, optimization.splitChunks, tree shaking improvements)
+- ⚠️ Node 8+ (deprecated, security risks)
+- ⚠️ ExtractTextPlugin (deprecated in Webpack 4+)
+- ⚠️ UglifyJS (slower, less efficient than Terser)
+- ⚠️ Buble transpiler (limited ES2015+ support vs Babel)
+- ⚠️ Legacy ESLint/Stylelint configs
 
-1. **Code Quality Tools:** 29% (Sage only) - 71% have no linting
-2. **Child Themes:** 7% - Underutilized pattern
-3. **ACF JSON Sync:** 21% - Should be higher
-4. **.editorconfig:** 29% - Critical gap for team consistency
+**Migration Needed:** Kelsey theme requires modernization to Webpack 5+ stack.
 
----
+### Aleph Nothing (No Build)
 
-## Recommendations for Standards
+**Philosophy:** Headless WordPress = backend only. Frontend (Next.js) handles all asset compilation.
 
-### Enforce (High Confidence)
-
-1. **For New Themes:** Use Sage framework (Blade, MVC, webpack)
-2. **PSR-4 Autoloading:** If using Composer, follow `App\\` namespace
-3. **ACF JSON Sync:** All themes with ACF should use acf-json/
-4. **Build Tools:** Use webpack for asset pipeline (cache-busting, minification)
-5. **Code Quality:** Add ESLint, Stylelint, PHPCS to all themes
-
-### Recommend (Medium Confidence)
-
-1. **inc/ Directory:** For traditional themes, organize code in inc/
-2. **Version Requirements:** Check PHP 7.4+ and WP 5.0+ minimum
-3. **Theme Support:** Enable title-tag, post-thumbnails, html5, customize-selective-refresh
-
-### Document as Options (Low Confidence)
-
-1. **Child Themes:** When to use vs standalone theme
-2. **Headless Themes:** Minimal theme pattern for GraphQL/REST only
-3. **Gutenberg Blocks:** ACF block registration with Blade views
+**Pattern Confidence:** 100%
 
 ---
 
-## Files Generated from This Analysis
+## 9. Template Hierarchy Customization
 
-**RAG-Optimized Documentation (8 files):**
-1. `sage-framework-structure.md` - Sage MVC architecture (29% adoption)
-2. `traditional-theme-organization.md` - inc/ directory pattern (50% adoption)
-3. `blade-templating-pattern.md` - Blade vs PHP templates (348 Blade files)
-4. `mvc-controllers-pattern.md` - SoberWP Controller usage (29% adoption)
-5. `asset-management-strategies.md` - Webpack vs manual enqueue (57% vs 43%)
-6. `build-tool-configuration.md` - webpack, Laravel Mix, Gulp patterns
-7. `composer-autoloading-themes.md` - PSR-4 autoloading (29% adoption)
-8. `template-hierarchy-usage.md` - WordPress template hierarchy in both paradigms
+### Sage Theme Hierarchy (Modified)
 
-**Semgrep Rules (4 rules):**
-1. `require-composer-autoload.yaml` - Detect Sage themes without vendor/autoload.php
-2. `enforce-namespaced-controllers.yaml` - Require `namespace App\Controllers;` in controllers
-3. `warn-manual-asset-loading.yaml` - Suggest webpack for themes with manual wp_enqueue
-4. `require-blade-escaping.yaml` - Enforce `{{ }}` over `{!! !!}` except for WordPress hooks
+Sage overrides WordPress template hierarchy to use `resources/views/` as the template directory:
+
+**WordPress Default:**
+```
+wp-content/themes/sage/
+├── index.php
+├── single.php
+├── archive.php
+└── ...
+```
+
+**Sage Modified:**
+```
+wp-content/themes/sage/resources/
+├── functions.php       # Entry point (WordPress sees this)
+├── index.php          # Required fallback
+└── views/             # Actual templates (Sage redirects here)
+    ├── index.blade.php
+    ├── single.blade.php
+    └── ...
+```
+
+**Implementation (resources/functions.php):**
+```php
+array_map(
+    'add_filter',
+    ['theme_file_path', 'theme_file_uri', 'parent_theme_file_path', 'parent_theme_file_uri'],
+    array_fill(0, 4, 'dirname')
+);
+```
+
+**Effect:**
+- `get_template_directory()` → `/themes/sage/resources`
+- `locate_template()` → `/themes/sage/resources/views`
+
+**Pattern Confidence:** 100% for Sage themes
 
 ---
 
-**Analysis Complete:** February 12, 2026
-**Next Steps:** Generate 8 documentation files + 4 Semgrep rules
-**Estimated Time:** 1.5 hours for docs, 30 minutes for Semgrep rules
+## 10. Quantitative Summary
+
+| Metric | Presser | Aleph Nothing | Kelsey |
+|--------|---------|---------------|--------|
+| **Framework** | Sage 9+ | None | Sage 9 |
+| **PHP Files** | 13 | 4 | 11 |
+| **PHP LOC** | 2,006 | 45 | 393 |
+| **JS Files** | 49 | 0 | 19 |
+| **SCSS Files** | 89 | 0 | 77 |
+| **Blade Templates** | 85 | 0 | 114 |
+| **Build System** | Webpack 5 | None | Webpack 3 |
+| **Node Version** | 20+ | N/A | 8+ |
+| **Composer Deps** | 6 | 0 | 6 |
+| **npm Deps (dev)** | 58 | 0 | 29 |
+| **npm Deps (prod)** | 7 | 0 | 4 |
+| **Modernization** | ✅ Current | N/A | ⚠️ Legacy |
+
+---
+
+## 11. Critical Patterns Identified
+
+### Universal Patterns (100% adoption where applicable)
+
+1. **Sage Roots for Traditional Themes**: Both Presser and Kelsey use Sage (100%)
+2. **PSR-4 Autoloading**: `App\` namespace for theme logic (100% Sage)
+3. **Laravel Blade Templating**: `.blade.php` templates (100% Sage)
+4. **Webpack Asset Compilation**: Both Sage themes use webpack (100%)
+5. **Composer for PHP Dependencies**: All use composer (100% Sage)
+6. **Asset Manifest Pattern**: `asset_path()` helper + `assets-manifest.json` (100% Sage)
+7. **Controller Pattern**: SoberWP Controller for Blade data (100% Sage)
+8. **Minimal Headless Theme**: Aleph Nothing proves 45-line viability (100% headless)
+
+### Divergent Patterns
+
+1. **Build Tooling Maturity**: Presser modern (Webpack 5), Kelsey legacy (Webpack 3)
+2. **Node Version Requirements**: Presser 20+, Kelsey 8+ (12 major versions behind)
+3. **Template Granularity**: Kelsey 114 templates, Presser 85 (34% more granular)
+4. **JavaScript Dependencies**: Presser 65 packages, Kelsey 33 packages
+5. **PHP Complexity**: Presser 2,006 LOC, Kelsey 393 LOC (410% more complex)
+
+### Critical Gaps
+
+1. **Kelsey Modernization**: Webpack 3 → 5, Node 8 → 20, ExtractTextPlugin → MiniCssExtractPlugin
+2. **No Testing Infrastructure**: Zero unit tests in any theme (0% adoption)
+3. **No TypeScript**: All JavaScript is plain ES6+ (0% TypeScript adoption)
+
+---
+
+## 12. Recommendations for Documentation
+
+### High Priority Docs (8 planned)
+
+1. **Sage Roots Framework Setup** (100% confidence)
+   - PSR-4 autoloading pattern
+   - Directory structure requirements
+   - Composer dependency setup
+
+2. **Laravel Blade Templating in WordPress** (100% confidence)
+   - Template hierarchy with Blade
+   - Controller pattern for view data
+   - Blade syntax vs PHP templates
+
+3. **Headless Theme Architecture** (100% confidence)
+   - Minimal file requirements
+   - GraphQL data formatting
+   - Admin-only WordPress setup
+
+4. **Webpack Asset Compilation** (100% confidence)
+   - Modern webpack 5 config
+   - Asset manifest pattern
+   - Entry point organization
+
+5. **Theme Build Process Modernization** (67% confidence)
+   - Webpack 3 → 5 migration
+   - Node version upgrades
+   - Deprecated plugin replacements
+
+6. **Theme vs MU-Plugins Separation** (observational)
+   - When to use theme vs mu-plugins
+   - Code organization best practices
+
+7. **Composer Autoloading in Themes** (100% confidence)
+   - PSR-4 namespace setup
+   - Required Sage dependencies
+
+8. **Template Directory Customization** (100% confidence)
+   - Sage's view directory override
+   - WordPress template hierarchy hooks
+
+### Medium Priority Semgrep Rules (4 planned)
+
+1. **Enforce Theme Header Requirements** - Detect missing style.css headers
+2. **Warn on Direct wp_enqueue in Templates** - Enforce app/setup.php pattern
+3. **Require PSR-4 Autoload Namespace** - Detect missing composer.json autoload
+4. **Warn on Legacy Webpack Plugins** - Detect ExtractTextPlugin, UglifyJsPlugin
+
+---
+
+## Next Steps
+
+1. ✅ Complete cross-theme comparison analysis (THIS DOCUMENT)
+2. ⏳ Generate 8 RAG-optimized documentation files
+3. ⏳ Generate 4 Semgrep enforcement rules
+4. ⏳ Move to Phase 4, Domain 7: Multisite Patterns
+5. ⏳ Move to Phase 4, Domain 8: Block Development
+
+**Estimated Time Remaining:** 1.5 hours (docs + Semgrep rules)

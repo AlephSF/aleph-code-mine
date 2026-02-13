@@ -1,0 +1,169 @@
+rules:
+  - id: get-sites-hardcoded-limit-without-pagination
+    patterns:
+      - pattern: get_sites(array('number' => $LIMIT))
+      - metavariable-comparison:
+          metavariable: $LIMIT
+          comparison: $LIMIT >= 500
+      - pattern-not-inside: |
+          do {
+            $sites = get_sites(...);
+            ...
+          } while (...);
+      - pattern-not-inside: |
+          while (...) {
+            $sites = get_sites(...);
+            ...
+          }
+    message: |
+      get_sites() with hardcoded limit >= 500 without pagination logic.
+      This may fail for networks larger than the limit.
+
+      Implement pagination for scalability:
+        $page = 1;
+        $per_page = 100;
+
+        do {
+            $sites = get_sites([
+                'number' => $per_page,
+                'offset' => ($page - 1) * $per_page,
+            ]);
+
+            foreach ($sites as $site) {
+                // Process site
+            }
+
+            $page++;
+        } while (count($sites) === $per_page);
+    severity: WARNING
+    languages: [php]
+    metadata:
+      category: scalability
+      confidence: HIGH
+      impact: MEDIUM
+      technology: [wordpress-multisite]
+      references:
+        - https://developer.wordpress.org/reference/functions/get_sites/
+
+  - id: get-sites-no-number-limit
+    patterns:
+      - pattern: get_sites(...)
+      - pattern-not: get_sites(array(..., 'number' => ..., ...))
+      - pattern-not: get_sites(['number' => ..., ...])
+    message: |
+      get_sites() called without 'number' limit.
+      WordPress defaults to 100, but explicit limit improves code clarity.
+
+      Specify limit explicitly:
+        $sites = get_sites(['number' => 1000, 'archived' => 0]);
+
+      Or use pagination for large networks (see pagination pattern).
+    severity: INFO
+    languages: [php]
+    metadata:
+      category: best-practice
+      confidence: MEDIUM
+      impact: LOW
+
+  - id: get-sites-in-loop-without-caching
+    patterns:
+      - pattern-inside: |
+          for (...) {
+            ...
+          }
+      - pattern: get_sites(...)
+      - pattern-not-inside: |
+          $sites = wp_cache_get(...);
+          if ($sites === false) {
+            $sites = get_sites(...);
+          }
+    message: |
+      get_sites() called inside loop without caching.
+      This causes redundant database queries.
+
+      Cache results:
+        $sites = wp_cache_get('all_sites', 'multisite');
+        if ($sites === false) {
+            $sites = get_sites(['number' => 1000]);
+            wp_cache_set('all_sites', $sites, 'multisite', HOUR_IN_SECONDS);
+        }
+
+        foreach ($sites as $site) {
+            // Use cached sites
+        }
+    severity: WARNING
+    languages: [php]
+    metadata:
+      category: performance
+      confidence: HIGH
+      impact: MEDIUM
+
+  - id: get-sites-without-archived-filter
+    patterns:
+      - pattern: get_sites(...)
+      - pattern-not: get_sites(array(..., 'archived' => ..., ...))
+      - pattern-not: get_sites(['archived' => ..., ...])
+    message: |
+      get_sites() without 'archived' filter may include archived sites.
+      Explicitly filter archived sites unless intentionally including them.
+
+      Recommended:
+        $sites = get_sites([
+            'archived' => 0,  // Exclude archived
+            'deleted'  => 0,  // Exclude deleted
+            'spam'     => 0,  // Exclude spam
+        ]);
+    severity: INFO
+    languages: [php]
+    metadata:
+      category: best-practice
+      confidence: MEDIUM
+      impact: LOW
+
+  - id: switch-to-blog-for-every-site-performance
+    patterns:
+      - pattern: |
+          $sites = get_sites(...);
+          foreach ($sites as $site) {
+            switch_to_blog($site->blog_id);
+            ...
+            restore_current_blog();
+          }
+      - metavariable-regex:
+          metavariable: $SITES
+          regex: get_sites
+    message: |
+      Iterating all sites with switch_to_blog() can be slow for large networks.
+      Each switch incurs 0.5-2ms overhead.
+
+      Performance tips:
+      1. Filter sites before iteration (reduce count)
+      2. Batch operations within single switch when possible
+      3. Consider direct SQL queries for simple read operations
+      4. Use pagination to process sites in chunks
+
+      For 1000 sites: 500ms-2s just for context switching overhead.
+    severity: INFO
+    languages: [php]
+    metadata:
+      category: performance
+      confidence: MEDIUM
+      impact: MEDIUM
+
+  - id: get-sites-limit-1000-magic-number
+    pattern: get_sites(array('number' => 1000))
+    message: |
+      Hardcoded limit of 1000 sites is a common magic number.
+      Consider defining as constant or using pagination.
+
+      Define constant:
+        define('MAX_SITES_PER_QUERY', 1000);
+        $sites = get_sites(['number' => MAX_SITES_PER_QUERY]);
+
+      Or implement proper pagination for networks that may exceed 1000 sites.
+    severity: INFO
+    languages: [php]
+    metadata:
+      category: maintainability
+      confidence: MEDIUM
+      impact: LOW

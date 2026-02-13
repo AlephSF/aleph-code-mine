@@ -1,0 +1,124 @@
+rules:
+  - id: require-restore-current-blog-pairing
+    pattern-either:
+      - patterns:
+          - pattern: |
+              switch_to_blog(...)
+              ...
+          - pattern-not: |
+              switch_to_blog(...)
+              ...
+              restore_current_blog()
+    message: |
+      Every switch_to_blog() must be paired with restore_current_blog().
+      Missing restore causes context pollution and data corruption.
+
+      Fix: Add restore_current_blog() after all operations in switched context.
+
+      Example:
+        switch_to_blog($blog_id);
+        $posts = get_posts();
+        restore_current_blog(); // Required!
+    severity: ERROR
+    languages: [php]
+    metadata:
+      category: security
+      confidence: HIGH
+      impact: HIGH
+      likelihood: HIGH
+      subcategory: [audit]
+      technology: [wordpress-multisite]
+      references:
+        - https://developer.wordpress.org/reference/functions/switch_to_blog/
+        - https://developer.wordpress.org/reference/functions/restore_current_blog/
+
+  - id: switch-to-blog-in-loop-without-restore
+    patterns:
+      - pattern-inside: |
+          foreach ($sites as $site) {
+            ...
+          }
+      - pattern: switch_to_blog($site->blog_id)
+      - pattern-not-inside: |
+          foreach ($sites as $site) {
+            switch_to_blog(...);
+            ...
+            restore_current_blog();
+          }
+    message: |
+      switch_to_blog() inside loop must have restore_current_blog() in same loop iteration.
+      Each iteration must restore context to prevent spillover effects.
+
+      Fix: Add restore_current_blog() before loop continues.
+    severity: ERROR
+    languages: [php]
+    metadata:
+      category: security
+      confidence: HIGH
+      impact: HIGH
+
+  - id: switch-without-restore-before-return
+    patterns:
+      - pattern-either:
+          - pattern: |
+              switch_to_blog(...);
+              ...
+              return ...;
+          - pattern: |
+              switch_to_blog(...);
+              ...
+              if (...) {
+                return ...;
+              }
+      - pattern-not: |
+          switch_to_blog(...);
+          ...
+          restore_current_blog();
+          return ...;
+    message: |
+      switch_to_blog() without restore_current_blog() before return statement.
+      Early returns must restore blog context to prevent leaked context.
+
+      Fix: Call restore_current_blog() before all return paths, or use try-finally block.
+    severity: ERROR
+    languages: [php]
+    metadata:
+      category: security
+      confidence: HIGH
+      impact: HIGH
+
+  - id: recommend-try-finally-for-context-safety
+    patterns:
+      - pattern: |
+          switch_to_blog(...);
+          ...
+          restore_current_blog();
+      - pattern-not-inside: |
+          try {
+            ...
+          } finally {
+            restore_current_blog();
+          }
+      - metavariable-pattern:
+          metavariable: $BODY
+          patterns:
+            - pattern-either:
+                - pattern: if (...) { return ...; }
+                - pattern: throw ...;
+    message: |
+      Consider using try-finally to guarantee restore_current_blog() execution.
+      This prevents context leaks when exceptions or early returns occur.
+
+      Recommended pattern:
+        switch_to_blog($blog_id);
+        try {
+            // Operations that might throw or return early
+        } finally {
+            restore_current_blog(); // Always executes
+        }
+    severity: WARNING
+    languages: [php]
+    metadata:
+      category: best-practice
+      confidence: MEDIUM
+      impact: MEDIUM

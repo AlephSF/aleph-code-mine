@@ -1,0 +1,137 @@
+rules:
+  - id: get-site-option-without-multisite-check
+    patterns:
+      - pattern: get_site_option(...)
+      - pattern-not-inside: |
+          if (is_multisite()) {
+            ...
+            get_site_option(...);
+          }
+      - pattern-not-inside: |
+          $VAR = is_multisite() ? get_site_option(...) : get_option(...);
+    message: |
+      get_site_option() used without is_multisite() check.
+      This may cause compatibility issues on single-site installations.
+
+      Recommended pattern:
+        $value = is_multisite()
+            ? get_site_option('option_name', 'default')
+            : get_option('option_name', 'default');
+
+      This ensures plugin works on both single-site and multisite.
+    severity: WARNING
+    languages: [php]
+    metadata:
+      category: portability
+      confidence: MEDIUM
+      impact: LOW
+      technology: [wordpress-multisite]
+
+  - id: network-admin-menu-without-capability-check
+    patterns:
+      - pattern-inside: |
+          add_action('network_admin_menu', $FUNC);
+      - pattern: |
+          function $FUNC(...) {
+            add_menu_page(..., $CAP, ...);
+          }
+      - metavariable-regex:
+          metavariable: $CAP
+          regex: ^((?!manage_network).)*$
+    message: |
+      Network admin menu requires proper capability check.
+      Use 'manage_network' or 'manage_network_options' for network menus.
+
+      Correct:
+        add_menu_page(
+            'Network Settings',
+            'Settings',
+            'manage_network_options', // Network capability
+            'my-settings',
+            'render_page'
+        );
+    severity: WARNING
+    languages: [php]
+    metadata:
+      category: security
+      confidence: MEDIUM
+      impact: MEDIUM
+
+  - id: switch-to-blog-without-multisite-check
+    patterns:
+      - pattern: switch_to_blog($BLOG_ID)
+      - pattern-not-inside: |
+          if (is_multisite()) {
+            ...
+            switch_to_blog(...);
+          }
+    message: |
+      switch_to_blog() called without is_multisite() guard.
+      This will cause fatal errors on single-site installations.
+
+      Fix: Wrap in is_multisite() check:
+        if (is_multisite()) {
+            switch_to_blog($blog_id);
+            // ... operations
+            restore_current_blog();
+        }
+    severity: ERROR
+    languages: [php]
+    metadata:
+      category: portability
+      confidence: HIGH
+      impact: HIGH
+
+  - id: get-sites-without-multisite-check
+    patterns:
+      - pattern: get_sites(...)
+      - pattern-not-inside: |
+          if (is_multisite()) {
+            ...
+            get_sites(...);
+          }
+    message: |
+      get_sites() called without is_multisite() check.
+      This function is multisite-only and will fail on single sites.
+
+      Fix:
+        if (!is_multisite()) {
+            return; // Skip on single site
+        }
+
+        $sites = get_sites(['archived' => 0]);
+        foreach ($sites as $site) {
+            // ... process sites
+        }
+    severity: ERROR
+    languages: [php]
+    metadata:
+      category: portability
+      confidence: HIGH
+      impact: HIGH
+
+  - id: is-network-admin-without-is-multisite
+    patterns:
+      - pattern: is_network_admin()
+      - pattern-not-inside: |
+          if (is_multisite() && is_network_admin()) {
+            ...
+          }
+      - pattern-not-inside: |
+          if (is_network_admin() && is_multisite()) {
+            ...
+          }
+    message: |
+      is_network_admin() used without is_multisite() check.
+      On single-site, is_network_admin() always returns false.
+
+      Best practice: Check both conditions:
+        if (is_multisite() && is_network_admin()) {
+            // Network admin only logic
+        }
+    severity: WARNING
+    languages: [php]
+    metadata:
+      category: best-practice
+      confidence: MEDIUM
+      impact: LOW
