@@ -3,7 +3,7 @@ title: "ACF Field Groups GraphQL Configuration"
 category: "wpgraphql-architecture"
 subcategory: "acf-integration"
 tags: ["acf", "wpgraphql-acf", "graphql-fields", "custom-fields", "headless-wp"]
-stack: "php-wordpress"
+stack: "php-wp"
 priority: "high"
 audience: "backend"
 complexity: "intermediate"

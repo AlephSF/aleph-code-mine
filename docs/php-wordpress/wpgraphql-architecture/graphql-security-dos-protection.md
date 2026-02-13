@@ -3,7 +3,7 @@ title: "WPGraphQL DoS Protection: Query Size & Complexity Limits"
 category: "wpgraphql-architecture"
 subcategory: "security"
 tags: ["graphql", "security", "dos-protection", "wordpress", "wpgraphql"]
-stack: "php-wordpress"
+stack: "php-wp"
 priority: "high"
 audience: "backend"
 complexity: "intermediate"

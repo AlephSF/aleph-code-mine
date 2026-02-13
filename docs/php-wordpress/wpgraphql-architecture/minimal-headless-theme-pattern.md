@@ -3,7 +3,7 @@ title: "Minimal Headless Theme Pattern"
 category: "wpgraphql-architecture"
 subcategory: "theme-architecture"
 tags: ["headless-theme", "wpgraphql", "minimal-theme", "theme-structure"]
-stack: "php-wordpress"
+stack: "php-wp"
 priority: "high"
 audience: "backend"
 complexity: "beginner"

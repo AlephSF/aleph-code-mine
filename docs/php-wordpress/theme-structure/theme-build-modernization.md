@@ -3,7 +3,7 @@ title: "Theme Build Process Modernization (Webpack 3 to 5)"
 category: "theme-structure"
 subcategory: "build-process"
 tags: ["webpack", "migration", "modernization", "build-tools", "upgrade"]
-stack: "php-wordpress"
+stack: "php-wp"
 priority: "medium"
 audience: "fullstack"
 complexity: "advanced"

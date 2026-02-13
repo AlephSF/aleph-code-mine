@@ -3,7 +3,7 @@ title: "Sage Roots Framework Setup for WordPress Themes"
 category: "theme-structure"
 subcategory: "framework"
 tags: ["sage", "roots", "composer", "psr-4", "modern-wordpress"]
-stack: "php-wordpress"
+stack: "php-wp"
 priority: "high"
 audience: "fullstack"
 complexity: "intermediate"

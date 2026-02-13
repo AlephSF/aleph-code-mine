@@ -3,7 +3,7 @@ title: "Headless WordPress Theme Architecture Pattern"
 category: "theme-structure"
 subcategory: "headless"
 tags: ["headless", "graphql", "minimal-theme", "api-first", "decoupled"]
-stack: "php-wordpress"
+stack: "php-wp"
 priority: "high"
 audience: "fullstack"
 complexity: "intermediate"

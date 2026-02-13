@@ -3,7 +3,7 @@ title: "Custom Post Type Label Conventions"
 category: "custom-post-types-taxonomies"
 subcategory: "labels"
 tags: ["wordpress", "custom-post-types", "labels", "i18n", "admin-ui", "ux"]
-stack: "php-wordpress"
+stack: "php-wp"
 priority: "medium"
 audience: "backend"
 complexity: "beginner"

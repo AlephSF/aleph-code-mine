@@ -3,7 +3,7 @@ title: "Custom Post Type GraphQL Registration Pattern"
 category: "wpgraphql-architecture"
 subcategory: "type-registration"
 tags: ["graphql", "custom-post-types", "wordpress", "wpgraphql", "schema"]
-stack: "php-wordpress"
+stack: "php-wp"
 priority: "high"
 audience: "backend"
 complexity: "intermediate"

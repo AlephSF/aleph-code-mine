@@ -3,7 +3,7 @@ title: "Custom Post Type REST API Configuration"
 category: "custom-post-types-taxonomies"
 subcategory: "rest-api"
 tags: ["wordpress", "rest-api", "custom-post-types", "show-in-rest", "graphql"]
-stack: "php-wordpress"
+stack: "php-wp"
 priority: "high"
 audience: "backend"
 complexity: "intermediate"

@@ -3,7 +3,7 @@ title: "Conditional Plugin Loading in WordPress Multisite"
 category: "wpgraphql-architecture"
 subcategory: "multisite"
 tags: ["multisite", "conditional-loading", "blog-id", "wpgraphql", "performance"]
-stack: "php-wordpress"
+stack: "php-wp"
 priority: "high"
 audience: "backend"
 complexity: "advanced"

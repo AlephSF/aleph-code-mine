@@ -3,7 +3,7 @@ title: "Rewrite Slug Best Practices for Custom Post Types"
 category: "custom-post-types-taxonomies"
 subcategory: "url-structure"
 tags: ["wordpress", "custom-post-types", "rewrite", "permalinks", "seo", "url-structure"]
-stack: "php-wordpress"
+stack: "php-wp"
 priority: "high"
 audience: "backend"
 complexity: "intermediate"

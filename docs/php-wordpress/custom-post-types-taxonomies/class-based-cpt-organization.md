@@ -3,7 +3,7 @@ title: "Class-Based Custom Post Type Organization"
 category: "custom-post-types-taxonomies"
 subcategory: "code-organization"
 tags: ["wordpress", "custom-post-types", "oop", "class-based", "hooks", "plugin-structure"]
-stack: "php-wordpress"
+stack: "php-wp"
 priority: "high"
 audience: "backend"
 complexity: "intermediate"

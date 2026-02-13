@@ -1,5 +1,3 @@
-# Custom Ordering Configurations
-
 ---
 title: "Custom Ordering Configurations"
 category: "studio-customization"

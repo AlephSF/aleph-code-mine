@@ -3,7 +3,7 @@ title: "WordPress Template Directory Customization for Sage Themes"
 category: "theme-structure"
 subcategory: "template-hierarchy"
 tags: ["template-hierarchy", "wordpress-hooks", "sage", "blade", "customization"]
-stack: "php-wordpress"
+stack: "php-wp"
 priority: "medium"
 audience: "fullstack"
 complexity: "advanced"

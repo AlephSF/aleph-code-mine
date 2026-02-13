@@ -1,5 +1,3 @@
-# Desk Structure Customization
-
 ---
 title: "Desk Structure Customization"
 category: "studio-customization"

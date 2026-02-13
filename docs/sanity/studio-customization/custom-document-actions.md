@@ -1,5 +1,3 @@
-# Custom Document Actions
-
 ---
 title: "Custom Document Actions"
 category: "studio-customization"

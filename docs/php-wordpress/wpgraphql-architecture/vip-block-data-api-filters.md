@@ -3,7 +3,7 @@ title: "VIP Block Data API Filters for GraphQL Data Transformation"
 category: "wpgraphql-architecture"
 subcategory: "data-transformation"
 tags: ["vip-block-data-api", "gutenberg-blocks", "data-transformation", "wpgraphql"]
-stack: "php-wordpress"
+stack: "php-wp"
 priority: "medium"
 audience: "backend"
 complexity: "advanced"

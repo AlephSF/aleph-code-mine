@@ -3,7 +3,7 @@ title: "Hierarchical Taxonomies Pattern"
 category: "custom-post-types-taxonomies"
 subcategory: "taxonomies"
 tags: ["wordpress", "taxonomies", "hierarchical", "categories", "term-relationships"]
-stack: "php-wordpress"
+stack: "php-wp"
 priority: "medium"
 audience: "backend"
 complexity: "beginner"

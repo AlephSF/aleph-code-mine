@@ -3,7 +3,7 @@ title: "Laravel Blade Templating in WordPress Sage Themes"
 category: "theme-structure"
 subcategory: "templating"
 tags: ["blade", "laravel", "sage", "templates", "mvc"]
-stack: "php-wordpress"
+stack: "php-wp"
 priority: "high"
 audience: "fullstack"
 complexity: "intermediate"

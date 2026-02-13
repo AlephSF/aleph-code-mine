@@ -3,7 +3,7 @@ title: "Namespaced Custom Post Type Registration Pattern"
 category: "custom-post-types-taxonomies"
 subcategory: "registration"
 tags: ["wordpress", "custom-post-types", "namespace", "collision-prevention", "naming"]
-stack: "php-wordpress"
+stack: "php-wp"
 priority: "high"
 audience: "backend"
 complexity: "beginner"

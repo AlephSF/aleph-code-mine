@@ -3,7 +3,7 @@ title: "Webpack Asset Compilation in WordPress Sage Themes"
 category: "theme-structure"
 subcategory: "build-process"
 tags: ["webpack", "build", "sass", "babel", "compilation"]
-stack: "php-wordpress"
+stack: "php-wp"
 priority: "high"
 audience: "fullstack"
 complexity: "intermediate"

@@ -3,7 +3,7 @@ title: "Custom GraphQL Field and Type Registration"
 category: "wpgraphql-architecture"
 subcategory: "schema-extension"
 tags: ["wpgraphql", "register-graphql-field", "custom-types", "schema-extension"]
-stack: "php-wordpress"
+stack: "php-wp"
 priority: "medium"
 audience: "backend"
 complexity: "advanced"

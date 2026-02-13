@@ -3,7 +3,7 @@ title: "Menu Icon and Positioning Patterns"
 category: "custom-post-types-taxonomies"
 subcategory: "admin-ui"
 tags: ["wordpress", "dashicons", "menu-position", "admin-menu", "ux"]
-stack: "php-wordpress"
+stack: "php-wp"
 priority: "low"
 audience: "backend"
 complexity: "beginner"

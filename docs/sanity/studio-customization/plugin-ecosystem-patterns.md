@@ -1,5 +1,3 @@
-# Plugin Ecosystem Patterns
-
 ---
 title: "Plugin Ecosystem Patterns"
 category: "studio-customization"

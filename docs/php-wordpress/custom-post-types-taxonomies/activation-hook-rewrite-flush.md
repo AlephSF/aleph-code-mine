@@ -3,7 +3,7 @@ title: "Activation Hook Rewrite Flush Pattern"
 category: "custom-post-types-taxonomies"
 subcategory: "activation"
 tags: ["wordpress", "activation-hooks", "flush-rewrite-rules", "performance", "permalinks"]
-stack: "php-wordpress"
+stack: "php-wp"
 priority: "high"
 audience: "backend"
 complexity: "intermediate"

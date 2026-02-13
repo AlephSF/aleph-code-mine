@@ -1,5 +1,3 @@
-# Singleton Document Management
-
 ---
 title: "Singleton Document Management"
 category: "studio-customization"

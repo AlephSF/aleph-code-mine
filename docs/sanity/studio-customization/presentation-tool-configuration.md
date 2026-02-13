@@ -1,5 +1,3 @@
-# Presentation Tool Configuration
-
 ---
 title: "Presentation Tool Configuration"
 category: "studio-customization"

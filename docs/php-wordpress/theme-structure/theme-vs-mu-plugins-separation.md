@@ -3,7 +3,7 @@ title: "Theme vs MU-Plugins Code Separation in WordPress"
 category: "theme-structure"
 subcategory: "architecture"
 tags: ["mu-plugins", "themes", "separation-of-concerns", "architecture", "wordpress"]
-stack: "php-wordpress"
+stack: "php-wp"
 priority: "medium"
 audience: "fullstack"
 complexity: "intermediate"

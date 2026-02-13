@@ -1,5 +1,3 @@
-# Authentication Customization (SAML SSO)
-
 ---
 title: "Authentication Customization (SAML SSO)"
 category: "studio-customization"

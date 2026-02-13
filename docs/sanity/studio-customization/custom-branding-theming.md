@@ -1,5 +1,3 @@
-# Custom Branding and Theming
-
 ---
 title: "Custom Branding and Theming"
 category: "studio-customization"

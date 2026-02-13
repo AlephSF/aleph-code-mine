@@ -1,5 +1,3 @@
-# Custom Validation Utilities
-
 ---
 title: "Custom Validation Utilities"
 category: "studio-customization"

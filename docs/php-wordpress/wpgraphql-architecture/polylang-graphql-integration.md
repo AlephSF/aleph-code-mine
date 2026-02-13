@@ -3,7 +3,7 @@ title: "Polylang GraphQL Integration for Multilingual Content"
 category: "wpgraphql-architecture"
 subcategory: "multilingual"
 tags: ["wpgraphql", "polylang", "multilingual", "i18n", "translations"]
-stack: "php-wordpress"
+stack: "php-wp"
 priority: "high"
 audience: "backend"
 complexity: "advanced"
