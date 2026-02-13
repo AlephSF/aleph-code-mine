@@ -9,7 +9,7 @@ audience: "fullstack"
 complexity: "beginner"
 doc_type: "standard"
 source_confidence: "100%"
-last_updated: "2026-02-11"
+last_updated: "2026-02-13"
 ---
 
 # Reference Expansion Operator (->)
@@ -30,7 +30,7 @@ The GROQ reference expansion operator (`->`) dereferences Sanity references to f
 
 ## Basic Reference Expansion
 
-### Single Reference Dereferencing
+## Single Reference Dereferencing
 
 GROQ references are pointers to other documents. The `->` operator fetches the referenced document's fields.
 
@@ -77,7 +77,7 @@ defineField({
 
 ## Image Asset Reference Expansion
 
-### Universal Pattern for Image Dereferencing
+## Universal Pattern for Image Dereferencing
 
 Image assets in Sanity are references that require expansion to access URLs and metadata. All projects follow this pattern.
 
@@ -118,7 +118,7 @@ Image assets in Sanity are references that require expansion to access URLs and 
 }
 ```
 
-### Image Expansion with Partial Interpolation
+## Image Expansion with Partial Interpolation
 
 **Common pattern across all projects:**
 
@@ -147,7 +147,7 @@ const pageQuery = groq`
 
 ## Array Reference Expansion
 
-### Dereferencing Arrays with []->
+## Dereferencing Arrays with []->
 
 The `[]->` operator expands all references in an array.
 
@@ -194,7 +194,7 @@ defineField({
 }
 ```
 
-### Navigation with Nested References
+## Navigation with Nested References
 
 **Kariusdx navigation pattern (2-level expansion):**
 
@@ -233,7 +233,7 @@ defineField({
 
 ## Nested Reference Expansion
 
-### Multi-Level Dereferencing
+## Multi-Level Dereferencing
 
 GROQ supports dereferencing references within referenced documents.
 
@@ -278,7 +278,7 @@ GROQ supports dereferencing references within referenced documents.
 
 ## Conditional Reference Expansion
 
-### Expansion with Type Checking
+## Expansion with Type Checking
 
 Conditional expansion based on reference type prevents errors with polymorphic references.
 
@@ -322,7 +322,7 @@ defineField({
 
 ## Reference Expansion with Filtering
 
-### Filtered Array References
+## Filtered Array References
 
 **Ripplecom pattern (filtering sub-navigation):**
 
@@ -352,7 +352,7 @@ defineField({
 
 ## Renaming Expanded Fields
 
-### Projection with Reference Expansion
+## Projection with Reference Expansion
 
 **Helix pattern (renaming expanded author field):**
 
@@ -379,7 +379,7 @@ defineField({
 
 ## Null Safety with References
 
-### Handling Missing References
+## Handling Missing References
 
 **Problem:** References can be null if the referenced document was deleted.
 
@@ -410,7 +410,7 @@ defineField({
 
 ## Performance Considerations
 
-### Expansion Depth Limit
+## Expansion Depth Limit
 
 **Best practice:** Limit expansion depth to 2-3 levels maximum.
 
@@ -439,7 +439,7 @@ defineField({
 }
 ```
 
-### Selective Field Expansion
+## Selective Field Expansion
 
 **❌ Over-fetching:**
 ```groq

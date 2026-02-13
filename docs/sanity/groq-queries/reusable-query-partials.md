@@ -9,7 +9,7 @@ audience: "fullstack"
 complexity: "beginner"
 doc_type: "standard"
 source_confidence: "100%"
-last_updated: "2026-02-11"
+last_updated: "2026-02-13"
 ---
 
 # Reusable Query Partials
@@ -30,7 +30,7 @@ GROQ query partials are reusable fragments that represent common content structu
 
 ## Image Reference Partial Pattern
 
-### Universal Adoption (100%)
+## Universal Adoption (100%)
 
 All three projects maintain dedicated image reference partials for dereferencing Sanity image assets with metadata.
 
@@ -93,7 +93,7 @@ export const imageFieldGroq = `
 export default imageGroq
 ```
 
-### Common Image Fields (100% Adoption)
+## Common Image Fields (100% Adoption)
 
 All projects include:
 - `metadata.dimensions.width` - Required for Next.js Image component
@@ -102,7 +102,7 @@ All projects include:
 - `metadata.blurHash` - For progressive loading (67% - helix + kariusdx)
 - `altText` or `alt` - Accessibility requirement (100%)
 
-### Using Image Partials in Queries
+## Using Image Partials in Queries
 
 **Pattern: Reference expansion with partial interpolation**
 
@@ -132,7 +132,7 @@ const pageQuery = groq`
 
 ## SEO Metadata Partial Pattern
 
-### Adoption: 67% (Kariusdx + Ripplecom)
+## Adoption: 67% (Kariusdx + Ripplecom)
 
 SEO partials centralize Open Graph, meta descriptions, and structured data queries.
 
@@ -194,7 +194,7 @@ export const getPageByPathQuery = defineQuery(`
 
 ## Rich Text / Portable Text Partial
 
-### Adoption: 67% (Kariusdx + Ripplecom)
+## Adoption: 67% (Kariusdx + Ripplecom)
 
 Rich text partials handle Portable Text expansion with custom block types.
 
@@ -241,7 +241,7 @@ const pageQuery = groq`
 
 ## Navigation Partial Pattern
 
-### Adoption: 33% (Kariusdx Only)
+## Adoption: 33% (Kariusdx Only)
 
 Navigation partials extract site-wide navigation structures for headers/footers.
 
@@ -280,7 +280,7 @@ const pageQuery = (slug: string[]) => groq`
 
 ## Global Data Partial Pattern
 
-### Adoption: 33% (Kariusdx Only)
+## Adoption: 33% (Kariusdx Only)
 
 Global data partials fetch site-wide settings (contact info, social links, footer content).
 
@@ -320,7 +320,7 @@ const pageQuery = (slug: string[]) => groq`
 
 ## Link Partial Pattern
 
-### Adoption: 67% (Helix + Ripplecom)
+## Adoption: 67% (Helix + Ripplecom)
 
 Link partials handle internal/external link objects with conditional logic.
 
@@ -357,7 +357,7 @@ const heroQuery = groq`
 
 ## Video Partial Pattern
 
-### Adoption: 33% (Ripplecom Only)
+## Adoption: 33% (Ripplecom Only)
 
 Video partials handle video embeds (YouTube, Vimeo) or uploaded video files.
 
@@ -389,7 +389,7 @@ export default videoGroq
 
 Create a partial when a GROQ fragment meets any of these criteria:
 
-### 1. Repetition (Used in 2+ Queries)
+## 1. Repetition (Used in 2+ Queries)
 
 **Without partial (repetitive):**
 ```typescript
@@ -406,7 +406,7 @@ const pageQuery = groq`{ 'heroImage': heroImage.asset->${imgRef} }`
 const authorQuery = groq`{ 'avatar': avatar.asset->${imgRef} }`
 ```
 
-### 2. Complex Structures (>5 Fields)
+## 2. Complex Structures (>5 Fields)
 
 **Without partial (unreadable):**
 ```typescript
@@ -435,7 +435,7 @@ const seoData = `metaTitle, metaDescription, ogTitle, ogDescription, ...`
 const query = groq`seo { ${seoData} }`
 ```
 
-### 3. Conditional Logic
+## 3. Conditional Logic
 
 **Without partial (complex):**
 ```typescript
@@ -472,7 +472,7 @@ const query = groq`link { ${linkData} }`
 
 ## Anti-Patterns to Avoid
 
-### ❌ Over-Abstraction
+## ❌ Over-Abstraction
 
 ```typescript
 // TOO GENERIC - Not reusable
@@ -481,7 +481,7 @@ const fields = `_id, title, slug`  // Every document type has different fields
 
 **Better:** Create specific partials for content structures that repeat.
 
-### ❌ Hardcoded Values in Partials
+## ❌ Hardcoded Values in Partials
 
 ```typescript
 // BAD - Hardcoded filter in partial
@@ -490,7 +490,7 @@ const posts = `*[_type == "post"][0..10]`
 
 **Better:** Partials should be fragments, not full queries. Keep filters in main queries.
 
-### ❌ Not Exporting as Default
+## ❌ Not Exporting as Default
 
 ```typescript
 // INCONSISTENT - Mix of named and default exports

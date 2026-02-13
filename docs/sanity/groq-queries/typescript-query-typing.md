@@ -9,7 +9,7 @@ audience: "fullstack"
 complexity: "intermediate"
 doc_type: "standard"
 source_confidence: "100%"
-last_updated: "2026-02-11"
+last_updated: "2026-02-13"
 ---
 
 # TypeScript Typing for GROQ Queries
@@ -31,91 +31,65 @@ TypeScript typing for GROQ query results ensures type safety when consuming Sani
 
 ## Auto-Generated Types (Sanity v4+ with defineQuery)
 
-### Modern Pattern with Type Generation
+## Modern Pattern with Type Generation
 
-Ripplecom (v4) uses `defineQuery()` with automated type generation tooling.
+Ripplecom (v4) uses `defineQuery()` with automated type generation. The `@sanity/codegen` CLI generates TypeScript types from GROQ queries, ensuring types always match query shape.
 
 **Query definition:**
 ```typescript
 // apps/ripple-web/src/queries/sanity/pages.ts
 import { defineQuery } from "next-sanity"
-import { richTextContentGroq } from "@/queries/sanity/partials/richText"
-import seoGroq from "@/queries/sanity/partials/seo"
 
-/**
- * Query to fetch a page by its path/slug
- * Returns full page data including layout type, content blocks, and SEO metadata
- */
 export const getPageByPathQuery = defineQuery(`
   *[_type == "page" && path.current == $path][0] {
     _id,
     title,
     "path": path.current,
     layout,
-    subnav-> {
-      _id,
-      title,
-      pages[]-> {
-        _id,
-        title,
-        "path": path.current
-      }
-    },
     content[] {
       ...,
-      _type == "textSection" => {
-        ...,
-        content {
-          ...,
-          ${richTextContentGroq}
-        }
-      }
+      _type == "textSection" => { ... }
     },
-    seo {
-      ${seoGroq}
-    }
+    seo { ... }
   }
 `)
 ```
 
-**Type generation command:**
+**Type generation:**
 ```bash
 npm run generate:schema:and:types
 ```
 
-**Auto-generated types (sanity.types.ts):**
+**Benefits:**
+- Zero manual type definitions
+- Types always match queries (no drift)
+- Compile-time errors if query changes break code
+- Full IDE autocomplete for query results
+
+## Type Generation Output
+
+Generated types match the exact shape of GROQ query results:
+
 ```typescript
-// Auto-generated - DO NOT EDIT MANUALLY
+// Auto-generated - DO NOT EDIT
 export type GetPageByPathQueryResult = {
   _id: string
   title: string
   path: string
   layout: 'standard' | 'wide' | 'full-width'
-  subnav: {
-    _id: string
-    title: string
-    pages: Array<{
-      _id: string
-      title: string
-      path: string
-    }>
-  } | null
   content: Array<{
     _type: string
     _key: string
-    // ... type-specific fields
   }>
   seo: {
     metaTitle: string
     metaDescription: string
-    ogImage: {
-      url: string
-    } | null
   } | null
 } | null
 ```
 
-**Usage in component:**
+## Type-Safe Component Usage
+
 ```typescript
 import { sanityFetch } from "@/lib/sanity/client"
 import { getPageByPathQuery } from "@/queries/sanity/pages"
@@ -129,27 +103,11 @@ async function Page({ params }: { params: { path: string } }) {
 
   if (!page) return notFound()
 
-  return (
-    <div>
-      <h1>{page.title}</h1>  {/* ✅ Full type inference */}
-      {page.subnav?.pages.map((p) => (
-        <a key={p._id} href={p.path}>
-          {p.title}  {/* ✅ Autocomplete works */}
-        </a>
-      ))}
-    </div>
-  )
+  return <h1>{page.title}</h1>  // ✅ Full type inference
 }
 ```
 
-**Benefits:**
-- Zero manual type definitions
-- Types always match queries (no drift)
-- Compile-time errors if query changes break code
-- Full IDE autocomplete for query results
-- Refactoring-safe (rename fields in schema, types update automatically)
-
-### Setting Up Type Generation (v4)
+## Setting Up Type Generation (v4)
 
 **1. Install dependencies:**
 ```bash
@@ -207,97 +165,44 @@ schema.json
 
 ## Manual Type Definitions (Sanity v2/v3)
 
-### Helix Pattern (Manual Types with Inference)
+## Helix Pattern (Manual Types with Inference)
 
-Helix (v3) manually defines types for query results.
+Helix (v3) manually defines TypeScript types for GROQ query results without automated generation.
 
 **Query:**
 ```typescript
-// app/(frontend)/lib/sanity/queries/pageByPathQuery.ts
-import { groq } from 'next-sanity'
-import imgReference from './partials/imgReference'
-
-const pageByPathQuery = (pagePath: string) => groq`
-  *[_type == "page" && slug.current == $pagePath][0]{
+// lib/sanity/queries/pageByPathQuery.ts
+const pageByPathQuery = (path: string) => groq`
+  *[_type == "page" && slug.current == $path][0]{
     title,
     slug,
-    'seo': seo {
-      metaTitle,
-      metaDescription,
-      'ogImage': ogImage.asset->${imgReference},
-    },
-    pageBuilder[] {
-      ...,
-      _type == 'accordion' => {
-        heading,
-        items[] {
-          question,
-          answer,
-          'image': image.asset->${imgReference}
-        }
-      },
-    },
+    seo { metaTitle, metaDescription },
+    pageBuilder[] { ..., _type == 'accordion' => { ... } }
   }
 `
-export default pageByPathQuery
 ```
 
 **Manual type definition:**
 ```typescript
 // types/page.ts
-export type ImageReference = {
-  url: string
-  altText: string | null
-  title: string | null
-  width: number
-  height: number
-  aspectRatio: number
-  blurHash: string
-}
-
 export type SeoData = {
   metaTitle: string | null
   metaDescription: string | null
-  ogImage: ImageReference | null
 }
-
-export type AccordionBlock = {
-  _type: 'accordion'
-  _key: string
-  heading: string
-  items: Array<{
-    question: string
-    answer: string
-    image: ImageReference | null
-  }>
-}
-
-export type PageBuilderBlock = AccordionBlock | /* other block types */
 
 export type PageByPath = {
   title: string | null
-  slug: {
-    current: string
-  }
+  slug: { current: string }
   seo: SeoData | null
-  pageBuilder: PageBuilderBlock[]
+  pageBuilder: Array<{ _type: string, _key: string }>
 } | null
 ```
 
-**Usage in component:**
+**Usage:**
 ```typescript
-import pageByPathQuery from '@/lib/sanity/queries/pageByPathQuery'
 import type { PageByPath } from '@/types/page'
 
-async function Page({ params }: { params: { path: string } }) {
-  const page: PageByPath = await client.fetch(
-    pageByPathQuery(params.path)
-  )
-
-  if (!page) return notFound()
-
-  return <h1>{page.title}</h1>  // ✅ Type-safe
-}
+const page: PageByPath = await client.fetch(pageByPathQuery(path))
 ```
 
 **Challenges:**
@@ -305,7 +210,7 @@ async function Page({ params }: { params: { path: string } }) {
 - Must update types when query changes
 - No compile-time validation of query structure
 
-### Kariusdx Pattern (Manual Types with Utility Types)
+## Kariusdx Pattern (Manual Types with Utility Types)
 
 Kariusdx uses manual types with TypeScript utility types for reusability.
 
@@ -363,7 +268,7 @@ const data: PageQueryResult = await client.fetch(pageQuery(slug))
 
 ## Partial Type Generation (Hybrid Approach)
 
-### Using Sanity Codegen for v2/v3 Projects
+## Using Sanity Codegen for v2/v3 Projects
 
 Even v2/v3 projects can generate base types from schema, then extend manually.
 
@@ -396,7 +301,7 @@ export type PageQueryResult = Pick<Page, 'title' | 'slug'> & {
 
 ## Query Parameter Typing
 
-### Typed Query Parameters
+## Typed Query Parameters
 
 **v4 defineQuery (auto-inferred params):**
 ```typescript
@@ -425,7 +330,7 @@ await client.fetch(pageByPathQuery('/about'))  // ✅ Type-checked
 
 ## Polymorphic Content Block Typing
 
-### Discriminated Union Types
+## Discriminated Union Types
 
 **Manual typing for polymorphic content arrays:**
 
@@ -486,7 +391,7 @@ const renderBlock = (block: ContentBlock) => {
 
 ## Null Safety Patterns
 
-### Handling Nullable Query Results
+## Handling Nullable Query Results
 
 GROQ queries can return `null` if no document matches.
 
@@ -509,7 +414,7 @@ async function Page({ params }: { params: { path: string } }) {
 }
 ```
 
-### Optional vs Nullable Fields
+## Optional vs Nullable Fields
 
 **Pattern: Distinguish optional from nullable:**
 
@@ -530,7 +435,7 @@ type PageData = {
 
 ## Type-Safe Partial Interpolation
 
-### Typing Reusable Partials
+## Typing Reusable Partials
 
 **Partial with type export:**
 ```typescript
@@ -572,7 +477,7 @@ export type PageResult = {
 
 ## Best Practices
 
-### 1. Always Type Query Results
+## 1. Always Type Query Results
 
 ```typescript
 // ❌ Avoid - No typing
@@ -584,7 +489,7 @@ const page: PageResult = await client.fetch(pageQuery(slug))
 console.log(page.title)  // ✅ Autocomplete, compile-time safety
 ```
 
-### 2. Use Discriminated Unions for Polymorphic Content
+## 2. Use Discriminated Unions for Polymorphic Content
 
 ```typescript
 // ✅ Good - Discriminated union
@@ -600,7 +505,7 @@ type ContentBlock = {
 }
 ```
 
-### 3. Keep Types Close to Queries
+## 3. Keep Types Close to Queries
 
 ```typescript
 // ✅ Good - Co-located
@@ -613,7 +518,7 @@ export type PageResult = {...}
 export type PageResult = {...}
 ```
 
-### 4. Prefer Auto-Generation Over Manual Types
+## 4. Prefer Auto-Generation Over Manual Types
 
 **For v4 projects:** Always use `defineQuery()` + type generation.
 

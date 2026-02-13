@@ -9,7 +9,7 @@ audience: "fullstack"
 complexity: "intermediate"
 doc_type: "standard"
 source_confidence: "100%"
-last_updated: "2026-02-11"
+last_updated: "2026-02-13"
 ---
 
 # Conditional Field Expansion (_type ==)
@@ -30,7 +30,7 @@ GROQ conditional field expansion (`_type == '...' => {...}`) enables type-specif
 
 ## Basic Conditional Expansion
 
-### Single Type Condition
+## Single Type Condition
 
 Conditional expansion fetches type-specific fields within arrays of mixed content types.
 
@@ -116,7 +116,7 @@ defineField({
 
 ## Page Builder Pattern
 
-### Helix Accordion Example (Nested Conditional Expansion)
+## Helix Accordion Example (Nested Conditional Expansion)
 
 Helix uses conditional expansion for complex page builder arrays with nested content.
 
@@ -164,9 +164,9 @@ Helix uses conditional expansion for complex page builder arrays with nested con
 
 ## Kariusdx Nested Content Pattern
 
-### Multi-Level Conditional Expansion
+## Multi-Level Conditional Expansion
 
-Kariusdx uses conditional expansion within conditionally expanded blocks (2-3 levels deep).
+Kariusdx uses nested conditional expansion (2-3 levels deep).
 
 **Query:**
 ```typescript
@@ -226,11 +226,11 @@ const pageQuery = (slug: string[]) => groq`
 2. `pageSection.innerBlocks[]` - Second-level array with imageColumnsCard, imageCarousel, staffGrid
 3. `columns[].richText[]` - Third-level array with image, text types
 
-**Benefit:** Handles deeply nested polymorphic content structures in a single query.
+**Benefit:** Handles nested polymorphic content in a single query.
 
 ## Ripplecom Modern Pattern with Partials
 
-### Conditional Expansion with Partial Interpolation
+## Conditional Expansion with Partial Interpolation
 
 Ripplecom combines conditional expansion with reusable partials for cleaner queries.
 
@@ -285,7 +285,7 @@ export const getPageByPathQuery = defineQuery(`
 
 ## Conditional Expansion for Reference Filtering
 
-### Type-Based Reference Dereferencing
+## Type-Based Reference Dereferencing
 
 Conditional expansion with reference dereferencing for polymorphic reference fields.
 
@@ -332,7 +332,7 @@ defineField({
 
 ## Kariusdx Dynamic Content Type Pattern
 
-### Conditional Content Fetching Based on Component
+## Conditional Content Fetching Based on Component
 
 **Query:**
 ```groq
@@ -368,7 +368,7 @@ content[]{
 
 ## Multiple Conditions for Same Type
 
-### Sequential Conditional Checks
+## Sequential Conditional Checks
 
 GROQ supports multiple conditional checks for fine-grained field selection.
 
@@ -396,7 +396,7 @@ content[] {
 
 ## Default Fields with Spread Operator
 
-### Pattern: Universal Fields + Type-Specific Fields
+## Pattern: Universal Fields + Type-Specific Fields
 
 **Query:**
 ```groq
@@ -432,7 +432,7 @@ content[] {
 
 ## Performance Considerations
 
-### Over-Expansion vs Selective Expansion
+## Over-Expansion vs Selective Expansion
 
 **❌ Over-expansion (fetches all fields for all types):**
 ```groq
@@ -459,7 +459,7 @@ content[] {
 
 ## Anti-Patterns to Avoid
 
-### ❌ Missing Spread Operator
+## ❌ Missing Spread Operator
 
 ```groq
 content[] {
@@ -480,7 +480,7 @@ content[] {
 }
 ```
 
-### ❌ Overly Complex Nested Conditions
+## ❌ Overly Complex Nested Conditions
 
 ```groq
 content[] {
@@ -505,7 +505,7 @@ content[] {
 
 **Better:** Extract inner conditionals to partials or flatten schema.
 
-### ❌ Redundant Conditions
+## ❌ Redundant Conditions
 
 ```groq
 content[] {

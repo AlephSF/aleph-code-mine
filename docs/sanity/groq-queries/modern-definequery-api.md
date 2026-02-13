@@ -9,7 +9,7 @@ audience: "fullstack"
 complexity: "intermediate"
 doc_type: "standard"
 source_confidence: "33%"
-last_updated: "2026-02-11"
+last_updated: "2026-02-13"
 ---
 
 # Modern defineQuery API (Sanity v4+)
@@ -33,7 +33,7 @@ Sanity v4 introduced the `defineQuery()` helper function to replace the legacy `
 
 ## Modern defineQuery Pattern (v4+)
 
-### Basic Query with defineQuery
+## Basic Query with defineQuery
 
 Sanity v4 projects use `defineQuery()` from `next-sanity` for type-safe query definitions with auto-generated TypeScript types.
 
@@ -60,7 +60,7 @@ export const getPageByPathQuery = defineQuery(`
 - No template tag needed (function call syntax)
 - Enables type generation tooling
 
-### Query with Multiple Exports
+## Query with Multiple Exports
 
 Ripplecom organizes related queries in single files with multiple named exports.
 
@@ -110,7 +110,7 @@ export const pageExistsQuery = defineQuery(`
 - Named exports improve tree-shaking
 - Auto-generated types for all three queries
 
-### Using Queries with Auto-Generated Types
+## Using Queries with Auto-Generated Types
 
 After defining queries, run type generation to create TypeScript types:
 
@@ -157,7 +157,7 @@ async function Page({ params }: { params: { path: string } }) {
 
 ## Legacy groq Template Pattern (v2/v3)
 
-### Basic Query with groq Template
+## Basic Query with groq Template
 
 Helix (v3) and kariusdx (v2) use the `groq` tagged template literal with manual TypeScript types.
 
@@ -183,7 +183,7 @@ export default pageQuery
 - Default export (not named export)
 - Requires manual TypeScript type definitions
 
-### Manual TypeScript Typing (Legacy Pattern)
+## Manual TypeScript Typing (Legacy Pattern)
 
 With `groq` template, types must be defined manually:
 
@@ -219,7 +219,7 @@ const data: PageQueryResult = await client.fetch(pageQuery(slug))
 
 ## Comparison: defineQuery vs groq Template
 
-### Side-by-Side Comparison
+## Side-by-Side Comparison
 
 **defineQuery (v4):**
 ```typescript
@@ -255,7 +255,7 @@ export type Post = { _id: string; title: string; slug: { current: string } }
 export type GetPostsResult = Post[]
 ```
 
-### Feature Matrix
+## Feature Matrix
 
 | Feature | defineQuery (v4+) | groq Template (v2/v3) |
 |---------|-------------------|----------------------|
@@ -283,13 +283,13 @@ export type GetPostsResult = Post[]
 
 ## Migration Path from groq to defineQuery
 
-### Step 1: Upgrade to Sanity v4
+## Step 1: Upgrade to Sanity v4
 
 ```bash
 npm install sanity@^4.0.0 next-sanity@^7.0.0
 ```
 
-### Step 2: Convert Query Files
+## Step 2: Convert Query Files
 
 **Before (groq template):**
 ```typescript
@@ -311,7 +311,7 @@ export const getPageQuery = defineQuery(`
 `)
 ```
 
-### Step 3: Set Up Type Generation
+## Step 3: Set Up Type Generation
 
 Add script to `package.json`:
 
@@ -323,7 +323,7 @@ Add script to `package.json`:
 }
 ```
 
-### Step 4: Run Type Generation
+## Step 4: Run Type Generation
 
 ```bash
 npm run generate:schema:and:types
@@ -333,7 +333,7 @@ npm run generate:schema:and:types
 - `schema.json` - Extracted Sanity schema
 - `sanity.types.ts` - TypeScript types for all queries
 
-### Step 5: Update Component Imports
+## Step 5: Update Component Imports
 
 **Before:**
 ```typescript
@@ -349,7 +349,7 @@ import type { GetPageQueryResult } from '../../sanity.types'  // Auto-generated
 
 ## Best Practices
 
-### 1. Use Named Exports
+## 1. Use Named Exports
 
 ```typescript
 // ✅ Good - Named exports for clarity
@@ -361,7 +361,7 @@ const query = defineQuery(`...`)
 export default query
 ```
 
-### 2. Add JSDoc Comments
+## 2. Add JSDoc Comments
 
 ```typescript
 /**
@@ -374,7 +374,7 @@ export default query
 export const getPostBySlugQuery = defineQuery(`...`)
 ```
 
-### 3. Run Type Generation in CI/CD
+## 3. Run Type Generation in CI/CD
 
 ```yaml
 # .github/workflows/ci.yml
@@ -385,7 +385,7 @@ export const getPostBySlugQuery = defineQuery(`...`)
   run: npm run type-check
 ```
 
-### 4. Gitignore Generated Files (Optional)
+## 4. Gitignore Generated Files (Optional)
 
 ```gitignore
 # Option 1: Gitignore (regenerate in CI)

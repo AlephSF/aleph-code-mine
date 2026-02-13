@@ -9,7 +9,7 @@ audience: "fullstack"
 complexity: "intermediate"
 doc_type: "standard"
 source_confidence: "67%"
-last_updated: "2026-02-11"
+last_updated: "2026-02-13"
 ---
 
 # Ordering, Filtering, and Pagination
@@ -34,7 +34,7 @@ GROQ provides `|order` for server-side sorting and array slicing (`[N..M]`) for 
 
 ## Server-Side Ordering with |order
 
-### Basic Ordering Pattern
+## Basic Ordering Pattern
 
 Kariusdx uses `|order` pipe operator for server-side sorting before fetching results.
 
@@ -54,7 +54,7 @@ Kariusdx uses `|order` pipe operator for server-side sorting before fetching res
 - `|order(field asc)` - Ascending order (A-Z, 0-9, oldest-newest)
 - `|order(field desc)` - Descending order (Z-A, 9-0, newest-oldest)
 
-### Ordering by Date Fields
+## Ordering by Date Fields
 
 **Kariusdx common pattern (date-based content):**
 
@@ -87,7 +87,7 @@ const videosQuery = groq`
 - `_createdAt` - Sanity built-in creation timestamp
 - `_updatedAt` - Sanity built-in update timestamp
 
-### Multiple Order Criteria
+## Multiple Order Criteria
 
 **Query with fallback ordering:**
 ```groq
@@ -105,7 +105,7 @@ const videosQuery = groq`
 
 ## Array Slicing for Pagination
 
-### Basic Array Slicing
+## Basic Array Slicing
 
 GROQ array slicing (`[start..end]`) extracts subsets of query results for pagination.
 
@@ -125,7 +125,7 @@ GROQ array slicing (`[start..end]`) extracts subsets of query results for pagina
 
 **Result:** First 10 posts, sorted by publishedAt.
 
-### Parameterized Pagination
+## Parameterized Pagination
 
 **Kariusdx pattern (dynamic pagination):**
 
@@ -148,7 +148,7 @@ const page3 = recentNewsGroq(20, 29) // Items 20-29 (10 items)
 - Server-side pagination (reduces client payload)
 - Type-safe with TypeScript parameters
 
-### count() for Total Items
+## count() for Total Items
 
 **Kariusdx pattern (pagination metadata):**
 
@@ -177,7 +177,7 @@ export const newsDataQueryString = (slug: string[]) => (
 
 ## Filtering Before Ordering
 
-### Combined Filter and Order
+## Combined Filter and Order
 
 **Query pattern:**
 ```groq
@@ -195,7 +195,7 @@ export const newsDataQueryString = (slug: string[]) => (
 
 **Result:** First 10 posts in specified category, sorted by date.
 
-### Published Content Filter
+## Published Content Filter
 
 **Common pattern (only published content):**
 ```groq
@@ -204,7 +204,7 @@ export const newsDataQueryString = (slug: string[]) => (
 
 **Use case:** Hide draft/unpublished content from public-facing queries.
 
-### Date Range Filtering with Ordering
+## Date Range Filtering with Ordering
 
 **Query pattern:**
 ```groq
@@ -223,7 +223,7 @@ export const newsDataQueryString = (slug: string[]) => (
 
 ## Client-Side vs Server-Side Sorting
 
-### Helix Pattern (Client-Side Sorting)
+## Helix Pattern (Client-Side Sorting)
 
 Helix fetches unordered results and sorts in React components.
 
@@ -253,7 +253,7 @@ const LatestContent = async () => {
 - **Pros:** Flexible sorting in UI (user can change sort order without re-fetching)
 - **Cons:** Must fetch all items (no server-side pagination), higher payload size
 
-### Kariusdx Pattern (Server-Side Sorting)
+## Kariusdx Pattern (Server-Side Sorting)
 
 Kariusdx sorts on server with `|order`, reducing payload.
 
@@ -283,7 +283,7 @@ const LatestNews = async () => {
 
 ## Ordering by Custom Weights
 
-### Priority-Based Ordering
+## Priority-Based Ordering
 
 **Query with custom priority field:**
 ```groq
@@ -308,7 +308,7 @@ defineField({
 
 ## Pagination Patterns
 
-### Offset Pagination (Kariusdx)
+## Offset Pagination (Kariusdx)
 
 **Pattern:**
 ```typescript
@@ -330,7 +330,7 @@ const page2 = getNewsPage(2, 10)  // [10..19]
 
 **Benefit:** Standard offset pagination with page numbers (1, 2, 3, ...).
 
-### Cursor Pagination (Not Observed)
+## Cursor Pagination (Not Observed)
 
 **Not used in analyzed projects, but GROQ supports:**
 ```groq
@@ -341,7 +341,7 @@ const page2 = getNewsPage(2, 10)  // [10..19]
 
 ## Ordering Limitations
 
-### Cannot Order by Reference Fields Directly
+## Cannot Order by Reference Fields Directly
 
 **❌ Does not work:**
 ```groq
@@ -358,7 +358,7 @@ const page2 = getNewsPage(2, 10)  // [10..19]
 
 **Or fetch and sort client-side.**
 
-### Cannot Order by Computed Fields
+## Cannot Order by Computed Fields
 
 **❌ Does not work:**
 ```groq
@@ -375,7 +375,7 @@ const page2 = getNewsPage(2, 10)  // [10..19]
 
 ## Performance Considerations
 
-### Ordering vs Client-Side Sorting
+## Ordering vs Client-Side Sorting
 
 **Server-side ordering (|order):**
 - ✅ Efficient for large datasets (sorts before fetching)

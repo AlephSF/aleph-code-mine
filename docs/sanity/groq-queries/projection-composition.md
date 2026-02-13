@@ -9,7 +9,7 @@ audience: "fullstack"
 complexity: "intermediate"
 doc_type: "standard"
 source_confidence: "100%"
-last_updated: "2026-02-11"
+last_updated: "2026-02-13"
 ---
 
 # Projection and Query Composition
@@ -30,7 +30,7 @@ GROQ template interpolation (`${}`) enables modular query composition by injecti
 
 ## Basic Projection with Partials
 
-### Simple Partial Interpolation
+## Simple Partial Interpolation
 
 Template interpolation injects partial query fragments into larger queries.
 
@@ -79,7 +79,7 @@ const pageQuery = groq`
 
 ## Multi-Partial Composition
 
-### Kariusdx Pattern (Composed Query with Multiple Partials)
+## Kariusdx Pattern (Composed Query with Multiple Partials)
 
 Kariusdx composes queries from multiple partials for maximum reusability.
 
@@ -126,7 +126,7 @@ export default pageQuery
 
 ## Conditional Projection with Helpers
 
-### Dynamic Query Fragments Based on Route
+## Dynamic Query Fragments Based on Route
 
 Kariusdx uses helper functions to conditionally include query fragments based on route parameters.
 
@@ -163,7 +163,7 @@ const pageQuery = (slug: string[]) => groq`
 
 ## Nested Projection for Content Blocks
 
-### Ripplecom Pattern (Content Array with Nested Projections)
+## Ripplecom Pattern (Content Array with Nested Projections)
 
 Ripplecom uses partials within content array expansions for polymorphic content blocks.
 
@@ -220,7 +220,7 @@ export const getPageByPathQuery = defineQuery(`
 
 ## Parameterized Projection
 
-### Dynamic Partial with Parameters
+## Dynamic Partial with Parameters
 
 Kariusdx uses parameterized helpers for flexible query fragments.
 
@@ -253,7 +253,7 @@ const homepageQuery = groq`
 
 ## Projection for Global Data
 
-### Site-Wide Data Composition
+## Site-Wide Data Composition
 
 Kariusdx pattern for including global site data in every query.
 
@@ -288,7 +288,7 @@ const pageQuery = (slug: string[]) => groq`
 
 ## Inline vs Partial Projection Trade-offs
 
-### Helix Pattern (Inline Projections)
+## Helix Pattern (Inline Projections)
 
 Helix uses fewer partials (3 vs 4-6 in other projects) and more inline projections.
 
@@ -332,7 +332,7 @@ const pageByPathQuery = groq`
 - **Pros:** Entire query visible in one file, easier to debug single queries
 - **Cons:** Less reusable, harder to maintain across multiple queries
 
-### Kariusdx Pattern (Partial-Heavy)
+## Kariusdx Pattern (Partial-Heavy)
 
 Kariusdx extracts more patterns into partials/helpers (8 total).
 
@@ -349,7 +349,7 @@ Kariusdx extracts more patterns into partials/helpers (8 total).
 
 ## Projection with Filtering
 
-### Filtered Projections in Content Arrays
+## Filtered Projections in Content Arrays
 
 **Pattern: Filter content blocks by type within projection**
 
@@ -370,7 +370,7 @@ const pageQuery = groq`
 
 ## Anti-Patterns to Avoid
 
-### ❌ Over-Interpolation (Too Many Partials)
+## ❌ Over-Interpolation (Too Many Partials)
 
 ```typescript
 // TOO GRANULAR
@@ -391,7 +391,7 @@ const query = groq`
 
 **Better:** Only extract repeated multi-field patterns.
 
-### ❌ Circular Dependencies
+## ❌ Circular Dependencies
 
 ```typescript
 // partial1.ts
@@ -407,7 +407,7 @@ const partial2 = `{${partial1}}`
 
 **Better:** Use one-way dependency flow (partials → queries, not partials → partials).
 
-### ❌ Mixing String Concatenation and Template Interpolation
+## ❌ Mixing String Concatenation and Template Interpolation
 
 ```typescript
 // INCONSISTENT
@@ -425,7 +425,7 @@ const query = groq`
 
 ## Performance Considerations
 
-### Projection Overhead
+## Projection Overhead
 
 **Minimal:** Template interpolation is compile-time (no runtime cost).
 

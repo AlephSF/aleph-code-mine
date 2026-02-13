@@ -9,7 +9,7 @@ audience: "fullstack"
 complexity: "beginner"
 doc_type: "standard"
 source_confidence: "100%"
-last_updated: "2026-02-11"
+last_updated: "2026-02-13"
 ---
 
 # Query File Organization for GROQ
@@ -30,7 +30,7 @@ Sanity projects consistently organize GROQ queries into dedicated directories wi
 
 ## Standard Directory Structure
 
-### Helix Pattern (Flat with Partials Subdirectory)
+## Helix Pattern (Flat with Partials Subdirectory)
 
 Helix (v3) uses a flat structure with a dedicated `/partials` subdirectory for reusable query fragments.
 
@@ -54,7 +54,7 @@ app/(frontend)/lib/sanity/
 - Clear separation between full queries and partials
 - 12 main query files + 3 reusable partials
 
-### Kariusdx Pattern (Organized with Helpers and Partials)
+## Kariusdx Pattern (Organized with Helpers and Partials)
 
 Kariusdx (v2) uses the most organized structure with separate `/helpers` and `/partials` subdirectories.
 
@@ -82,7 +82,7 @@ lib/groq/
 - 8 main queries + 4 helpers + 4 partials
 - Scalable for complex projects with many query variations
 
-### Ripplecom Pattern (Modern v4 with Partials)
+## Ripplecom Pattern (Modern v4 with Partials)
 
 Ripplecom (v4) organizes queries with a `/partials` subdirectory and follows modern naming conventions.
 
@@ -114,7 +114,7 @@ apps/ripple-web/src/queries/sanity/
 
 ## File Naming Conventions
 
-### Query Files (Main Queries)
+## Query Files (Main Queries)
 
 **Pattern 1: Descriptive noun (Ripplecom):**
 ```typescript
@@ -134,7 +134,7 @@ export default pageByPathQuery
 
 ## Partials Subdirectory Pattern
 
-### Purpose of Partials
+## Purpose of Partials
 
 Partials contain reusable GROQ fragments for common content structures. All three projects use partials for:
 
@@ -143,7 +143,7 @@ Partials contain reusable GROQ fragments for common content structures. All thre
 3. **Rich text content** (67% adoption) - Portable Text expansion with custom blocks
 4. **Navigation/links** (67% adoption) - Link objects with URL and display text
 
-### Image Reference Partial Example
+## Image Reference Partial Example
 
 **Helix imgReference.ts:**
 ```typescript
@@ -209,7 +209,7 @@ export const clinicalDataQueryString = (slug: string[]) => (
 
 ## Anti-Patterns to Avoid
 
-### ❌ Queries Inside Component Files
+## ❌ Queries Inside Component Files
 
 ```typescript
 // components/BlogPost.tsx (AVOID)
@@ -222,7 +222,7 @@ const BlogPost = () => {
 
 **Problem:** Query is not reusable, harder to test, and couples data fetching to UI.
 
-### ❌ No Partials for Repeated Patterns
+## ❌ No Partials for Repeated Patterns
 
 ```typescript
 // pageQuery.ts (AVOID)
@@ -236,7 +236,7 @@ const pageQuery = groq`
 
 **Problem:** Image reference expansion repeated twice. Extract to `imgReference` partial.
 
-### ✅ Correct Pattern with Partials
+## ✅ Correct Pattern with Partials
 
 ```typescript
 // partials/imgReference.ts
