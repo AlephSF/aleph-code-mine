@@ -9,7 +9,7 @@ audience: "fullstack"
 complexity: "intermediate"
 doc_type: "standard"
 source_confidence: "40%"
-last_updated: "2026-02-12"
+last_updated: "2026-02-13"
 ---
 
 # Allowed Blocks Filtering for Editor Access Control
@@ -24,7 +24,7 @@ WordPress allowed_block_types_all filter restricts available blocks in the edito
 
 ## Basic Allowlist Implementation
 
-### Global Block Restriction
+## Global Block Restriction
 
 WordPress allowed_block_types_all filter receives current allowed blocks and editor context, returning filtered array of allowed block namespaces. Simplest implementation restricts to specific blocks globally.
 
@@ -54,9 +54,17 @@ add_filter( 'allowed_block_types_all', 'restrict_blocks', 10, 2 );
 
 ## Post-Type-Specific Allowlists
 
-### Tiered Allowlist Pattern
+## Tiered Allowlist Pattern
 
-WordPress post-type-specific allowlists enable different block access per content type. This pattern uses tiered allowlist arrays merged based on post type detection.
+WordPress post-type-specific allowlists enable different block access per content type. This pattern uses tiered allowlist arrays merged based on post type detection from editor context, with base blocks providing universal functionality and post-type arrays extending capabilities.
+
+## Tiered Allowlist Implementation Strategy
+
+WordPress tiered allowlist merges base blocks with post-type-specific additions. Universal blocks provide baseline functionality while post-type arrays extend capabilities through context detection and array merging. Separate arrays enable maintainable block management.
+
+## PHP Implementation for Tiered Allowlist
+
+WordPress filter function checks editor context post type and merges universal blocks with appropriate tier-specific blocks. Separate arrays for universal, page-specific, and custom post type blocks enable maintainable management:
 
 ```php
 function restrict_blocks( $allowed_block_types, $editor_context ) {
@@ -118,7 +126,7 @@ add_filter( 'allowed_block_types_all', 'restrict_blocks', 10, 2 );
 
 ## Editor Context Detection
 
-### Pattern Editor Exception
+## Pattern Editor Exception
 
 WordPress pattern editor (core/edit-site) requires access to all blocks since patterns may use any registered block. Allowlist logic must detect pattern editor context and permit all blocks.
 
@@ -144,7 +152,7 @@ add_filter( 'allowed_block_types_all', 'restrict_blocks', 10, 2 );
 
 **Real-world usage:** airbnb-policy-blocks checks `$editor_context->name === 'core/edit-site'` and returns merged allowlist containing all site blocks (universal + page + local page blocks) for pattern creation.
 
-### Template Editor Detection
+## Template Editor Detection
 
 WordPress Full Site Editing (FSE) templates require broader block access than post content. Template editor detection enables expanded allowlists for site builders.
 
@@ -167,9 +175,17 @@ if ( ! empty( $editor_context->name ) && strpos( $editor_context->name, 'core/ed
 
 ## Core Block Categories
 
-### Selective Core Block Allowlist
+## Selective Core Block Allowlist
 
-WordPress core blocks span multiple categories. Allowlists can restrict to specific core block categories while enabling all custom blocks.
+WordPress core blocks span multiple categories. Allowlists can restrict to specific core block categories while enabling all custom blocks, preventing use of problematic blocks (code, embeds, custom HTML) while maintaining project-specific block functionality.
+
+## Core Block Registry Query Strategy
+
+WordPress block registry query enables dynamic allowlist combining curated core blocks with all custom blocks. This pattern restricts core blocks by category while trusting custom blocks registered by the site, preventing problematic core blocks.
+
+## PHP Registry Loop Implementation
+
+WordPress registry query iterates all registered blocks, combining curated core blocks with dynamically discovered custom blocks. WP_Block_Type_Registry query filters blocks by namespace:
 
 ```php
 function restrict_blocks( $allowed_block_types, $editor_context ) {
@@ -223,7 +239,7 @@ add_filter( 'allowed_block_types_all', 'restrict_blocks', 10, 2 );
 
 ## User Capability Detection
 
-### Role-Based Allowlists
+## Role-Based Allowlists
 
 WordPress allowlists can vary by user capability, enabling power users (administrators) to access all blocks while restricting editors/authors to approved subset.
 
@@ -265,7 +281,7 @@ add_filter( 'allowed_block_types_all', 'restrict_blocks', 10, 2 );
 
 ## Dynamic Allowlist Generation
 
-### Registry-Based Allowlist
+## Registry-Based Allowlist
 
 WordPress dynamic allowlists query block registry to programmatically build allowed block arrays based on block metadata patterns (category, keywords, custom attributes).
 
@@ -305,7 +321,7 @@ add_filter( 'allowed_block_types_all', 'restrict_blocks', 10, 2 );
 
 ## Allowlist Maintenance
 
-### Centralized Block List Constants
+## Centralized Block List Constants
 
 WordPress allowlists benefit from centralized constant definitions for maintainability. Constants enable reuse across multiple filter implementations.
 
@@ -360,9 +376,17 @@ add_filter( 'allowed_block_types_all', 'restrict_blocks', 10, 2 );
 
 ## Complete Example
 
-### Multi-Tier Post-Type-Aware Allowlist
+## Multi-Tier Post-Type-Aware Allowlist
 
-WordPress production-ready allowlist implementation with tiered blocks, post-type detection, pattern editor exception, and maintainable structure.
+WordPress production-ready allowlist implementation combines tiered blocks, post-type detection, pattern editor exception, and maintainable constant-based structure. Real-world pattern from airbnb-policy-blocks managing 25+ blocks across 3 post types with pattern editor compatibility.
+
+## Production Multi-Tier Strategy
+
+WordPress complete allowlist filter combines constants, editor context detection, and tiered merging. Pattern enables different block sets per post type while maintaining pattern editor compatibility through context-aware merging of block tier constants.
+
+## PHP Production Multi-Tier Implementation
+
+WordPress production filter combines constant definitions for maintainability with editor context detection and tiered merging logic. Pattern includes pattern editor exception and post-type-specific merging:
 
 ```php
 <?php
@@ -440,7 +464,7 @@ add_filter( 'allowed_block_types_all', 'airbnb_restrict_blocks', 10, 2 );
 
 ## Performance Considerations
 
-### Caching Allowlist Results
+## Caching Allowlist Results
 
 WordPress allowed_block_types_all filter executes on every editor load. Complex allowlist logic should cache results to prevent repeated computation.
 
@@ -478,7 +502,7 @@ function restrict_blocks( $allowed_block_types, $editor_context ) {
 
 ## Common Pitfalls
 
-### Blocking Reusable Blocks
+## Blocking Reusable Blocks
 
 WordPress core/block type enables reusable blocks (synced patterns). Omitting core/block from allowlist prevents editors from using any reusable blocks, breaking expected editor functionality.
 
@@ -500,7 +524,7 @@ $allowed_blocks = array(
 );
 ```
 
-### Blocking InnerBlocks
+## Blocking InnerBlocks
 
 WordPress container blocks (group, columns, section-block) using InnerBlocks require child blocks in allowlist. Blocking child blocks renders container blocks unusable.
 
@@ -508,7 +532,7 @@ WordPress container blocks (group, columns, section-block) using InnerBlocks req
 
 **Solution:** When allowing container blocks, ensure commonly used child blocks (paragraph, heading, image) are also in allowlist.
 
-### Pattern Editor Restrictions
+## Pattern Editor Restrictions
 
 WordPress pattern editor (core/edit-site) must access all site blocks to create patterns. Applying content allowlists to pattern editor breaks pattern creation workflow.
 

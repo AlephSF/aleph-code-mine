@@ -9,7 +9,7 @@ audience: "fullstack"
 complexity: "intermediate"
 doc_type: "standard"
 source_confidence: "20%"
-last_updated: "2026-02-12"
+last_updated: "2026-02-13"
 ---
 
 # block.json Metadata API for Block Registration
@@ -24,7 +24,7 @@ WordPress block.json metadata file serves as the single source of truth for bloc
 
 ## block.json File Structure
 
-### Required Fields
+## Required Fields
 
 WordPress block.json requires specific fields for valid block registration. The $schema field enables IDE autocomplete and validation against WordPress specification.
 
@@ -50,7 +50,7 @@ WordPress block.json requires specific fields for valid block registration. The 
 
 **Validation:** WordPress validates block.json against JSON schema at plugin activation. Invalid files prevent block registration.
 
-### Attributes Definition
+## Attributes Definition
 
 WordPress block.json attributes define block data structure with type validation and default values. Attributes automatically sync between JavaScript and PHP without manual prop passing.
 
@@ -87,7 +87,7 @@ WordPress block.json attributes define block data structure with type validation
 - `default`: Fallback value when undefined
 - `source`: HTML attribute selector for block parsing (deprecated in API v3)
 
-### Supports Configuration
+## Supports Configuration
 
 WordPress block.json supports field controls editor features like HTML editing, alignment options, and spacing controls. These settings integrate with theme.json design system.
 
@@ -124,7 +124,7 @@ WordPress block.json supports field controls editor features like HTML editing, 
 
 **Theme integration:** Support values inherit from theme.json settings when not explicitly disabled.
 
-### Asset References
+## Asset References
 
 WordPress block.json editorScript and editorStyle fields point to compiled JavaScript and CSS assets. The file:// prefix indicates build output paths relative to block.json location.
 
@@ -147,7 +147,7 @@ WordPress block.json editorScript and editorStyle fields point to compiled JavaS
 
 ## PHP Registration Pattern
 
-### Directory-Based Registration
+## Directory-Based Registration
 
 WordPress register_block_type() accepts directory paths containing block.json files. This approach automatically reads metadata and registers blocks without manual attribute definitions.
 
@@ -181,7 +181,7 @@ add_action( 'init', 'airbnb_policy_blocks_block_init' );
 
 **Benefit:** Single PHP function registers 9+ blocks with ~10 lines of code.
 
-### Asset Enqueuing Automation
+## Asset Enqueuing Automation
 
 WordPress register_block_type() automatically enqueues JavaScript and CSS when using file:// paths in block.json. Manual wp_enqueue_script() calls are unnecessary.
 
@@ -212,7 +212,7 @@ wp_enqueue_style(
 
 **Handles:** WordPress generates unique handles based on block name (namespace + block slug).
 
-### index.asset.php Dependency Loading
+## index.asset.php Dependency Loading
 
 WordPress @wordpress/scripts build process generates index.asset.php files containing dependency arrays and version hashes. The register_block_type() function automatically loads these dependencies when block.json references the compiled script.
 
@@ -237,7 +237,7 @@ WordPress looks for `index.asset.php` next to `index.js` referenced in editorScr
 
 ## JavaScript Integration
 
-### Importing block.json Metadata
+## Importing block.json Metadata
 
 WordPress blocks import block.json as a JavaScript module to access metadata in registerBlockType(). This ensures JavaScript and PHP use identical block names and settings.
 
@@ -276,7 +276,7 @@ registerBlockType( metadata.name, {
 
 **Benefit:** Changing block.json updates both PHP and JavaScript registration without touching code files.
 
-### Minimal registerBlockType() Calls
+## Minimal registerBlockType() Calls
 
 WordPress registerBlockType() requires only edit and save functions when metadata comes from block.json. All other properties (title, icon, category, attributes) are inherited from the imported metadata.
 
@@ -317,7 +317,7 @@ registerBlockType( 'airbnb/hero-cluster', {
 
 ## Dynamic Blocks with render_callback
 
-### Server-Side Rendering Configuration
+## Server-Side Rendering Configuration
 
 WordPress blocks using render_callback for server-side rendering still benefit from block.json metadata. The PHP register_block_type() call adds render_callback to the metadata-driven registration.
 
@@ -341,7 +341,7 @@ function airbnb_acf_block_render_callback( $attributes, $content, $block ) {
 
 **Combined approach:** block.json defines attributes and supports, PHP adds render_callback for dynamic data.
 
-### save: () => null Pattern
+## save: () => null Pattern
 
 WordPress dynamic blocks using server-side rendering should set save to null in JavaScript. This prevents generating static HTML since PHP render_callback produces the final output.
 
@@ -363,7 +363,7 @@ registerBlockType( metadata.name, {
 
 ## Block Variations
 
-### Defining Variations in block.json
+## Defining Variations in block.json
 
 WordPress block.json supports variations array for creating block presets with predefined attributes. Variations appear as separate options in the block inserter without duplicating code.
 
@@ -400,11 +400,11 @@ WordPress block.json supports variations array for creating block presets with p
 
 ## Example Templates
 
-### Block.json Example Patterns
+## Block.json Example Patterns Overview
 
 WordPress block.json patterns vary based on block complexity and feature requirements. Common patterns include simple content blocks, container blocks with InnerBlocks, and dynamic blocks with server rendering.
 
-#### Simple Content Block
+## Simple Content Block Pattern
 
 WordPress blocks displaying static content use minimal block.json configuration with basic attributes and supports.
 
@@ -437,7 +437,7 @@ WordPress blocks displaying static content use minimal block.json configuration 
 }
 ```
 
-#### Container Block with InnerBlocks
+## Container Block with InnerBlocks Pattern
 
 WordPress blocks containing nested content use supports.html: false to prevent direct HTML editing and rely on InnerBlocks for content structure.
 
@@ -482,11 +482,14 @@ WordPress blocks containing nested content use supports.html: false to prevent d
 
 ## Migration from Legacy Registration
 
-### Converting Inline Metadata
+## Converting Inline Metadata Overview
 
-WordPress blocks using legacy inline registerBlockType() metadata should extract properties to block.json for maintainability and WordPress 6.6+ compatibility.
+WordPress blocks using legacy inline registerBlockType() metadata should extract properties to block.json for maintainability and WordPress 6.6+ compatibility. Migration reduces JavaScript code by 50% and creates single source of truth.
 
-**Legacy inline metadata:**
+## Legacy Inline Metadata Pattern
+
+WordPress legacy blocks define all metadata inline within registerBlockType() call:
+
 ```javascript
 const { registerBlockType } = wp.blocks;
 
@@ -510,7 +513,10 @@ registerBlockType( 'thekelsey/slideshow', {
 } );
 ```
 
-**Migrated block.json:**
+## Migrated block.json Configuration
+
+WordPress modern blocks extract metadata to block.json declarative format:
+
 ```json
 {
   "$schema": "https://schemas.wp.org/trunk/block.json",
@@ -535,7 +541,10 @@ registerBlockType( 'thekelsey/slideshow', {
 }
 ```
 
-**Migrated index.js:**
+## Migrated JavaScript Registration
+
+WordPress migrated blocks import metadata and register with minimal JavaScript:
+
 ```javascript
 import { registerBlockType } from '@wordpress/blocks';
 import metadata from './block.json';
@@ -556,7 +565,7 @@ registerBlockType( metadata.name, {
 
 ## Validation and Debugging
 
-### Schema Validation
+## Schema Validation
 
 WordPress validates block.json against JSON schema at plugin activation. Invalid files log errors and prevent block registration. Use IDE extensions for real-time validation during development.
 
@@ -575,7 +584,7 @@ Reason: Invalid block.json - Missing required field: "name"
 
 **VS Code:** Automatically validates JSON against schema URL, shows inline errors.
 
-### Common Validation Issues
+## Common Validation Issues
 
 WordPress block.json validation failures often stem from incorrect field types or missing required properties. Check schema documentation for correct format.
 
@@ -613,11 +622,14 @@ WordPress block.json validation failures often stem from incorrect field types o
 
 ## Real-World Example
 
-### airbnb-policy-blocks section-block
+## airbnb-policy-blocks section-block Overview
 
 WordPress airbnb-policy-blocks section-block demonstrates complete block.json usage with attributes, supports, and example preview content for the block inserter.
 
-**build/section-block/block.json:**
+## section-block block.json Configuration
+
+WordPress section-block block.json includes example preview, enum validation, and boolean attributes:
+
 ```json
 {
   "$schema": "https://schemas.wp.org/trunk/block.json",
@@ -669,12 +681,18 @@ WordPress airbnb-policy-blocks section-block demonstrates complete block.json us
 }
 ```
 
-**PHP registration:**
+## section-block PHP Registration
+
+WordPress directory-based registration reads block.json automatically:
+
 ```php
 register_block_type( __DIR__ . '/build/section-block' );
 ```
 
-**JavaScript registration:**
+## section-block JavaScript Registration
+
+WordPress block registration imports metadata and registers edit/save functions:
+
 ```javascript
 import { registerBlockType } from '@wordpress/blocks';
 import metadata from './block.json';

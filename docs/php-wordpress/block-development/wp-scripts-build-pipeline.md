@@ -9,7 +9,7 @@ audience: "fullstack"
 complexity: "intermediate"
 doc_type: "standard"
 source_confidence: "20%"
-last_updated: "2026-02-12"
+last_updated: "2026-02-13"
 ---
 
 # @wordpress/scripts Build Pipeline for Block Development
@@ -24,7 +24,7 @@ WordPress `@wordpress/scripts` package provides modern build tooling for Gutenbe
 
 ## Installation and Configuration
 
-### Package Installation
+## Package Installation
 
 WordPress @wordpress/scripts installs as a development dependency with no runtime overhead. The package includes all build tools needed for block development.
 
@@ -44,7 +44,7 @@ WordPress @wordpress/scripts installs as a development dependency with no runtim
 - ESLint and Prettier integration
 - Hot module replacement for development
 
-### Build Scripts Configuration
+## Build Scripts Configuration
 
 WordPress @wordpress/scripts provides standard build and development commands. Custom build steps can chain with && operators for additional processing like global stylesheet compilation.
 
@@ -71,7 +71,7 @@ WordPress @wordpress/scripts provides standard build and development commands. C
 
 ## Per-Block Build Output
 
-### Automatic Entry Point Detection
+## Automatic Entry Point Detection
 
 WordPress @wordpress/scripts automatically detects entry points based on file structure. Each directory in `src/` with an `index.js` file becomes a separate build target, enabling code splitting and smaller bundle sizes.
 
@@ -108,7 +108,7 @@ build/
     └── ...
 ```
 
-### Dependency Management with asset.php
+## Dependency Management with asset.php
 
 WordPress @wordpress/scripts generates `index.asset.php` files containing WordPress dependency handles and version hashes. This enables proper script enqueuing without manual dependency tracking.
 
@@ -142,7 +142,7 @@ wp_enqueue_script(
 
 ## Custom Build Additions
 
-### Global Stylesheet Compilation
+## Global Stylesheet Compilation
 
 WordPress @wordpress/scripts compiles per-block styles automatically, but global editor stylesheets require separate Sass compilation. Chain custom build steps with && to extend the build pipeline.
 
@@ -182,7 +182,7 @@ add_action('enqueue_block_editor_assets', 'airbnb_policy_blocks_enqueue_editor_g
 
 **Use case:** Typography scales, color variables, and utility classes shared across all blocks.
 
-### Watch Mode for Development
+## Watch Mode for Development
 
 WordPress @wordpress/scripts supports concurrent processes using `&` for parallel watching. Combine `wp-scripts start` with Sass watch mode for live reloading during development.
 
@@ -203,7 +203,7 @@ WordPress @wordpress/scripts supports concurrent processes using `&` for paralle
 
 ## Migration from Create Guten Block (cgb-scripts)
 
-### Build Tool Comparison
+## Build Tool Comparison
 
 Create Guten Block (cgb-scripts) was deprecated in 2022 and produces monolithic builds incompatible with modern WordPress features. Migrating to @wordpress/scripts enables block.json metadata, per-block code splitting, and ESM imports.
 
@@ -237,17 +237,23 @@ Create Guten Block (cgb-scripts) was deprecated in 2022 and produces monolithic 
 
 **Output:** Separate `build/<block-name>/index.js` files with automatic dependency extraction.
 
-### Migration Steps
+## Migration Planning
 
-WordPress @wordpress/scripts requires restructuring from single-file blocks to per-block directories with block.json metadata. Estimated effort: 2-4 hours per block.
+WordPress @wordpress/scripts requires restructuring from single-file blocks to per-block directories with block.json metadata. Estimated migration effort: 2-4 hours per block. Follow the five-step process below for systematic migration from deprecated cgb-scripts.
 
-**Step 1: Install @wordpress/scripts**
+## Migration Step 1: Install @wordpress/scripts
+
+WordPress @wordpress/scripts replaces cgb-scripts as a development dependency. Remove the deprecated package and install the modern build tooling:
+
 ```bash
 npm uninstall cgb-scripts
 npm install --save-dev @wordpress/scripts
 ```
 
-**Step 2: Restructure directories**
+## Migration Step 2: Restructure Directories
+
+WordPress @wordpress/scripts requires per-block directories with index.js entry points. Restructure from monolithic block registration to individual block folders:
+
 ```
 # Before (cgb-scripts)
 src/
@@ -269,9 +275,9 @@ src/
     └── block.json
 ```
 
-**Step 3: Create block.json files**
+## Migration Step 3: Create block.json Files
 
-Move metadata from `registerBlockType()` inline attributes to block.json:
+WordPress block.json metadata replaces inline `registerBlockType()` attributes. Move configuration from JavaScript to declarative JSON format:
 
 ```javascript
 // BEFORE (legacy)
@@ -301,7 +307,10 @@ registerBlockType( 'airbnb/hero-cluster', {
 }
 ```
 
-**Step 4: Update package.json scripts**
+## Migration Step 4: Update Package Scripts
+
+WordPress @wordpress/scripts provides standard wp-scripts commands. Replace cgb-scripts commands with modern build tooling:
+
 ```json
 {
   "scripts": {
@@ -311,7 +320,10 @@ registerBlockType( 'airbnb/hero-cluster', {
 }
 ```
 
-**Step 5: Update PHP registration**
+## Migration Step 5: Update PHP Registration
+
+WordPress register_block_type() reads block.json automatically when provided a directory path. Simplify PHP registration by removing manual metadata:
+
 ```php
 // BEFORE (manual registration)
 register_block_type( 'airbnb/hero-cluster', array(
@@ -325,7 +337,7 @@ register_block_type( __DIR__ . '/build/hero-block' );
 
 ## Build Configuration Customization
 
-### webpack.config.js Override
+## webpack.config.js Override
 
 WordPress @wordpress/scripts allows custom Webpack configuration via `webpack.config.js` in the project root. Use this for advanced customizations like additional loaders or plugins.
 
@@ -349,7 +361,7 @@ module.exports = {
 - Loader overrides for specific file types
 - Externals configuration for third-party libraries
 
-### Environment-Specific Builds
+## Environment-Specific Builds
 
 WordPress @wordpress/scripts respects NODE_ENV for production vs development builds. Production builds enable minification, source maps, and optimization.
 
@@ -365,7 +377,7 @@ NODE_ENV=production npm run build
 
 ## Troubleshooting
 
-### Common Build Errors
+## Common Build Errors
 
 WordPress @wordpress/scripts errors often relate to missing dependencies or incorrect file structure. Check for proper block.json schema and ESM import paths.
 
@@ -381,7 +393,7 @@ WordPress @wordpress/scripts errors often relate to missing dependencies or inco
 - **Cause:** Invalid JSON or missing required fields
 - **Fix:** Validate against https://schemas.wp.org/trunk/block.json
 
-### Performance Optimization
+## Performance Optimization
 
 WordPress @wordpress/scripts builds can be slow for large plugins with 20+ blocks. Use parallel builds and caching to improve performance.
 
@@ -398,7 +410,7 @@ WordPress @wordpress/scripts builds can be slow for large plugins with 20+ block
 
 ## Integration with WordPress Coding Standards
 
-### ESLint Configuration
+## ESLint Configuration
 
 WordPress @wordpress/scripts includes @wordpress/eslint-plugin with WordPress JavaScript coding standards. Run linting to catch common issues before build.
 
@@ -417,7 +429,7 @@ WordPress @wordpress/scripts includes @wordpress/eslint-plugin with WordPress Ja
 - Consistent code formatting (Prettier integration)
 - Accessibility requirements (jsx-a11y)
 
-### Pre-Commit Hooks with Husky
+## Pre-Commit Hooks with Husky
 
 WordPress @wordpress/scripts integrates with Husky for pre-commit linting. This prevents committing code that fails coding standards.
 
@@ -435,7 +447,7 @@ WordPress @wordpress/scripts integrates with Husky for pre-commit linting. This 
 
 ## Real-World Examples
 
-### airbnb-policy-blocks Plugin
+## airbnb-policy-blocks Plugin
 
 WordPress airbnb-policy-blocks demonstrates modern @wordpress/scripts usage with 11 standard blocks and custom Sass compilation for global editor styles.
 
@@ -474,7 +486,7 @@ add_action( 'init', 'airbnb_policy_blocks_block_init' );
 
 **Build output:** 11 directories in `build/`, each with index.js, index.asset.php, and block.json.
 
-### Performance Metrics
+## Performance Metrics
 
 WordPress @wordpress/scripts build performance for airbnb-policy-blocks with 11 blocks and global Sass compilation:
 

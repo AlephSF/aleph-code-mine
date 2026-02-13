@@ -9,7 +9,7 @@ audience: "fullstack"
 complexity: "beginner"
 doc_type: "standard"
 source_confidence: "100%"
-last_updated: "2026-02-12"
+last_updated: "2026-02-13"
 ---
 
 # Custom Block Categories for Block Organization
@@ -24,7 +24,7 @@ WordPress custom block categories organize blocks in the editor inserter panel b
 
 ## Basic Category Registration
 
-### Single Category Registration
+## Single Category Registration
 
 WordPress block_categories_all filter adds custom categories by merging new category arrays with existing default categories. The filter receives current categories array and optional post object for context-aware registration.
 
@@ -51,7 +51,7 @@ add_filter( 'block_categories_all', 'thekelsey_add_block_category', 10, 2 );
 
 **Real-world usage:** All 5 analyzed plugins register exactly one custom category matching plugin namespace (thekelsey-custom-blocks, airbnb-careers, airbnb-press).
 
-### Multiple Categories Registration
+## Multiple Categories Registration
 
 WordPress plugins serving multiple client areas can register multiple categories for better organizational separation. Multiple categories appear as distinct sections in the block inserter.
 
@@ -85,7 +85,7 @@ add_filter( 'block_categories_all', 'airbnb_add_block_categories', 10, 2 );
 
 ## Assigning Blocks to Categories
 
-### Using category in block.json
+## Using category in block.json
 
 WordPress block.json metadata references custom category slug in the category field. The slug must match a registered category (default or custom) for blocks to appear in the inserter.
 
@@ -102,7 +102,7 @@ WordPress block.json metadata references custom category slug in the category fi
 
 **Category slug validation:** WordPress silently falls back to "text" category if slug doesn't match registered categories. Always verify category registration before assigning to blocks.
 
-### Using category in registerBlockType
+## Using category in registerBlockType
 
 WordPress legacy blocks using JavaScript registration specify category in the registerBlockType options object. This approach duplicates metadata but works without block.json.
 
@@ -121,7 +121,7 @@ registerBlockType( 'thekelsey/slideshow', {
 
 ## Category Naming Conventions
 
-### Slug Naming Patterns
+## Slug Naming Patterns
 
 WordPress custom category slugs follow consistent naming patterns across analyzed codebases: namespace-descriptor format using hyphens for word separation.
 
@@ -134,7 +134,7 @@ WordPress custom category slugs follow consistent naming patterns across analyze
 
 **Best practice:** Prefix category slugs with plugin/theme namespace to prevent collisions when multiple plugins register similarly-named categories.
 
-### Title Naming Patterns
+## Title Naming Patterns
 
 WordPress custom category titles use human-readable names with proper capitalization. Title patterns observed in analyzed codebases prioritize brand/department recognition.
 
@@ -148,7 +148,7 @@ WordPress custom category titles use human-readable names with proper capitaliza
 
 ## Icon Customization
 
-### Dashicon Selection
+## Dashicon Selection
 
 WordPress custom categories accept Dashicon slugs for visual identification in the block inserter. Icon choice should reflect category content theme for immediate recognition.
 
@@ -160,7 +160,7 @@ WordPress custom categories accept Dashicon slugs for visual identification in t
 
 **Full Dashicon reference:** https://developer.wordpress.org/resource/dashicons/
 
-### Icon Omission
+## Icon Omission
 
 WordPress custom categories can omit icon field entirely, rendering category name without icon prefix in block inserter. This approach simplifies registration when visual distinction isn't critical.
 
@@ -176,7 +176,7 @@ array(
 
 ## Category Ordering
 
-### Default Category Insertion Point
+## Default Category Insertion Point
 
 WordPress array_merge places custom categories after default WordPress categories in the block inserter. This ordering makes custom blocks appear below core blocks.
 
@@ -189,7 +189,7 @@ WordPress array_merge places custom categories after default WordPress categorie
 6. Embed (core)
 7. **Custom categories** (plugin-added)
 
-### Prioritizing Custom Categories
+## Prioritizing Custom Categories
 
 WordPress custom categories can appear before default categories by placing new categories at array start instead of end. This elevates plugin blocks above core blocks in the inserter.
 
@@ -214,7 +214,7 @@ function thekelsey_add_block_category( $categories, $post ) {
 
 ## Context-Aware Registration
 
-### Post-Type-Specific Categories
+## Post-Type-Specific Categories
 
 WordPress block_categories_all filter receives post object parameter enabling post-type-specific category registration. This reduces category clutter when blocks apply to specific post types only.
 
@@ -244,7 +244,7 @@ add_filter( 'block_categories_all', 'airbnb_add_block_categories', 10, 2 );
 
 ## Legacy Filter Support
 
-### block_categories Filter (Deprecated)
+## block_categories Filter (Deprecated)
 
 WordPress 5.8 deprecated block_categories filter in favor of block_categories_all. Legacy codebases may still reference the old filter name.
 
@@ -264,7 +264,7 @@ add_filter( 'block_categories_all', 'thekelsey_add_block_category', 10, 2 );
 
 ## Complete Plugin Example
 
-### Full Category Registration with Block Assignment
+## Full Category Registration with Block Assignment
 
 WordPress plugin demonstrating complete custom category workflow from registration to block assignment.
 
@@ -315,7 +315,7 @@ add_action( 'init', 'thekelsey_blocks_register' );
 
 ## Common Pitfalls
 
-### Category Slug Mismatch
+## Category Slug Mismatch
 
 WordPress blocks fail to appear in custom categories when category slug in block.json doesn't match registered slug. Typos or case sensitivity issues cause blocks to fall back to default "text" category.
 
@@ -323,7 +323,7 @@ WordPress blocks fail to appear in custom categories when category slug in block
 
 **Fix:** Verify exact slug match (case-sensitive) between block_categories_all registration and block.json category field.
 
-### Missing Textdomain in Translation
+## Missing Textdomain in Translation
 
 WordPress category titles should use __() translation function with proper textdomain for internationalization. Missing textdomain prevents translation and causes PHPCS warnings.
 
@@ -337,7 +337,7 @@ WordPress category titles should use __() translation function with proper textd
 'title' => __( 'Custom Blocks', 'plugin-textdomain' ),
 ```
 
-### Duplicate Category Registration
+## Duplicate Category Registration
 
 WordPress plugins that register categories multiple times (duplicate add_filter calls) cause categories to appear multiple times in block inserter. Always verify single registration per category slug.
 

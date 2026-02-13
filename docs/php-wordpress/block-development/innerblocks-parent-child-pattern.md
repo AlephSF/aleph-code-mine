@@ -9,7 +9,7 @@ audience: "fullstack"
 complexity: "intermediate"
 doc_type: "standard"
 source_confidence: "100%"
-last_updated: "2026-02-12"
+last_updated: "2026-02-13"
 ---
 
 # InnerBlocks Pattern for Parent-Child Block Relationships
@@ -24,7 +24,7 @@ WordPress InnerBlocks component enables parent-child block relationships by allo
 
 ## Basic InnerBlocks Implementation
 
-### Edit Component with InnerBlocks
+## Edit Component with InnerBlocks
 
 WordPress InnerBlocks component renders a nested block editor within a parent block. The component automatically handles child block insertion, reordering, and deletion without additional state management.
 
@@ -48,7 +48,7 @@ export default function Edit() {
 
 **Use case:** Generic container blocks (sections, groups, columns) where content editors need full flexibility in choosing child blocks.
 
-### Save Component with InnerBlocks.Content
+## Save Component with InnerBlocks.Content
 
 WordPress InnerBlocks.Content renders saved child block markup in the frontend. The component must appear in both edit and save functions at the same nesting depth to prevent block validation errors.
 
@@ -77,7 +77,7 @@ export default function save() {
 
 ## Restricting Allowed Child Blocks
 
-### allowedBlocks Prop
+## allowedBlocks Prop
 
 WordPress allowedBlocks prop restricts child blocks to a specific set of block types. This prevents content editors from inserting incompatible blocks within specialized containers like slideshows or carousels.
 
@@ -106,7 +106,7 @@ WordPress allowedBlocks prop restricts child blocks to a specific set of block t
 
 ## Default Block Templates
 
-### Template Prop for Initial Structure
+## Template Prop for Initial Structure
 
 WordPress template prop defines default child blocks inserted when the parent block is added. Templates reduce repetitive setup and guide editors toward intended content structures.
 
@@ -140,7 +140,7 @@ const TEMPLATE = [
 
 **Source data:** 40+ template definitions found in analyzed plugins, primarily in section blocks and page builder components.
 
-### templateLock for Enforcing Structure
+## templateLock for Enforcing Structure
 
 WordPress templateLock prop prevents users from adding, removing, or reordering child blocks. This enforces strict content structures for design consistency.
 
@@ -164,7 +164,7 @@ WordPress templateLock prop prevents users from adding, removing, or reordering 
 
 ## Block Appender Controls
 
-### renderAppender Prop
+## renderAppender Prop
 
 WordPress renderAppender prop controls the "Add block" button appearance for inserting additional child blocks. This customization improves UX for container blocks with dynamic child counts.
 
@@ -196,7 +196,7 @@ WordPress renderAppender prop controls the "Add block" button appearance for ins
 
 ## Advanced Patterns
 
-### Slideshow Parent-Child Pattern
+## Slideshow Parent-Child Pattern
 
 WordPress slideshow blocks demonstrate classic parent-child InnerBlocks usage with restricted child types and default templates. Two distinct patterns emerged in analyzed codebases.
 
@@ -233,7 +233,7 @@ registerBlockType( 'thekelsey/slideshow-slide', {
 
 **Pattern comparison:** Custom slide blocks provide more control (slide-specific attributes), while core/image blocks reduce development overhead. Analyzed codebase shows both approaches are valid depending on customization needs.
 
-### Section Wrapper with Flexible Content
+## Section Wrapper with Flexible Content
 
 WordPress section blocks use InnerBlocks without restrictions to provide flexible content areas. Templates guide initial structure but allow editors to modify freely.
 
@@ -275,7 +275,7 @@ export default function save({ attributes }) {
 
 ## Common Pitfalls
 
-### Nesting Depth Mismatch
+## Nesting Depth Mismatch
 
 WordPress InnerBlocks validation fails when edit and save functions have different wrapper depths. This causes "invalid content" errors requiring block recovery.
 
@@ -303,7 +303,7 @@ function save() {
 }
 ```
 
-### Missing InnerBlocks.Content in Save
+## Missing InnerBlocks.Content in Save
 
 WordPress blocks using InnerBlocks in edit must call InnerBlocks.Content in save (unless using dynamic rendering with save: () => null). Omitting InnerBlocks.Content causes child blocks to disappear on save.
 
@@ -327,7 +327,7 @@ function save() {
 
 ## Migration from Legacy Patterns
 
-### Converting wp.blockEditor to @wordpress/block-editor
+## Converting wp.blockEditor to @wordpress/block-editor
 
 WordPress legacy blocks using wp.blockEditor global must migrate to ESM imports for InnerBlocks. This enables tree-shaking and aligns with modern WordPress development standards.
 

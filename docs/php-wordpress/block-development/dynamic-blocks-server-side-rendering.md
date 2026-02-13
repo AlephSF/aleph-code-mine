@@ -9,7 +9,7 @@ audience: "fullstack"
 complexity: "advanced"
 doc_type: "standard"
 source_confidence: "40%"
-last_updated: "2026-02-12"
+last_updated: "2026-02-13"
 ---
 
 # Dynamic Blocks with Server-Side Rendering
@@ -24,7 +24,7 @@ WordPress dynamic blocks execute PHP rendering logic at runtime instead of savin
 
 ## Basic Dynamic Block Registration
 
-### PHP render_callback Pattern
+## PHP render_callback Pattern
 
 WordPress dynamic blocks register via register_block_type() with render_callback parameter pointing to PHP function that returns block HTML. The callback receives attributes array and optional content string.
 
@@ -64,7 +64,7 @@ register_block_type( 'rkv/carousel', [
 
 **Return value:** String of HTML markup rendered on frontend
 
-### JavaScript save: null Pattern
+## JavaScript save: null Pattern
 
 WordPress dynamic blocks must return null from save function to signal server-side rendering. Returning JSX from save creates static block requiring deprecation strategy when render logic changes.
 
@@ -83,7 +83,7 @@ registerBlockType( metadata.name, {
 
 ## OOP Base Class Pattern
 
-### Abstract Base Class for Template Hierarchy
+## Abstract Base Class for Template Hierarchy
 
 WordPress dynamic blocks can use Object-Oriented Programming with abstract base class to standardize render_callback logic across multiple blocks. This pattern implements template hierarchy (child theme → parent theme → plugin) for PHP template overrides.
 
@@ -142,7 +142,7 @@ abstract class Base {
 }
 ```
 
-### Concrete Block Implementation
+## Concrete Block Implementation
 
 WordPress dynamic blocks extend base class by defining block name and attributes. The base class handles registration and rendering automatically.
 
@@ -213,7 +213,7 @@ $className = $attributes['className'] ?? '';
 
 ## ACF Blocks with Dynamic Rendering
 
-### ACF Block Registration
+## ACF Block Registration
 
 WordPress ACF (Advanced Custom Fields) Pro provides acf_register_block_type() wrapper that automatically implements dynamic rendering. ACF blocks use PHP templates with $block, $attributes, and ACF field functions.
 
@@ -270,7 +270,7 @@ registerBlockType( metadata.name, {
 
 ## Template Hierarchy Customization
 
-### Theme Override Pattern
+## Theme Override Pattern
 
 WordPress dynamic blocks with template hierarchy enable theme-level customization without modifying plugin code. Themes copy plugin templates to specific directories for override.
 
@@ -306,7 +306,7 @@ $images = $attributes['images'] ?? [];
 
 ## Dynamic Data Queries
 
-### WP_Query in render_callback
+## WP_Query in render_callback
 
 WordPress dynamic blocks excel at displaying real-time database queries. render_callback can execute WP_Query to fetch latest posts, custom post types, or taxonomies at page load time.
 
@@ -367,7 +367,7 @@ return $html;
 
 ## Edit Component for Dynamic Blocks
 
-### ServerSideRender Component
+## ServerSideRender Component
 
 WordPress ServerSideRender component previews dynamic block output in the editor by calling render_callback via REST API. This provides WYSIWYG preview for blocks that cannot render identical output in JavaScript.
 
@@ -422,7 +422,7 @@ export default function Edit({ attributes, setAttributes }) {
 
 ## When to Use Dynamic Blocks
 
-### Dynamic vs Static Decision Matrix
+## Dynamic vs Static Decision Matrix
 
 WordPress blocks should use dynamic rendering when content changes frequently or requires runtime logic. Static blocks work better for fixed content that editors control entirely.
 
@@ -444,7 +444,7 @@ WordPress blocks should use dynamic rendering when content changes frequently or
 
 ## Common Pitfalls
 
-### Forgetting save: () => null
+## Forgetting save: () => null
 
 WordPress dynamic blocks that return JSX from save function become static blocks, ignoring render_callback entirely. This creates confusing bugs where PHP changes don't reflect on frontend.
 
@@ -460,7 +460,7 @@ save: () => {
 save: () => null, // Forces render_callback execution
 ```
 
-### Missing wp_reset_postdata()
+## Missing wp_reset_postdata()
 
 WordPress render_callback using WP_Query must call wp_reset_postdata() after loop to restore global $post object. Forgetting causes subsequent template tags (the_title, the_content) to reference query posts instead of current post.
 
@@ -482,7 +482,7 @@ endwhile;
 wp_reset_postdata(); // Reset global $post
 ```
 
-### Unescaped Attribute Output
+## Unescaped Attribute Output
 
 WordPress dynamic blocks must escape all attribute values in render_callback to prevent XSS vulnerabilities. Use esc_html(), esc_attr(), esc_url() based on context.
 

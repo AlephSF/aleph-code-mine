@@ -9,7 +9,7 @@ audience: "fullstack"
 complexity: "intermediate"
 doc_type: "standard"
 source_confidence: "60%"
-last_updated: "2026-02-12"
+last_updated: "2026-02-13"
 ---
 
 # Block Patterns Registration for Reusable Compositions
@@ -24,7 +24,7 @@ WordPress block patterns provide pre-configured block compositions that users in
 
 ## Basic Pattern Registration
 
-### Single Pattern Registration
+## Single Pattern Registration
 
 WordPress register_block_pattern() creates reusable block compositions by registering pattern metadata and block markup. Patterns appear in the block inserter under the patterns tab, organized by category.
 
@@ -69,7 +69,7 @@ register_block_pattern(
 
 ## Pattern Categories
 
-### Custom Category Registration
+## Custom Category Registration
 
 WordPress block patterns require categories for organization in the pattern inserter. Custom categories register via register_block_pattern_category() before pattern registration.
 
@@ -107,7 +107,7 @@ register_block_pattern(
 
 ## Pattern Content Generation
 
-### Block Markup Serialization
+## Block Markup Serialization
 
 WordPress block patterns require content in block serialization format (HTML comments + markup). Pattern content can embed directly in PHP or load from separate template files.
 
@@ -137,7 +137,7 @@ register_block_pattern(
 );
 ```
 
-### Template File Loading Pattern
+## Template File Loading Pattern
 
 WordPress block patterns can load content from separate PHP template files for better organization and editor syntax highlighting. This pattern separates pattern registration from block markup.
 
@@ -211,7 +211,7 @@ register_block_pattern(
 
 ## Pattern Types Analysis
 
-### Layout Patterns
+## Layout Patterns
 
 WordPress layout patterns combine structural blocks (columns, groups, spacers) to create reusable page sections. Analyzed codebase shows 6 common pattern types.
 
@@ -306,7 +306,7 @@ WordPress layout patterns combine structural blocks (columns, groups, spacers) t
 
 ## Custom Block Integration
 
-### Mixing Core and Custom Blocks in Patterns
+## Mixing Core and Custom Blocks in Patterns
 
 WordPress block patterns can combine core WordPress blocks with custom plugin/theme blocks. This enables branded pattern compositions using site-specific block types.
 
@@ -350,7 +350,7 @@ register_block_pattern(
 
 ## Block Styles with Patterns
 
-### registerBlockStyle for Style Variations
+## registerBlockStyle for Style Variations
 
 WordPress block styles provide visual variations of core blocks without creating custom blocks. Block styles combine with patterns to offer preset styling options.
 
@@ -381,7 +381,7 @@ registerBlockStyle( 'core/button', {
 
 ## Pattern Discovery and Keywords
 
-### Keyword Array for Search
+## Keyword Array for Search
 
 WordPress block patterns accept keywords array for pattern search functionality. Keywords improve pattern discoverability when users search inserter.
 
@@ -408,7 +408,7 @@ register_block_pattern(
 
 ## Pattern Organization Strategy
 
-### Centralized Pattern Registration
+## Centralized Pattern Registration
 
 WordPress themes and plugins should centralize pattern registration in dedicated pattern files for maintainability. Separate pattern logic from plugin/theme initialization.
 
@@ -483,7 +483,7 @@ if ( ! function_exists( 'rkv_register_patterns' ) ) {
 
 ## Pattern vs Block Decision
 
-### When to Use Patterns vs Custom Blocks
+## When to Use Patterns vs Custom Blocks
 
 WordPress patterns and custom blocks solve different problems. Understanding when to use each approach prevents over-engineering.
 
@@ -507,7 +507,7 @@ WordPress patterns and custom blocks solve different problems. Understanding whe
 
 ## Common Pitfalls
 
-### Invalid Block Markup
+## Invalid Block Markup
 
 WordPress patterns fail to register when content contains invalid block serialization syntax. Block comments must follow exact format with correct block namespaces.
 
@@ -525,7 +525,7 @@ WordPress patterns fail to register when content contains invalid block serializ
 
 **Debugging tip:** Test pattern markup by pasting into WordPress editor. If blocks fail to parse, markup is invalid.
 
-### Missing Block Registration
+## Missing Block Registration
 
 WordPress patterns referencing custom blocks fail silently when custom blocks aren't registered. Patterns using unregistered blocks appear in inserter but show invalid block errors when inserted.
 
@@ -535,7 +535,7 @@ add_action( 'init', 'register_custom_blocks', 5 );  // Priority 5
 add_action( 'init', 'register_patterns', 10 );      // Priority 10 (default)
 ```
 
-### Unescaped URLs in Template Files
+## Unescaped URLs in Template Files
 
 WordPress patterns loading content from template files must escape dynamic URLs to prevent XSS vulnerabilities when patterns include plugin/theme asset paths.
 

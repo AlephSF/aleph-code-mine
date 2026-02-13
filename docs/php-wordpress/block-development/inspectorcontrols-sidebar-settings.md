@@ -9,7 +9,7 @@ audience: "fullstack"
 complexity: "intermediate"
 doc_type: "standard"
 source_confidence: "100%"
-last_updated: "2026-02-12"
+last_updated: "2026-02-13"
 ---
 
 # InspectorControls Pattern for Block Sidebar Settings
@@ -24,7 +24,7 @@ WordPress InspectorControls component renders block settings in the editor sideb
 
 ## Basic InspectorControls Structure
 
-### Minimal Sidebar Implementation
+## Minimal Sidebar Implementation
 
 WordPress InspectorControls renders settings panels in the block inspector sidebar. The component must wrap control components within PanelBody sections for proper visual grouping.
 
@@ -63,7 +63,7 @@ export default function Edit({ attributes, setAttributes }) {
 
 ## Common Control Components
 
-### TextControl for String Input
+## TextControl for String Input
 
 WordPress TextControl provides single-line text input for string attributes. The component includes label, value binding, and onChange handler for attribute updates.
 
@@ -85,7 +85,7 @@ WordPress TextControl provides single-line text input for string attributes. The
 
 **Real-world usage:** 30+ TextControl instances found in analyzed codebase for headings, link text, CSS classes, and custom labels.
 
-### SelectControl for Dropdown Options
+## SelectControl for Dropdown Options
 
 WordPress SelectControl renders dropdown select menus for attributes with predefined options. The component requires options array with label/value pairs.
 
@@ -109,7 +109,7 @@ WordPress SelectControl renders dropdown select menus for attributes with predef
 
 **Real-world usage:** 40+ SelectControl instances in analyzed blocks for size variants, alignment options, color schemes, and animation types.
 
-### ToggleControl for Boolean Settings
+## ToggleControl for Boolean Settings
 
 WordPress ToggleControl provides switch UI for boolean attributes. The component uses checked prop instead of value to match checkbox semantics.
 
@@ -129,7 +129,7 @@ WordPress ToggleControl provides switch UI for boolean attributes. The component
 
 **Real-world usage:** 20+ ToggleControl instances for feature toggles (show/hide elements, enable animations, auto-play videos).
 
-### RangeControl for Numeric Sliders
+## RangeControl for Numeric Sliders
 
 WordPress RangeControl renders numeric slider input with min/max bounds. The component works best for numeric attributes with defined value ranges.
 
@@ -153,7 +153,7 @@ WordPress RangeControl renders numeric slider input with min/max bounds. The com
 
 ## Multi-Panel Organization
 
-### Grouping Related Settings
+## Grouping Related Settings
 
 WordPress PanelBody components group related controls into collapsible sections. Multiple panels organize complex block settings without overwhelming users with a single long form.
 
@@ -199,7 +199,7 @@ WordPress PanelBody components group related controls into collapsible sections.
 
 ## Complete Pattern Example
 
-### Section Block with Sidebar Controls
+## Section Block with Sidebar Controls
 
 WordPress section block demonstrates comprehensive InspectorControls pattern with multiple panels, control types, and conditional rendering based on attribute values.
 
@@ -269,7 +269,7 @@ export default function Edit({ attributes, setAttributes }) {
 
 ## Advanced Patterns
 
-### ColorPalette for Color Selection
+## ColorPalette for Color Selection
 
 WordPress ColorPalette component provides color picker UI with theme color presets. The component integrates with theme.json color palette for design system consistency.
 
@@ -287,7 +287,7 @@ import { ColorPalette } from '@wordpress/components';
 
 **Color format:** Returns hex color string (e.g., "#ff0000") or undefined when cleared.
 
-### MediaUpload for Image Selection
+## MediaUpload for Image Selection
 
 WordPress MediaUpload component opens media library for image selection. The component requires custom button UI and returns attachment ID and URL.
 
@@ -322,7 +322,7 @@ import { Button } from '@wordpress/components';
 
 ## addFilter for Extending All Blocks
 
-### Global InspectorControls Injection
+## Global InspectorControls Injection
 
 WordPress addFilter enables adding InspectorControls to every block (core + custom) without modifying block registration. This pattern adds global settings like spacing or visibility controls.
 
@@ -382,7 +382,7 @@ addFilter('editor.BlockEdit', 'rkv/spacing-controls', addSpacingInspectorControl
 
 ## Common Pitfalls
 
-### Missing setAttributes Callback
+## Missing setAttributes Callback
 
 WordPress InspectorControls must use setAttributes in onChange handlers to persist attribute changes. Directly mutating attributes object causes silent failures.
 
@@ -398,7 +398,7 @@ onChange={ ( value ) => {
 onChange={ ( value ) => setAttributes({ size: value }) }
 ```
 
-### Forgetting PanelBody Wrapper
+## Forgetting PanelBody Wrapper
 
 WordPress InspectorControls requires PanelBody wrapper for proper styling. Controls placed directly in InspectorControls render without proper spacing or collapsible behavior.
 
@@ -420,7 +420,7 @@ WordPress InspectorControls requires PanelBody wrapper for proper styling. Contr
 
 ## Migration from Legacy Patterns
 
-### Converting wp.components to @wordpress/components
+## Converting wp.components to @wordpress/components
 
 WordPress legacy blocks using wp.components global must migrate to ESM imports for modern tooling support and tree-shaking.
 
