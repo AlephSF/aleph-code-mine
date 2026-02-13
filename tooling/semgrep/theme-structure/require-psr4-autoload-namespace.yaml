@@ -1,0 +1,182 @@
+rules:
+  - id: wordpress-sage-missing-composer-autoload
+    pattern: |
+      {
+        "name": "$NAME",
+        $...REST
+      }
+    pattern-not: |
+      {
+        "autoload": {
+          "psr-4": {
+            $...MAPPINGS
+          }
+        },
+        $...REST
+      }
+    languages: [json]
+    paths:
+      include:
+        - composer.json
+    severity: ERROR
+    message: |
+      Sage theme composer.json missing PSR-4 autoload configuration.
+
+      Add autoload section:
+      ```json
+      {
+        "name": "roots/sage",
+        "type": "wordpress-theme",
+        "autoload": {
+          "psr-4": {
+            "App\\": "app/"
+          }
+        },
+        "require": {
+          "roots/sage-lib": "dev-master"
+        }
+      }
+      ```
+
+      This maps App\Controllers\FrontPage class to app/Controllers/FrontPage.php.
+
+      Observed pattern: 100% of Sage themes use PSR-4 autoloading
+      See: docs/php-wordpress/theme-structure/composer-autoloading-themes.md
+    metadata:
+      category: wordpress
+      subcategory: theme-structure
+      confidence: HIGH
+      likelihood: MEDIUM
+      impact: HIGH
+      technology:
+        - wordpress
+        - sage
+        - composer
+        - psr-4
+      references:
+        - https://www.php-fig.org/psr/psr-4/
+        - https://roots.io/sage/docs/composer/
+
+  - id: wordpress-sage-namespace-not-app
+    pattern: |
+      {
+        "autoload": {
+          "psr-4": {
+            "$NAMESPACE\\": "$PATH",
+            $...REST
+          }
+        }
+      }
+    metavariable-regex:
+      metavariable: $NAMESPACE
+      regex: ^(?!App).*$
+    languages: [json]
+    paths:
+      include:
+        - composer.json
+    severity: INFO
+    message: |
+      Sage convention: Use "App\\" namespace for theme code (not "$NAMESPACE\\").
+
+      Standard configuration:
+      ```json
+      {
+        "autoload": {
+          "psr-4": {
+            "App\\": "app/"
+          }
+        }
+      }
+      ```
+
+      Observed pattern: 100% of Sage themes use App\ namespace (Presser, Kelsey)
+      See: docs/php-wordpress/theme-structure/composer-autoloading-themes.md
+    metadata:
+      category: wordpress
+      subcategory: theme-structure
+      confidence: HIGH
+      likelihood: LOW
+      impact: LOW
+      technology:
+        - sage
+        - composer
+
+  - id: wordpress-sage-missing-vendor-autoload
+    pattern-not: require_once $AUTOLOAD
+    pattern: |
+      use $NAMESPACE\$CLASS;
+    languages: [php]
+    paths:
+      include:
+        - resources/functions.php
+        - functions.php
+    severity: ERROR
+    message: |
+      Namespaced class used but vendor/autoload.php not required.
+
+      Add to resources/functions.php:
+      ```php
+      if (!file_exists($composer = __DIR__.'/../vendor/autoload.php')) {
+          wp_die('You must run <code>composer install</code> from theme directory.');
+      }
+      require_once $composer;
+      ```
+
+      Without this, "Class not found" fatal errors occur.
+
+      Observed pattern: 100% of Sage themes check and require autoloader
+      See: docs/php-wordpress/theme-structure/composer-autoloading-themes.md
+    metadata:
+      category: wordpress
+      subcategory: theme-structure
+      confidence: HIGH
+      likelihood: MEDIUM
+      impact: HIGH
+      technology:
+        - wordpress
+        - sage
+        - composer
+      cwe:
+        - "CWE-665: Improper Initialization"
+
+  - id: wordpress-class-not-psr4-compliant
+    patterns:
+      - pattern: |
+          namespace App\$NAMESPACE;
+
+          class $CLASS {
+            $...BODY
+          }
+      - metavariable-regex:
+          metavariable: $NAMESPACE
+          regex: .*
+      - metavariable-regex:
+          metavariable: $CLASS
+          regex: .*
+    languages: [php]
+    paths:
+      include:
+        - app/**/*.php
+    severity: WARNING
+    message: |
+      PSR-4 compliance check: Class App\$NAMESPACE\$CLASS should be in file app/$NAMESPACE/$CLASS.php
+
+      Mapping rules:
+      - App\Controllers\FrontPage → app/Controllers/FrontPage.php
+      - App\Models\Post → app/Models/Post.php
+      - App\Utils\Helper → app/Utils/Helper.php
+
+      Verify file path matches namespace + class name.
+
+      See: docs/php-wordpress/theme-structure/composer-autoloading-themes.md
+    metadata:
+      category: wordpress
+      subcategory: theme-structure
+      confidence: MEDIUM
+      likelihood: LOW
+      impact: MEDIUM
+      technology:
+        - php
+        - psr-4
+      references:
+        - https://www.php-fig.org/psr/psr-4/

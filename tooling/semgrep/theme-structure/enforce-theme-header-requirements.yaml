@@ -1,0 +1,120 @@
+rules:
+  - id: wordpress-theme-missing-style-header
+    pattern-either:
+      - pattern: |
+          /*
+          Theme Name: ...
+          */
+      - pattern: |
+          /**
+          Theme Name: ...
+          */
+    pattern-not: |
+      /*
+      Theme Name: $NAME
+      ...
+      Version: $VERSION
+      */
+    languages: [generic]
+    paths:
+      include:
+        - style.css
+        - resources/style.css
+    severity: ERROR
+    message: |
+      WordPress theme header incomplete. Required fields: Theme Name, Version, Author, Description.
+
+      Complete header format:
+      ```
+      /*
+      Theme Name: My Theme
+      Description: Theme description
+      Author: Author Name
+      Version: 1.0.0
+      */
+      ```
+
+      See: docs/php-wordpress/theme-structure/sage-roots-framework-setup.md
+    metadata:
+      category: wordpress
+      subcategory: theme-structure
+      confidence: HIGH
+      likelihood: HIGH
+      impact: HIGH
+      technology:
+        - wordpress
+        - theme
+      references:
+        - https://developer.wordpress.org/themes/basics/main-stylesheet-style-css/
+
+  - id: wordpress-theme-missing-version-field
+    pattern: |
+      /*
+      Theme Name: $NAME
+      $...FIELDS
+      */
+    pattern-not: Version
+    languages: [generic]
+    paths:
+      include:
+        - style.css
+        - resources/style.css
+    severity: WARNING
+    message: |
+      WordPress theme header missing Version field. This field is required for theme updates.
+
+      Add Version field:
+      ```
+      /*
+      Theme Name: My Theme
+      Version: 1.0.0
+      ...
+      */
+      ```
+    metadata:
+      category: wordpress
+      subcategory: theme-structure
+      confidence: HIGH
+      likelihood: MEDIUM
+      impact: MEDIUM
+      technology:
+        - wordpress
+
+  - id: wordpress-theme-style-not-in-resources
+    patterns:
+      - pattern: |
+          /*
+          Theme Name: $NAME
+          */
+      - metavariable-regex:
+          metavariable: $NAME
+          regex: .*
+    languages: [generic]
+    paths:
+      include:
+        - style.css
+      exclude:
+        - resources/style.css
+        - dist/styles/style.css
+    severity: INFO
+    message: |
+      Sage framework convention: style.css should be in resources/ directory.
+
+      Expected structure:
+      ```
+      themes/my-theme/
+      └── resources/
+          └── style.css    # Theme header here
+      ```
+
+      Observed in: 100% of Sage themes (Presser, Kelsey)
+      See: docs/php-wordpress/theme-structure/sage-roots-framework-setup.md
+    metadata:
+      category: wordpress
+      subcategory: theme-structure
+      confidence: HIGH
+      likelihood: LOW
+      impact: LOW
+      technology:
+        - wordpress
+        - sage

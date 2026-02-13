@@ -1,0 +1,189 @@
+rules:
+  - id: prefer-block-json-metadata-api
+    message: |
+      Block registers metadata inline with registerBlockType() instead of using block.json. Inline metadata duplicates definitions between PHP and JavaScript, causing inconsistency and maintenance overhead.
+
+      Use block.json as single source of truth:
+      1. Create block.json with metadata (name, title, attributes, supports)
+      2. Import metadata in JavaScript:
+         import metadata from './block.json';
+         registerBlockType(metadata.name, { edit, save });
+      3. Register in PHP:
+         register_block_type(__DIR__ . '/build/block-name');
+
+      Benefits:
+      - Single source of truth (no duplication)
+      - Server-side validation
+      - WordPress 6.1+ features (variations, API v3)
+
+      See docs/php-wordpress/block-development/block-json-metadata-registration.md
+    severity: WARNING
+    languages:
+      - javascript
+      - typescript
+    patterns:
+      - pattern-either:
+          # Legacy pattern: wp.blocks.registerBlockType with inline metadata
+          - pattern: |
+              $WP.blocks.registerBlockType($NAME, {
+                title: $TITLE,
+                ...
+              })
+          # Modern pattern without metadata import
+          - pattern: |
+              registerBlockType($NAME, {
+                title: $TITLE,
+                ...
+              })
+      - pattern-not: |
+          registerBlockType($METADATA.name, ...)
+      - pattern-not: |
+          registerBlockType(metadata.name, ...)
+    metadata:
+      category: block-development
+      subcategory: registration
+      confidence: HIGH
+      impact: MEDIUM
+      likelihood: HIGH
+      references:
+        - https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/
+
+  - id: require-block-json-schema
+    message: |
+      block.json file missing $schema field. Without JSON schema reference, IDE loses autocomplete and validation against WordPress block.json specification.
+
+      Add $schema field at top of block.json:
+      {
+        "$schema": "https://schemas.wp.org/trunk/block.json",
+        "apiVersion": 3,
+        "name": "namespace/block-name",
+        ...
+      }
+
+      This enables:
+      - IDE autocomplete for valid fields
+      - Validation against WordPress specification
+      - Error highlighting for invalid configurations
+    severity: WARNING
+    languages:
+      - json
+    paths:
+      include:
+        - "**/block.json"
+    patterns:
+      - pattern: |
+          {
+            "apiVersion": $VERSION,
+            "name": $NAME,
+            ...
+          }
+      - pattern-not: |
+          {
+            "$schema": $SCHEMA,
+            ...
+          }
+    metadata:
+      category: block-development
+      subcategory: registration
+      confidence: HIGH
+      impact: LOW
+
+  - id: recommend-api-version-3
+    message: |
+      block.json uses apiVersion 2. WordPress 6.3+ supports apiVersion 3 with improved features:
+      - Simplified attribute syntax (no 'source' selectors)
+      - Better InnerBlocks handling
+      - Enhanced supports options
+
+      Update to apiVersion 3:
+      {
+        "$schema": "https://schemas.wp.org/trunk/block.json",
+        "apiVersion": 3,
+        ...
+      }
+
+      Note: apiVersion 3 requires WordPress 6.3+. Verify minimum WordPress version before upgrading.
+    severity: INFO
+    languages:
+      - json
+    paths:
+      include:
+        - "**/block.json"
+    patterns:
+      - pattern: |
+          {
+            "apiVersion": 2,
+            ...
+          }
+    metadata:
+      category: block-development
+      subcategory: registration
+      confidence: MEDIUM
+      impact: LOW
+
+  - id: enforce-block-json-required-fields
+    message: |
+      block.json missing required fields. WordPress blocks must define:
+      - apiVersion: Block API version (3 for WP 6.3+)
+      - name: Unique block identifier (namespace/block-name)
+      - title: Human-readable name for inserter
+      - category: Block inserter category
+
+      Minimal valid block.json:
+      {
+        "$schema": "https://schemas.wp.org/trunk/block.json",
+        "apiVersion": 3,
+        "name": "namespace/block-name",
+        "title": "Block Title",
+        "category": "text"
+      }
+    severity: ERROR
+    languages:
+      - json
+    paths:
+      include:
+        - "**/block.json"
+    patterns:
+      - pattern-either:
+          # Missing apiVersion
+          - pattern: |
+              {
+                "name": $NAME,
+                "title": $TITLE,
+                ...
+              }
+          # Missing name
+          - pattern: |
+              {
+                "apiVersion": $VERSION,
+                "title": $TITLE,
+                ...
+              }
+          # Missing title
+          - pattern: |
+              {
+                "apiVersion": $VERSION,
+                "name": $NAME,
+                ...
+              }
+      - pattern-not: |
+          {
+            "apiVersion": $VERSION,
+            "name": $NAME,
+            "title": $TITLE,
+            ...
+          }
+    fix-regex:
+      regex: '(\{)'
+      replacement: |
+        {
+          "$schema": "https://schemas.wp.org/trunk/block.json",
+          "apiVersion": 3,
+          "name": "namespace/block-name",
+          "title": "Block Title",
+          "category": "text",
+    metadata:
+      category: block-development
+      subcategory: registration
+      confidence: HIGH
+      impact: HIGH

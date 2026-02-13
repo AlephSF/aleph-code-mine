@@ -1,0 +1,95 @@
+rules:
+  - id: warn-legacy-cgb-scripts-package-json
+    message: |
+      Detected deprecated Create Guten Block (cgb-scripts) tooling. cgb-scripts is unmaintained since 2022 and lacks support for block.json metadata API, modern ESM imports, and per-block builds.
+
+      Migrate to @wordpress/scripts for WordPress 6.6+ compatibility:
+      1. Install: npm install --save-dev @wordpress/scripts
+      2. Update package.json scripts:
+         "build": "wp-scripts build"
+         "start": "wp-scripts start"
+      3. Refactor to per-block structure with block.json files
+      4. Convert wp.* globals to @wordpress/* ESM imports
+
+      See docs/php-wordpress/block-development/wp-scripts-build-pipeline.md for migration guide.
+    severity: WARNING
+    languages:
+      - json
+    patterns:
+      - pattern: |
+          {
+            "dependencies": {
+              ...,
+              "cgb-scripts": $VERSION,
+              ...
+            },
+            ...
+          }
+      - focus-metavariable: $VERSION
+    metadata:
+      category: block-development
+      subcategory: build-tools
+      confidence: HIGH
+      impact: MEDIUM
+      likelihood: HIGH
+      cwe: "CWE-1104: Use of Unmaintained Third Party Components"
+      references:
+        - https://www.npmjs.com/package/cgb-scripts
+        - https://developer.wordpress.org/block-editor/reference-guides/packages/packages-scripts/
+
+  - id: warn-legacy-cgb-scripts-usage
+    message: |
+      Detected cgb-scripts build command. cgb-scripts is deprecated and unmaintained. This tooling produces monolithic bundles, uses legacy wp.* globals, and lacks block.json support.
+
+      Migrate to @wordpress/scripts for better performance and WordPress 6.6+ features.
+    severity: WARNING
+    languages:
+      - json
+    patterns:
+      - pattern-either:
+          - pattern: |
+              {
+                "scripts": {
+                  ...,
+                  "$SCRIPT": "cgb-scripts ...",
+                  ...
+                },
+                ...
+              }
+          - pattern: |
+              {
+                "scripts": {
+                  ...,
+                  "$SCRIPT": "cgb-scripts ...",
+                  ...
+                },
+                ...
+              }
+    metadata:
+      category: block-development
+      subcategory: build-tools
+      confidence: HIGH
+      impact: MEDIUM
+
+  - id: warn-cgb-monolithic-output
+    message: |
+      Detected monolithic build output pattern (dist/blocks.build.js). cgb-scripts bundles all blocks into single file, preventing code splitting and tree-shaking.
+
+      Modern @wordpress/scripts creates per-block builds:
+      - build/section-block/index.js
+      - build/slideshow-block/index.js
+
+      Per-block builds reduce bundle size and enable selective block loading.
+    severity: INFO
+    languages:
+      - javascript
+      - typescript
+    patterns:
+      - pattern-either:
+          - pattern: import ... from './dist/blocks.build.js'
+          - pattern: import ... from './dist/blocks.style.build.css'
+    metadata:
+      category: block-development
+      subcategory: build-tools
+      confidence: MEDIUM
+      impact: LOW

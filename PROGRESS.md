@@ -2,8 +2,8 @@
 
 **Last Updated:** February 12, 2026
 **Current Phase:** Phase 4 - WordPress Domains ⏳ IN PROGRESS
-**Overall Progress:** Phase 2 complete (9/9), Phase 3 complete (4/4), Phase 4 in progress (5/8 domains complete)
-**Next Phase:** Continue Phase 4 - WordPress Domains (3 more domains)
+**Overall Progress:** Phase 2 complete (9/9), Phase 3 complete (4/4), Phase 4 in progress (7/8 domains complete)
+**Next Phase:** Continue Phase 4 - WordPress Domains (1 more domain: Multisite Patterns) OR move to Phase 5 (Cross-Stack)
 
 ---
 
@@ -425,10 +425,10 @@ aleph-code-mine/
 | - Domain 2: GROQ Queries | ✅ Complete | 3 hours (done) |
 | - Domain 3: Content Modeling | ✅ Complete | 3 hours (done) |
 | - Domain 4: Studio Customization | ⏳ Next | 2-3 hours |
-| Phase 4: WordPress Domains (8) | ⏳ In Progress (5/8) | 16-24 hours (15 hours done) |
+| Phase 4: WordPress Domains (8) | ⏳ In Progress (7/8) | 16-24 hours (21 hours done) |
 | Phase 5: Cross-Stack (4) | ⏳ Pending | 8-12 hours |
 | Phase 6: Tooling Outputs | ⏳ Pending | 8-12 hours |
-| **TOTAL** | **62% Complete** | **50/83 hours done** |
+| **TOTAL** | **70% Complete** | **56/83 hours done** |
 
 ---
 
@@ -463,6 +463,11 @@ Then tell Claude:
 - ✅ Phase 3, Domain 4: Studio Customization (Sanity) - 8 docs + 4 Semgrep rules
 - ✅ Phase 4, Domain 1: WPGraphQL Architecture (WordPress) - 8 docs + 4 Semgrep rules
 - ✅ Phase 4, Domain 2: Custom Post Types & Taxonomies (WordPress) - 8 docs + 9 Semgrep rules
+- ✅ Phase 4, Domain 3: ACF Patterns (WordPress) - 8 docs + 4 Semgrep rules
+- ✅ Phase 4, Domain 4: VIP Patterns (WordPress) - 8 docs + 4 Semgrep rules
+- ✅ Phase 4, Domain 5: Security & Code Standards (WordPress) - 8 docs + 4 Semgrep rules
+- ✅ Phase 4, Domain 6: Theme Structure & Organization (WordPress) - 8 docs + 4 Semgrep rules
+- ✅ Phase 4, Domain 8: Block Development (WordPress) - 8 docs + 4 Semgrep rules
 
 ### Domain 6: Project Structure ✅ COMPLETE
 
@@ -658,8 +663,9 @@ Then tell Claude:
 
 ## Phase 4: WordPress Domains ⏳ IN PROGRESS
 
-**Status:** 5 of 8 domains complete (62.5%)
+**Status:** 6 of 8 domains complete (75%)
 **Focus:** Extract patterns from 2 WordPress repositories (airbnb VIP multisite, thekelsey-wp)
+**Note:** Domain 6 (Theme Structure) analyzed only 3 specific themes: Presser (Sage, modern), Aleph Nothing (headless), Kelsey (Sage, legacy)
 
 ### Domain 1: WPGraphQL Architecture ✅ COMPLETE
 
@@ -846,28 +852,107 @@ Then tell Claude:
 - VIP-safe functions: 31 calls (wpcom_vip_file_get_contents 9, vip_safe_wp_remote_get 22)
 - Critical gaps: 48 eval() calls, 677 unsanitized $_POST, 519 unsanitized $_GET, 127 unprepared SQL
 
-### Remaining WordPress Domains (3)
+### Domain 6: Theme Structure & Organization ✅ COMPLETE
+
+**Duration:** ~3 hours
+**Deliverables:**
+- 8 RAG-optimized documentation files in `docs/php-wordpress/theme-structure/`
+- 4 Semgrep enforcement rules (15 individual rules) in `tooling/semgrep/theme-structure/`
+- 1 cross-project comparison analysis
+
+**Documentation Files:**
+1. ✅ sage-roots-framework-setup.md (100% confidence)
+2. ✅ laravel-blade-templating-wordpress.md (100% confidence)
+3. ✅ headless-theme-architecture.md (33% confidence)
+4. ✅ webpack-asset-compilation.md (67% confidence)
+5. ✅ theme-build-modernization.md (33% confidence)
+6. ✅ theme-vs-mu-plugins-separation.md (100% confidence)
+7. ✅ composer-autoloading-themes.md (100% confidence)
+8. ✅ template-directory-customization.md (100% confidence)
+
+**Semgrep Rules:**
+1. ✅ enforce-theme-header-requirements.yaml (3 rules: theme header validation, version field, resources/ location)
+2. ✅ warn-direct-wp-enqueue-templates.yaml (3 rules: template enqueue, inline styles/scripts, asset_path helper)
+3. ✅ require-psr4-autoload-namespace.yaml (4 rules: composer autoload, App\ namespace, vendor/autoload.php, PSR-4 compliance)
+4. ✅ warn-legacy-webpack-plugins.yaml (5 rules: ExtractTextPlugin, UglifyJsPlugin, CommonsChunkPlugin, Node version, Webpack version)
+
+**Analysis Files:**
+1. ✅ phase4-domain6-theme-structure-comparison.md - Cross-theme architecture analysis (3 themes: Presser, Aleph Nothing, Kelsey)
+
+**Validation:**
+- ✅ All sections under 1,500 characters
+- ✅ No pronoun-leading sentences
+- ✅ All required frontmatter fields present
+- ✅ Source confidence calculated from actual pattern counts
+- ⏳ Semgrep rules validation pending
+
+**Key Findings:**
+- **Theme framework adoption**: 100% Sage Roots for traditional themes (Presser, Kelsey), 33% headless (Aleph Nothing)
+- **Headless architecture**: 99.5% code reduction (45 lines vs 2,006 lines PHP)
+- **Laravel Blade templates**: 85 Blade files in Presser, 114 in Kelsey
+- **Webpack version gap**: Presser uses Webpack 5 (modern), Kelsey uses Webpack 3 (5 years behind)
+- **Build time**: Presser dev 3.2s, production 12.8s with cache-busted assets
+- **PSR-4 autoloading**: 100% adoption in Sage themes (App\ namespace → app/ directory)
+- **Asset compilation**: 100% use webpack for SCSS → CSS, ES6+ → ES5 transpilation
+- **MU-plugins vs theme**: Airbnb uses 612 mu-plugin files vs 13 theme PHP files (47:1 ratio)
+- **Template directory customization**: 100% Sage themes use resources/ directory pattern
+- **WordPress 6.9+ compatibility**: Kelsey has theme.json path fix for new WP version
+
+**Scope Note:**
+Analysis focused exclusively on 3 themes:
+- **Presser** (Sage Roots, Airbnb newsroom, Webpack 5, Node 20+, modern build)
+- **Aleph Nothing** (headless, Airbnb impact site, 45 lines PHP, GraphQL-first)
+- **Kelsey** (Sage Roots, traditional blog, Webpack 3, Node 8+, legacy build)
+
+### Domain 8: Block Development (Gutenberg) ✅ COMPLETE
+
+**Duration:** ~3 hours
+**Deliverables:**
+- 8 RAG-optimized documentation files in `docs/php-wordpress/block-development/`
+- 4 Semgrep enforcement rules (15 individual rules) in `tooling/semgrep/block-development/`
+- 1 cross-project comparison analysis
+
+**Documentation Files:**
+1. ✅ block-json-metadata-registration.md (20% confidence - modern pattern)
+2. ✅ wp-scripts-build-pipeline.md (20% confidence - modern pattern)
+3. ✅ innerblocks-parent-child-pattern.md (100% confidence - container blocks)
+4. ✅ inspectorcontrols-sidebar-settings.md (100% confidence - universal pattern)
+5. ✅ custom-block-categories.md (100% confidence - all plugins)
+6. ✅ dynamic-blocks-server-side-rendering.md (40% confidence)
+7. ✅ block-patterns-registration.md (60% confidence)
+8. ✅ allowed-blocks-filtering.md (40% confidence)
+
+**Semgrep Rules:**
+1. ✅ warn-legacy-cgb-scripts.yaml (3 rules: detect deprecated Create Guten Block tooling)
+2. ✅ prefer-block-json-metadata.yaml (4 rules: enforce block.json metadata API)
+3. ✅ require-useblockprops.yaml (4 rules: enforce modern block wrapper APIs)
+4. ✅ require-innerblocks-patterns.yaml (6 rules: InnerBlocks best practices)
+
+**Analysis Files:**
+1. ✅ block-development-comparison.md - Cross-project block pattern analysis (92 blocks analyzed)
+
+**Validation:**
+- ✅ All sections under 1,500 characters
+- ✅ No pronoun-leading sentences
+- ✅ All required frontmatter fields present
+- ✅ Source confidence calculated from actual pattern counts
+- ⏳ Semgrep rules validation pending
+
+**Key Findings:**
+- **Build tooling:** 80% legacy (cgb-scripts), 20% modern (@wordpress/scripts)
+- **Modern patterns:** block.json (20%), useBlockProps (16%), separate edit/save files (16%)
+- **Universal patterns:** InspectorControls (100% blocks with settings), InnerBlocks (100% container blocks), custom categories (100% plugins)
+- **Advanced patterns:** Dynamic blocks (40%), block patterns (60%), allowed blocks filtering (40%)
+- **Block count:** 92 total blocks (71 standard + 15 ACF + 2 dynamic + 6 patterns)
+- **Migration need:** 58 legacy blocks require cgb-scripts → @wordpress/scripts migration (116-232 hours estimated)
+
+### Remaining WordPress Domains (1)
 
 **Priority order based on Phase 1 findings:**
-
-5. **Theme Structure & Organization** - Medium priority
-   - Sage framework (Roots), Blade templating
-   - Traditional PHP themes
-   - Estimated: 2-3 hours
-
-6. **Security & Code Standards** - High priority
-   - PHPCS (VIP WordPress standards)
-   - Input sanitization, output escaping
-   - Estimated: 2-3 hours
 
 7. **Multisite Patterns** - Medium priority
    - Conditional plugin loading by blog_id
    - Network-wide vs site-specific functionality
-   - Estimated: 2-3 hours
-
-8. **Block Development (Gutenberg)** - Medium priority
-   - Custom blocks (airbnb-policy-blocks: 12 custom + 15 ACF blocks)
-   - Block registration patterns
    - Estimated: 2-3 hours
 
 ---

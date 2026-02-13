@@ -1,0 +1,220 @@
+rules:
+  - id: require-innerblocks-content-in-save
+    message: |
+      Edit component uses InnerBlocks but save function missing InnerBlocks.Content. Child blocks will disappear on save.
+
+      When edit uses InnerBlocks, save MUST render InnerBlocks.Content at same nesting depth:
+
+      Edit:
+      export default function Edit() {
+        return (
+          <div { ...useBlockProps() }>
+            <InnerBlocks />
+          </div>
+        );
+      }
+
+      Save (correct):
+      export default function save() {
+        return (
+          <div { ...useBlockProps.save() }>
+            <InnerBlocks.Content />
+          </div>
+        );
+      }
+
+      Exception: Dynamic blocks with save: () => null don't need InnerBlocks.Content (server-side rendering handles it).
+
+      See docs/php-wordpress/block-development/innerblocks-parent-child-pattern.md
+    severity: ERROR
+    languages:
+      - javascript
+      - typescript
+    patterns:
+      - pattern-inside: |
+          export default function save($PROPS) {
+            ...
+            return <$ELEMENT>...</$ELEMENT>;
+          }
+      - pattern-not: <InnerBlocks.Content />
+      - pattern-not: useInnerBlocksProps.save(...)
+    metadata:
+      category: block-development
+      subcategory: block-composition
+      confidence: HIGH
+      impact: HIGH
+      likelihood: MEDIUM
+      references:
+        - https://developer.wordpress.org/block-editor/reference-guides/components/inner-blocks/
+
+  - id: warn-innerblocks-nesting-depth-mismatch
+    message: |
+      InnerBlocks nesting depth appears inconsistent between edit and save. This causes block validation errors ("unexpected or invalid content").
+
+      InnerBlocks must be at identical wrapper depth in both functions.
+
+      Incorrect (mismatched depth):
+      Edit: <div><InnerBlocks /></div>
+      Save: <InnerBlocks.Content />  // Missing wrapper
+
+      Correct (matched depth):
+      Edit: <div><InnerBlocks /></div>
+      Save: <div><InnerBlocks.Content /></div>
+
+      Verify both functions have same wrapper structure around InnerBlocks/InnerBlocks.Content.
+    severity: WARNING
+    languages:
+      - javascript
+      - typescript
+    patterns:
+      - pattern-either:
+          # InnerBlocks in edit but not save
+          - patterns:
+              - pattern-inside: |
+                  export default function Edit($PROPS) {
+                    ...
+                    return <$WRAPPER><InnerBlocks /></$WRAPPER>;
+                  }
+              - pattern-not-inside: |
+                  export default function save($PROPS) {
+                    ...
+                    return <$WRAPPER><InnerBlocks.Content /></$WRAPPER>;
+                  }
+    metadata:
+      category: block-development
+      subcategory: block-composition
+      confidence: MEDIUM
+      impact: HIGH
+
+  - id: warn-innerblocks-without-allowedblocks
+    message: |
+      InnerBlocks used without allowedBlocks restriction. This allows editors to insert any block type, which may break layout or styling assumptions.
+
+      Consider restricting child blocks:
+      <InnerBlocks
+        allowedBlocks={[
+          'core/heading',
+          'core/paragraph',
+          'core/image'
+        ]}
+      />
+
+      Use allowedBlocks when:
+      - Parent block has specific child requirements (slideshow → images)
+      - Layout breaks with certain block types
+      - Design system requires limited block palette
+
+      Omit allowedBlocks only for truly flexible containers (sections, groups).
+    severity: INFO
+    languages:
+      - javascript
+      - typescript
+    patterns:
+      - pattern: <InnerBlocks />
+      - pattern-not: <InnerBlocks allowedBlocks={...} />
+      - pattern-not: <InnerBlocks template={...} templateLock="all" />
+    metadata:
+      category: block-development
+      subcategory: block-composition
+      confidence: LOW
+      impact: LOW
+
+  - id: recommend-innerblocks-template
+    message: |
+      InnerBlocks without template prop. Templates provide default block structure, reducing repetitive setup for editors.
+
+      Add template for common patterns:
+      const TEMPLATE = [
+        ['core/heading', { level: 2 }],
+        ['core/paragraph', { placeholder: 'Add content...' }],
+      ];
+
+      <InnerBlocks template={TEMPLATE} />
+
+      Benefits:
+      - Guides editors toward intended structure
+      - Reduces setup time for common layouts
+      - Improves content consistency
+
+      See docs/php-wordpress/block-development/innerblocks-parent-child-pattern.md
+    severity: INFO
+    languages:
+      - javascript
+      - typescript
+    patterns:
+      - pattern: <InnerBlocks />
+      - pattern-not: <InnerBlocks template={...} />
+    metadata:
+      category: block-development
+      subcategory: block-composition
+      confidence: LOW
+      impact: LOW
+
+  - id: require-modern-useinnerblocksprops
+    message: |
+      Using legacy InnerBlocks pattern. WordPress 6.3+ provides useInnerBlocksProps() for cleaner InnerBlocks integration with useBlockProps().
+
+      Legacy pattern:
+      <div { ...useBlockProps() }>
+        <InnerBlocks />
+      </div>
+
+      Modern pattern (WordPress 6.3+):
+      const blockProps = useInnerBlocksProps(useBlockProps(), {
+        allowedBlocks: ['core/paragraph'],
+        template: TEMPLATE,
+      });
+      return <div { ...blockProps } />;
+
+      Save function:
+      <div { ...useInnerBlocksProps.save(useBlockProps.save()) } />
+
+      Benefits:
+      - Single props spread
+      - Cleaner syntax
+      - Better TypeScript support
+    severity: INFO
+    languages:
+      - javascript
+      - typescript
+    patterns:
+      - pattern: |
+          <$ELEMENT { ...useBlockProps() }>
+            <InnerBlocks />
+          </$ELEMENT>
+    metadata:
+      category: block-development
+      subcategory: block-composition
+      confidence: MEDIUM
+      impact: LOW
+      references:
+        - https://developer.wordpress.org/block-editor/reference-guides/packages/packages-block-editor/#useinnerblocksprops
+
+  - id: warn-missing-innerblocks-renderappender
+    message: |
+      InnerBlocks with allowedBlocks restriction but no renderAppender. Users may not realize they can add more blocks.
+
+      Add ButtonBlockAppender for clear insertion UX:
+      <InnerBlocks
+        allowedBlocks={['core/image']}
+        renderAppender={InnerBlocks.ButtonBlockAppender}
+      />
+
+      renderAppender options:
+      - InnerBlocks.ButtonBlockAppender: Shows "+ Add block" button
+      - InnerBlocks.DefaultBlockAppender: Shows placeholder text (default)
+      - false: Hides appender (use with templateLock="all")
+
+      See docs/php-wordpress/block-development/innerblocks-parent-child-pattern.md
+    severity: INFO
+    languages:
+      - javascript
+      - typescript
+    patterns:
+      - pattern: <InnerBlocks allowedBlocks={...} />
+      - pattern-not: <InnerBlocks allowedBlocks={...} renderAppender={...} />
+    metadata:
+      category: block-development
+      subcategory: block-composition
+      confidence: LOW
+      impact: LOW

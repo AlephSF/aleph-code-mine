@@ -1,0 +1,187 @@
+rules:
+  - id: require-useblockprops-in-edit
+    message: |
+      Edit component missing useBlockProps(). Modern WordPress blocks must use useBlockProps() to ensure proper block wrapper behavior (drag handles, border, toolbar positioning).
+
+      Without useBlockProps(), blocks:
+      - Cannot be selected properly in editor
+      - Lack drag handles for reordering
+      - Miss block toolbar alignment
+      - Fail accessibility requirements
+
+      Add useBlockProps() to edit function:
+      import { useBlockProps } from '@wordpress/block-editor';
+
+      export default function Edit({ attributes }) {
+        return (
+          <div { ...useBlockProps() }>
+            {/* Block content */}
+          </div>
+        );
+      }
+
+      See docs/php-wordpress/block-development/block-json-metadata-registration.md
+    severity: WARNING
+    languages:
+      - javascript
+      - typescript
+    patterns:
+      - pattern-either:
+          # Function component without useBlockProps
+          - pattern: |
+              export default function Edit($PROPS) {
+                ...
+                return <$ELEMENT>...</$ELEMENT>;
+              }
+          # Arrow function component without useBlockProps
+          - pattern: |
+              export default ($PROPS) => {
+                ...
+                return <$ELEMENT>...</$ELEMENT>;
+              }
+      - pattern-not-inside: |
+          export default function Edit($PROPS) {
+            ...
+            useBlockProps(...)
+            ...
+          }
+      - pattern-not-inside: |
+          export default ($PROPS) => {
+            ...
+            useBlockProps(...)
+            ...
+          }
+    metadata:
+      category: block-development
+      subcategory: block-editor-ui
+      confidence: HIGH
+      impact: HIGH
+      likelihood: MEDIUM
+      references:
+        - https://developer.wordpress.org/block-editor/reference-guides/packages/packages-block-editor/#useblockprops
+
+  - id: require-useblockprops-save-in-save
+    message: |
+      Save component missing useBlockProps.save(). Static blocks must use useBlockProps.save() to ensure proper block wrapper attributes on frontend.
+
+      Without useBlockProps.save(), blocks lose:
+      - CSS classes for styling
+      - Data attributes for block identification
+      - Anchor/ID attributes
+      - Alignment classes
+
+      Add useBlockProps.save() to save function:
+      import { useBlockProps } from '@wordpress/block-editor';
+
+      export default function save({ attributes }) {
+        return (
+          <div { ...useBlockProps.save() }>
+            {/* Block content */}
+          </div>
+        );
+      }
+
+      Note: Dynamic blocks using save: () => null don't need this.
+    severity: WARNING
+    languages:
+      - javascript
+      - typescript
+    patterns:
+      - pattern-either:
+          # Function save without useBlockProps.save
+          - pattern: |
+              export default function save($PROPS) {
+                ...
+                return <$ELEMENT>...</$ELEMENT>;
+              }
+          # Arrow function save without useBlockProps.save
+          - pattern: |
+              export default ($PROPS) => {
+                ...
+                return <$ELEMENT>...</$ELEMENT>;
+              }
+      - pattern-not-inside: |
+          export default function save($PROPS) {
+            ...
+            useBlockProps.save(...)
+            ...
+          }
+      - pattern-not-inside: |
+          export default ($PROPS) => {
+            ...
+            useBlockProps.save(...)
+            ...
+          }
+      # Exclude dynamic blocks
+      - pattern-not: |
+          export default () => null
+    metadata:
+      category: block-development
+      subcategory: block-editor-ui
+      confidence: HIGH
+      impact: MEDIUM
+
+  - id: warn-legacy-wp-element-fragment
+    message: |
+      Using legacy wp.element.Fragment. Modern blocks should use React Fragment directly via ESM imports.
+
+      Legacy pattern:
+      const { Fragment } = wp.element;
+
+      Modern pattern:
+      import { Fragment } from '@wordpress/element';
+      // or use shorthand:
+      return <></>;
+
+      Benefits:
+      - Tree-shaking (smaller bundles)
+      - Type safety with TypeScript
+      - Alignment with modern WordPress standards
+    severity: INFO
+    languages:
+      - javascript
+      - typescript
+    patterns:
+      - pattern-either:
+          - pattern: const { Fragment } = wp.element;
+          - pattern: const { ..., Fragment, ... } = wp.element;
+    fix: import { Fragment } from '@wordpress/element';
+    metadata:
+      category: block-development
+      subcategory: block-editor-ui
+      confidence: HIGH
+      impact: LOW
+
+  - id: warn-missing-useblockprops-classname
+    message: |
+      useBlockProps() called without className attribute. Custom CSS classes should merge with useBlockProps() to preserve WordPress block classes.
+
+      Incorrect:
+      <div className={customClass}>...</div>
+
+      Correct:
+      <div { ...useBlockProps({ className: customClass }) }>...</div>
+
+      This ensures both WordPress classes (wp-block-*, alignment, etc.) and custom classes apply properly.
+    severity: INFO
+    languages:
+      - javascript
+      - typescript
+    patterns:
+      - pattern: |
+          <$ELEMENT className={$CLASS}>
+            ...
+          </$ELEMENT>
+      - pattern-inside: |
+          export default function Edit($PROPS) {
+            ...
+          }
+      - pattern-not-inside: |
+          <$ELEMENT { ...useBlockProps({ className: $PROP }) }>
+            ...
+          </$ELEMENT>
+    metadata:
+      category: block-development
+      subcategory: block-editor-ui
+      confidence: MEDIUM
+      impact: LOW

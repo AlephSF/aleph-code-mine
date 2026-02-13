@@ -1,0 +1,251 @@
+rules:
+  - id: webpack-legacy-extract-text-plugin
+    pattern-either:
+      - pattern: |
+          const ExtractTextPlugin = require('extract-text-webpack-plugin');
+      - pattern: |
+          import ExtractTextPlugin from 'extract-text-webpack-plugin';
+      - pattern: |
+          new ExtractTextPlugin($CONFIG)
+    languages: [javascript, typescript]
+    paths:
+      include:
+        - webpack.config.js
+        - webpack.config.*.js
+        - build/webpack.config.js
+    severity: WARNING
+    message: |
+      ExtractTextPlugin is deprecated in Webpack 4+. Use MiniCssExtractPlugin instead.
+
+      Migration:
+      ```javascript
+      // OLD (Webpack 3)
+      const ExtractTextPlugin = require('extract-text-webpack-plugin');
+
+      module.exports = {
+        plugins: [
+          new ExtractTextPlugin('styles/main.css'),
+        ],
+      };
+
+      // NEW (Webpack 5)
+      const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+
+      module.exports = {
+        plugins: [
+          new MiniCssExtractPlugin({
+            filename: 'styles/main.[contenthash].css',
+          }),
+        ],
+      };
+      ```
+
+      Observed: Kelsey uses ExtractTextPlugin (Webpack 3), Presser uses MiniCssExtractPlugin (Webpack 5)
+      See: docs/php-wordpress/theme-structure/theme-build-modernization.md
+    metadata:
+      category: wordpress
+      subcategory: theme-structure
+      confidence: HIGH
+      likelihood: MEDIUM
+      impact: MEDIUM
+      technology:
+        - webpack
+        - javascript
+      references:
+        - https://webpack.js.org/plugins/mini-css-extract-plugin/
+        - https://github.com/webpack-contrib/mini-css-extract-plugin
+
+  - id: webpack-legacy-uglifyjs-plugin
+    pattern-either:
+      - pattern: |
+          const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+      - pattern: |
+          new UglifyJsPlugin($CONFIG)
+    languages: [javascript, typescript]
+    paths:
+      include:
+        - webpack.config.js
+        - webpack.config.*.js
+        - build/webpack.config.js
+    severity: WARNING
+    message: |
+      UglifyJsPlugin is deprecated in Webpack 4+. Use built-in TerserPlugin instead.
+
+      Migration:
+      ```javascript
+      // OLD (Webpack 3)
+      const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+
+      module.exports = {
+        plugins: [
+          new UglifyJsPlugin(),
+        ],
+      };
+
+      // NEW (Webpack 5) - built-in, no plugin needed
+      module.exports = {
+        mode: 'production',  // Enables TerserPlugin automatically
+        optimization: {
+          minimize: true,
+          minimizer: [
+            '...',  // Extend defaults (includes TerserPlugin)
+          ],
+        },
+      };
+      ```
+
+      See: docs/php-wordpress/theme-structure/theme-build-modernization.md
+    metadata:
+      category: wordpress
+      subcategory: theme-structure
+      confidence: HIGH
+      likelihood: LOW
+      impact: MEDIUM
+      technology:
+        - webpack
+        - javascript
+      references:
+        - https://webpack.js.org/plugins/terser-webpack-plugin/
+
+  - id: webpack-legacy-commons-chunk-plugin
+    pattern-either:
+      - pattern: |
+          new webpack.optimize.CommonsChunkPlugin($CONFIG)
+      - pattern: CommonsChunkPlugin
+    languages: [javascript, typescript]
+    paths:
+      include:
+        - webpack.config.js
+        - webpack.config.*.js
+        - build/webpack.config.js
+    severity: WARNING
+    message: |
+      CommonsChunkPlugin removed in Webpack 4+. Use optimization.splitChunks instead.
+
+      Migration:
+      ```javascript
+      // OLD (Webpack 3)
+      module.exports = {
+        plugins: [
+          new webpack.optimize.CommonsChunkPlugin({
+            name: 'vendor',
+            minChunks: 2,
+          }),
+        ],
+      };
+
+      // NEW (Webpack 5)
+      module.exports = {
+        optimization: {
+          splitChunks: {
+            chunks: 'all',
+            cacheGroups: {
+              vendor: {
+                test: /[\\/]node_modules[\\/]/,
+                name: 'vendor',
+                priority: 10,
+              },
+            },
+          },
+        },
+      };
+      ```
+
+      See: docs/php-wordpress/theme-structure/theme-build-modernization.md
+    metadata:
+      category: wordpress
+      subcategory: theme-structure
+      confidence: HIGH
+      likelihood: LOW
+      impact: MEDIUM
+      technology:
+        - webpack
+        - javascript
+      references:
+        - https://webpack.js.org/plugins/split-chunks-plugin/
+
+  - id: webpack-legacy-node-version
+    pattern: |
+      "engines": {
+        "node": "$VERSION",
+        $...REST
+      }
+    metavariable-regex:
+      metavariable: $VERSION
+      regex: ^([0-9]|1[0-7])\..*$
+    languages: [json]
+    paths:
+      include:
+        - package.json
+    severity: WARNING
+    message: |
+      Node.js version $VERSION is below minimum for Webpack 5 (requires Node 18+).
+
+      Webpack compatibility:
+      - Webpack 3: Node 8+ (EOL December 2019)
+      - Webpack 4: Node 10+ (EOL April 2021)
+      - Webpack 5: Node 18+ (Active LTS)
+
+      Update package.json:
+      ```json
+      {
+        "engines": {
+          "node": ">=20.0.0"
+        }
+      }
+      ```
+
+      Observed: Kelsey requires Node 8 (Webpack 3), Presser requires Node 20 (Webpack 5)
+      See: docs/php-wordpress/theme-structure/theme-build-modernization.md
+    metadata:
+      category: wordpress
+      subcategory: theme-structure
+      confidence: HIGH
+      likelihood: MEDIUM
+      impact: HIGH
+      technology:
+        - webpack
+        - node
+      references:
+        - https://nodejs.org/en/about/releases/
+        - https://webpack.js.org/migrate/5/
+
+  - id: webpack-version-3-or-older
+    pattern: |
+      "webpack": "$VERSION"
+    metavariable-regex:
+      metavariable: $VERSION
+      regex: ^[0-3]\..*$
+    languages: [json]
+    paths:
+      include:
+        - package.json
+    severity: ERROR
+    message: |
+      Webpack $VERSION is 5+ years behind current release. Upgrade to Webpack 5.
+
+      Breaking changes to address:
+      - ExtractTextPlugin → MiniCssExtractPlugin
+      - UglifyJsPlugin → TerserPlugin (built-in)
+      - CommonsChunkPlugin → optimization.splitChunks
+      - Node 18+ required
+
+      Migration guide:
+      ```bash
+      npm install --save-dev webpack@5 webpack-cli@5
+      npm install --save-dev mini-css-extract-plugin
+      npm uninstall extract-text-webpack-plugin uglifyjs-webpack-plugin
+      ```
+
+      Observed: Kelsey uses Webpack 3 (5 years behind), Presser uses Webpack 5
+      See: docs/php-wordpress/theme-structure/theme-build-modernization.md
+    metadata:
+      category: wordpress
+      subcategory: theme-structure
+      confidence: HIGH
+      likelihood: HIGH
+      impact: HIGH
+      technology:
+        - webpack
+      references:
+        - https://webpack.js.org/migrate/5/

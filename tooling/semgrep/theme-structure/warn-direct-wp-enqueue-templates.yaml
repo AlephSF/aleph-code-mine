@@ -1,0 +1,125 @@
+rules:
+  - id: wordpress-direct-enqueue-in-template
+    pattern-either:
+      - pattern: wp_enqueue_style(...)
+      - pattern: wp_enqueue_script(...)
+      - pattern: wp_register_style(...)
+      - pattern: wp_register_script(...)
+    languages: [php]
+    paths:
+      include:
+        - "*.blade.php"
+        - views/**/*.blade.php
+        - resources/views/**/*.blade.php
+        - templates/**/*.php
+    severity: WARNING
+    message: |
+      Avoid calling wp_enqueue_style() or wp_enqueue_script() directly in templates.
+
+      Assets should be enqueued in app/setup.php using actions:
+
+      ```php
+      // app/setup.php
+      add_action('wp_enqueue_scripts', function () {
+          wp_enqueue_style('sage/main.css', asset_path('styles/main.css'), false, null);
+          wp_enqueue_script('sage/main.js', asset_path('scripts/main.js'), ['jquery'], null, true);
+      }, 100);
+      ```
+
+      Templates should only reference already-enqueued assets via asset_path() helper.
+
+      Observed pattern: 100% of Sage themes (Presser, Kelsey) enqueue in app/setup.php
+      See: docs/php-wordpress/theme-structure/sage-roots-framework-setup.md
+    metadata:
+      category: wordpress
+      subcategory: theme-structure
+      confidence: HIGH
+      likelihood: MEDIUM
+      impact: MEDIUM
+      technology:
+        - wordpress
+        - sage
+        - blade
+      cwe:
+        - "CWE-1121: Excessive McCabe Cyclomatic Complexity"
+      references:
+        - https://developer.wordpress.org/themes/basics/including-css-javascript/#enqueuing-scripts-and-styles
+
+  - id: wordpress-inline-style-script-tags
+    pattern-either:
+      - pattern: |
+          <style>
+          $...CODE
+          </style>
+      - pattern: |
+          <script>
+          $...CODE
+          </script>
+    languages: [generic]
+    paths:
+      include:
+        - "*.blade.php"
+        - views/**/*.blade.php
+        - resources/views/**/*.blade.php
+    severity: INFO
+    message: |
+      Inline <style> or <script> tags detected in Blade template.
+
+      Sage framework best practice: Extract to external files and enqueue properly:
+
+      1. Create assets/styles/components/_component.scss
+      2. Import in assets/styles/main.scss
+      3. Enqueue in app/setup.php
+
+      Exception: Small conditional inline styles (<5 lines) may be acceptable for dynamic values.
+
+      See: docs/php-wordpress/theme-structure/webpack-asset-compilation.md
+    metadata:
+      category: wordpress
+      subcategory: theme-structure
+      confidence: MEDIUM
+      likelihood: LOW
+      impact: LOW
+      technology:
+        - blade
+
+  - id: wordpress-missing-asset-path-helper
+    pattern-either:
+      - pattern: |
+          wp_enqueue_style($ID, $PATH, ...)
+      - pattern: |
+          wp_enqueue_script($ID, $PATH, ...)
+    pattern-not-regex: asset_path\(
+    languages: [php]
+    paths:
+      include:
+        - app/setup.php
+        - app/filters.php
+    severity: WARNING
+    message: |
+      Use asset_path() helper for cache-busted asset URLs in Sage themes.
+
+      Instead of:
+      ```php
+      wp_enqueue_style('sage/main.css', get_template_directory_uri() . '/dist/styles/main.css', ...);
+      ```
+
+      Use:
+      ```php
+      wp_enqueue_style('sage/main.css', asset_path('styles/main.css'), ...);
+      ```
+
+      asset_path() reads dist/manifest.json for cache-busted filenames (main.abc123.css).
+
+      Observed pattern: 100% of Sage themes use asset_path()
+      See: docs/php-wordpress/theme-structure/webpack-asset-compilation.md
+    metadata:
+      category: wordpress
+      subcategory: theme-structure
+      confidence: HIGH
+      likelihood: LOW
+      impact: MEDIUM
+      technology:
+        - wordpress
+        - sage
+        - webpack
