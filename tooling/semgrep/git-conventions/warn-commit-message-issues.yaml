@@ -1,0 +1,92 @@
+rules:
+  - id: commit-message-too-long
+    pattern-regex: ^.{73,}$
+    message: |
+      Commit message subject exceeds 72 characters.
+      GitHub truncates commit messages at 72 characters.
+
+      Current length: >72 chars
+      Recommended: 50-72 chars
+      Hard limit: 72 chars
+
+      If more detail needed, use commit body:
+        feat: add feature
+
+        Longer explanation here, wrapped at 72 characters.
+        Multiple paragraphs OK.
+    severity: INFO
+    languages: [regex]
+    paths:
+      include:
+        - "**/.git/COMMIT_EDITMSG"
+    metadata:
+      category: convention
+      confidence: MEDIUM
+
+  - id: commit-message-too-short
+    pattern-regex: ^(feat|fix|chore|docs|style|refactor|test): .{1,10}$
+    message: |
+      Commit message subject is very short (<10 chars after type).
+      Provide more context about what changed.
+
+      ❌ Too vague:
+        feat: add feature
+        fix: fix bug
+        chore: update
+
+      ✅ Better:
+        feat: add dark mode toggle
+        fix: resolve mobile navigation bug
+        chore: update Next.js to v15
+    severity: INFO
+    languages: [regex]
+    metadata:
+      category: convention
+      confidence: MEDIUM
+
+  - id: branch-name-uppercase
+    pattern-regex: ^[A-Z]
+    message: |
+      Branch names should use lowercase with hyphens.
+
+      ❌ Bad:
+        Feature-Dark-Mode
+        FIX_Bug
+
+      ✅ Good:
+        feat-dark-mode
+        fix-navigation-bug
+        chore-update-deps
+    severity: WARNING
+    languages: [regex]
+    paths:
+      include:
+        - "**/.git/HEAD"
+    metadata:
+      category: convention
+      confidence: HIGH
+
+  - id: missing-co-author-for-pair-programming
+    pattern-not: Co-Authored-By
+    message: |
+      Consider adding Co-Authored-By tags for pair programming or AI assistance.
+
+      Format:
+        feat: implement feature
+
+        Co-Authored-By: Name <email@example.com>
+
+      Benefits:
+      - GitHub shows multiple authors
+      - Counts toward all authors' contributions
+      - Makes collaboration transparent
+
+      Current adoption: 0% (opportunity to improve)
+    severity: INFO
+    languages: [regex]
+    paths:
+      include:
+        - "**/.git/COMMIT_EDITMSG"
+    metadata:
+      category: best-practice
+      confidence: LOW

@@ -1,0 +1,72 @@
+rules:
+  - id: missing-env-var-validation
+    pattern-not: |
+      const requiredEnvVars = ...
+      ...
+      if (!process.env.$VAR) {
+        throw ...
+      }
+    message: |
+      No environment variable validation detected at startup.
+      Missing required env vars cause cryptic runtime errors.
+
+      Add validation in entry point:
+        const requiredEnvVars = ['API_KEY', 'DATABASE_URL'];
+        requiredEnvVars.forEach(v => {
+          if (!process.env[v]) {
+            throw new Error(`Missing: ${v}`);
+          }
+        });
+    severity: INFO
+    languages: [javascript, typescript]
+    paths:
+      include:
+        - "**/layout.tsx"
+        - "**/app.ts"
+        - "**/index.ts"
+    metadata:
+      category: best-practice
+      confidence: LOW
+
+  - id: env-var-without-fallback
+    pattern-either:
+      - pattern: process.env.$VAR
+      - pattern: $_ENV['$VAR']
+    pattern-not-inside: |
+      $X ?? $DEFAULT
+    pattern-not-inside: |
+      $X || $DEFAULT
+    message: |
+      Environment variable accessed without fallback default.
+      This can cause undefined errors when variable is missing.
+
+      Add fallback:
+        const value = process.env.API_URL ?? 'http://localhost:3000';
+        const debug = process.env.DEBUG || 'false';
+    severity: WARNING
+    languages: [javascript, typescript, php]
+    metadata:
+      category: reliability
+      confidence: MEDIUM
+
+  - id: upper-snake-case-env-var-convention
+    pattern-either:
+      - pattern: process.env.$VAR
+      - pattern: $_ENV['$VAR']
+    metavariable-regex:
+      metavariable: $VAR
+      regex: ^[a-z]+.*$ # Starts with lowercase
+    pattern-not-regex: NEXT_PUBLIC_.*
+    message: |
+      Environment variable should use UPPER_SNAKE_CASE convention.
+
+      Industry standard:
+        ✅ DATABASE_URL
+        ✅ API_KEY
+        ❌ databaseUrl
+        ❌ apiKey
+    severity: INFO
+    languages: [javascript, typescript, php]
+    metadata:
+      category: convention
+      confidence: MEDIUM

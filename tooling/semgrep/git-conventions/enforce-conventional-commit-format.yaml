@@ -1,0 +1,47 @@
+rules:
+  - id: conventional-commit-format
+    pattern-regex: ^(feat|fix|chore|docs|style|refactor|test|perf|ci|build|revert)(\(.+\))?: .+
+    message: |
+      Commit message should follow Conventional Commits format.
+
+      Format: <type>: <subject> or <type>(<scope>): <subject>
+
+      Types: feat, fix, chore, docs, style, refactor, test, perf, ci, build, revert
+
+      Examples:
+        ✅ feat: add dark mode
+        ✅ fix: resolve navigation bug
+        ✅ chore: update dependencies
+        ✅ feat(auth): implement JWT tokens
+
+      Current adoption: 83% of repos follow this pattern
+    severity: WARNING
+    languages: [regex]
+    paths:
+      include:
+        - "**/.git/COMMIT_EDITMSG"
+    metadata:
+      category: convention
+      confidence: HIGH
+
+  - id: imperative-mood-check
+    pattern-regex: ^(feat|fix|chore|docs|style|refactor|test)(\(.+\))?: (added|fixed|changed|updated|removed|deleted)
+    message: |
+      Commit message should use imperative mood, not past tense.
+
+      ❌ Bad:
+        feat: added dark mode
+        fix: resolved bug
+        chore: updated deps
+
+      ✅ Good:
+        feat: add dark mode
+        fix: resolve bug
+        chore: update deps
+
+      Mental model: "If applied, this commit will [your message]"
+    severity: WARNING
+    languages: [regex]
+    metadata:
+      category: convention
+      confidence: HIGH
