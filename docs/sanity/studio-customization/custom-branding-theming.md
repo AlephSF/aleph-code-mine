@@ -101,8 +101,6 @@ Sanity Studio theming uses CSS variables for colors, spacing, and typography. Ov
     --brand-primary: #212944;
     --brand-secondary: #cc4e13;
     --brand-tertiary: #0d7479;
-    --brand-gray: #9ea1a5;
-    --brand-gray-light: #f5f5f5;
     --main-navigation-color: var(--brand-gray-light);
 }
 
@@ -110,17 +108,12 @@ Sanity Studio theming uses CSS variables for colors, spacing, and typography. Ov
     border-bottom: 1px var(--brand-gray) solid;
 }
 
-:global([data-testid='text-style--h1']),
-:global([data-testid='text-style--h2']),
-:global([data-testid='text-style--h3']),
-:global([data-testid='text-style--h4']),
-:global([data-testid='text-style--h5']),
-:global([data-testid='text-style--h6']) {
+:global([data-testid^='text-style--h']) {
     font-size: 1rem !important;
 }
 ```
 
-Kariusdx defines 5 brand colors and overrides navbar border color. Font size override normalizes heading sizes to 1rem (design system requirement).
+Kariusdx defines brand colors and overrides navbar styling. Font size override normalizes headings.
 
 **Common Override Targets:**
 

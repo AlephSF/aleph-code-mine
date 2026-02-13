@@ -83,28 +83,23 @@ Exclusion filters scale better than inclusion filters. Adding new document types
 **Inclusion Filter (Legacy v2):**
 
 ```javascript
-// deskStructure.js (v2 only)
 export default () =>
   S.list()
-    .title('Content')
     .items([
-      ...S.documentTypeListItems().filter(listItem => ['page'].includes(listItem.getId())),
-      ...S.documentTypeListItems().filter(listItem => ['news'].includes(listItem.getId())),
-      ...S.documentTypeListItems().filter(listItem => ['pressRelease'].includes(listItem.getId())),
-      // ... repeat for each type
+      ...S.documentTypeListItems().filter(listItem => ['page', 'news', 'pressRelease'].includes(listItem.getId())),
     ])
 ```
 
-Kariusdx uses inclusion filters (8 document types listed manually). This approach requires updating the structure file for every new document type. Avoid this pattern in v3+ projects.
+Kariusdx uses inclusion filters (requires manual updates for new types). Avoid in v3+ projects.
 
 ## Singleton Grouping
 
-Singleton documents (site settings, navigation, SEO defaults) should be grouped under a collapsible menu item to reduce desk clutter. 67% of projects with custom structures use singleton grouping.
+Singleton documents should be grouped under a collapsible menu item to reduce desk clutter. 67% of projects use singleton grouping.
 
 **Pattern:**
 
 ```typescript
-import { CogIcon, HomeIcon, MenuIcon, InfoOutlineIcon } from '@sanity/icons'
+import { CogIcon, HomeIcon } from '@sanity/icons'
 
 export const structure: StructureResolver = (S) =>
   S.list()
@@ -114,44 +109,25 @@ export const structure: StructureResolver = (S) =>
       S.divider(),
       S.listItem()
         .title('Global Options')
-        .id('globalOptions')
         .icon(CogIcon)
         .child(
           S.list()
             .title('Global Options')
             .items([
               S.listItem()
-                .title('Homepage Setting')
+                .title('Homepage')
                 .icon(HomeIcon)
-                .child(
-                  S.document()
-                    .schemaType('homepage')
-                    .documentId('homepage')
-                    .title('Homepage Setting'),
-                ),
+                .child(S.document().schemaType('homepage').documentId('homepage')),
               S.listItem()
-                .title('Navigation Menus')
-                .icon(MenuIcon)
-                .child(
-                  S.documentTypeList('navigation')
-                    .title('Navigation Menus')
-                    .filter('_type == "navigation"'),
-                ),
-              S.listItem()
-                .title('Default SEO Settings')
-                .icon(InfoOutlineIcon)
-                .child(
-                  S.document()
-                    .schemaType('defaultSeo')
-                    .documentId('defaultSeo')
-                    .title('Default SEO Settings'),
-                ),
+                .title('Default SEO')
+                .child(S.document().schemaType('defaultSeo').documentId('defaultSeo')),
+              // ... other singletons
             ]),
         ),
     ])
 ```
 
-Ripplecom groups 6 singletons under "Global Options". Kariusdx groups 2 singletons under "Settings". Use `@sanity/icons` for official icon set (ripplecom) or `react-icons` for extended icon library (kariusdx).
+Ripplecom groups 6 singletons under "Global Options". Use `@sanity/icons` for official icons.
 
 ## Legacy Content Grouping
 

@@ -55,50 +55,24 @@ Preview URLs must adapt to environment: local development uses `localhost:3000`,
 ```typescript
 // src/utils/getPreviewUrl.ts
 function getPreviewUrl() {
-  const env = process.env.SANITY_STUDIO_VERCEL_ENV // "development" | "preview" | "production"
-  const rippleApp = process.env.SANITY_STUDIO_RIPPLE_APP_URL
-  const envUrl = process.env.SANITY_STUDIO_VERCEL_URL
+  const env = process.env.SANITY_STUDIO_VERCEL_ENV
+  const prodUrl = process.env.SANITY_STUDIO_RIPPLE_APP_URL
 
-  const relatedProjectsRaw =
-    process.env.SANITY_STUDIO_VERCEL_RELATED_PROJECTS ||
-    process.env.VERCEL_RELATED_PROJECTS
+  if (env === 'production') return prodUrl || 'https://ripple.com'
 
-  let relatedProjects
-  if (relatedProjectsRaw) {
-    try {
-      relatedProjects = JSON.parse(relatedProjectsRaw)
-    } catch (e) {
-      console.warn('Failed to parse related projects, using fallback', e)
-    }
+  if (env === 'preview') {
+    const related = JSON.parse(process.env.SANITY_STUDIO_VERCEL_RELATED_PROJECTS || '[]')
+    const project = related.find((p) => p.project.name === 'ripplecom-nextjs')
+    return project?.preview?.branch ? `https://${project.preview.branch}` : prodUrl
   }
 
-  if (env === 'production') {
-    return rippleApp || 'https://ripple.com'
-  }
-
-  if (env === 'preview' && Array.isArray(relatedProjects)) {
-    const rippleProject = relatedProjects.find(
-      (p) => p.project.name === 'ripplecom-nextjs',
-    )
-    const { preview } = rippleProject || {}
-    const { branch } = preview || {}
-
-    if (!branch) {
-      console.warn('No preview branch found, using fallback')
-      return rippleApp
-    }
-
-    return `https://${branch}`
-  }
-
-  // Development environment
   return 'http://localhost:3000'
 }
 
 export default getPreviewUrl
 ```
 
-Ripplecom uses Vercel's `VERCEL_RELATED_PROJECTS` environment variable to find the preview branch URL for the corresponding Next.js app. Critical for monorepo setups where Sanity Studio and frontend deploy separately.
+Ripplecom uses `VERCEL_RELATED_PROJECTS` to find preview branch URL. Critical for monorepo setups.
 
 ## CORS Origin Whitelist
 

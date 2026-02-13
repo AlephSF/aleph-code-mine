@@ -25,20 +25,14 @@ Sanity built-in slug fields validate format but not uniqueness. Custom async val
 ```javascript
 // lib/isUniqueAcrossAllDocuments.js
 const isUniqueAcrossAllDocuments = async (slug, context) => {
-  const { document, getClient } = context
-  const client = getClient({
-    apiVersion: process.env.SANITY_STUDIO_API_VERSION || '2023-05-09',
-  })
-  const id = document._id.replace(/^drafts\./, '')
-  const params = {
+  const client = context.getClient({ apiVersion: '2023-05-09' })
+  const id = context.document._id.replace(/^drafts\./, '')
+  const query = '!defined(*[!(_id in [$draft, $published]) && slug.current == $slug][0]._id)'
+  return await client.fetch(query, {
     draft: `drafts.${id}`,
     published: id,
     slug,
-  }
-  const query =
-    '!defined(*[!(_id in [$draft, $published]) && slug.current == $slug][0]._id)'
-  const result = await client.fetch(query, params)
-  return result
+  })
 }
 
 export default isUniqueAcrossAllDocuments
@@ -47,39 +41,23 @@ export default isUniqueAcrossAllDocuments
 **Schema Integration:**
 
 ```typescript
-// schemaTypes/documents/page.ts
-import { defineType } from 'sanity'
 import isUniqueAcrossAllDocuments from '../../lib/isUniqueAcrossAllDocuments'
 
 export default defineType({
   name: 'page',
-  type: 'document',
-  fields: [
-    {
-      name: 'slug',
-      type: 'slug',
-      options: {
-        source: 'title',
-        maxLength: 200,
-      },
-      validation: (Rule) =>
-        Rule.required().custom(async (slug, context) => {
-          const isUnique = await isUniqueAcrossAllDocuments(slug?.current, context)
-          return isUnique || 'Slug is already in use'
-        }),
-    },
-  ],
+  fields: [{
+    name: 'slug',
+    type: 'slug',
+    validation: (Rule) =>
+      Rule.required().custom(async (slug, context) => {
+        const isUnique = await isUniqueAcrossAllDocuments(slug?.current, context)
+        return isUnique || 'Slug is already in use'
+      }),
+  }],
 })
 ```
 
-Helix uses this pattern for `page` and `blogPost` document types. Validation runs on slug change and prevents duplicate slugs across different document types (prevents `/about` page conflicting with `/about` blog post).
-
-**Key Features:**
-
-1. **Draft/published awareness** - Checks both `drafts.page-123` and `page-123` IDs
-2. **Self-exclusion** - Excludes current document from uniqueness check
-3. **Cross-document** - Validates against all document types with slugs
-4. **Async** - Uses `Rule.custom(async ...)` for GROQ query
+Pattern prevents duplicate slugs across document types and excludes current document from check.
 
 ## Validation Context Object
 

@@ -109,61 +109,38 @@ Ripplecom defines homepage as a regular document type. Schema does not indicate 
 
 ## Desk Structure Integration
 
-Singletons should appear in a dedicated "Settings" or "Global Options" section in the desk structure. Use `.documentId()` to link directly to the singleton document rather than showing a document list.
+Singletons appear in a dedicated "Global Options" section. Use `.documentId()` to link directly to singleton documents.
 
 **Pattern:**
 
 ```typescript
 // structure/index.ts
 import { StructureResolver } from 'sanity/structure'
-import { HomeIcon, InfoOutlineIcon, MenuIcon } from '@sanity/icons'
 
 export const structure: StructureResolver = (S) =>
   S.list()
     .title('Base')
     .items([
-      // ... regular documents
       S.divider(),
       S.listItem()
         .title('Global Options')
-        .icon(CogIcon)
         .child(
           S.list()
             .title('Global Options')
             .items([
               S.listItem()
                 .title('Homepage Setting')
-                .icon(HomeIcon)
-                .child(
-                  S.document()
-                    .schemaType('homepage')
-                    .documentId('homepage')
-                    .title('Homepage Setting'),
-                ),
+                .child(S.document().schemaType('homepage').documentId('homepage')),
               S.listItem()
-                .title('Default SEO Settings')
-                .icon(InfoOutlineIcon)
-                .child(
-                  S.document()
-                    .schemaType('defaultSeo')
-                    .documentId('defaultSeo')
-                    .title('Default SEO Settings'),
-                ),
-              S.listItem()
-                .title('Footer Navigation')
-                .icon(MenuIcon)
-                .child(
-                  S.document()
-                    .schemaType('footerNavigation')
-                    .documentId('footerNavigation')
-                    .title('Footer Navigation'),
-                ),
+                .title('Default SEO')
+                .child(S.document().schemaType('defaultSeo').documentId('defaultSeo')),
+              // ... other singletons
             ]),
         ),
     ])
 ```
 
-Ripplecom groups 6 singletons under "Global Options". Each singleton uses `.documentId()` with a hardcoded ID matching the schema type name. This creates a direct link to the singleton document, bypassing the document list view.
+Each singleton uses `.documentId()` with hardcoded ID matching schema type name, bypassing document list view.
 
 ## Singleton Document IDs
 
