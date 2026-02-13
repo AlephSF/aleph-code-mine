@@ -98,24 +98,9 @@ rules:
       impact: medium
 
   - id: missing-webpack-config
-    pattern: |
-      "name": "...",
-      ...
-      "devDependencies": {
-        ...
-        "webpack": "...",
-        ...
-      }
-    pattern-not-inside: |
-      {
-        ...,
-        "scripts": {
-          ...,
-          "build": "...",
-          ...
-        },
-        ...
-      }
+    patterns:
+      - pattern-regex: '"webpack":\s*"[^"]+"'
+      - pattern-not-regex: '"build":\s*"[^"]+"'
     paths:
       include:
         - package.json

@@ -23,19 +23,7 @@ rules:
       subcategory: error-handling
 
   - id: require-get-field-null-check
-    pattern-either:
-      - pattern: |
-          $VAR = get_field(...)
-          ...
-          echo $VAR
-      - pattern: |
-          $VAR = get_field(...)
-          ...
-          $VAR['...']
-    pattern-not-inside: |
-      if( $VAR ) {
-        ...
-      }
+    pattern-regex: (echo\s+get_field\(|get_field\([^\)]+\)\s*\[)
     languages: [php]
     message: |
       ACF field value used without null check. Field may be empty causing undefined variable errors.

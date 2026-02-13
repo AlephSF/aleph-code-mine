@@ -1,24 +1,8 @@
 rules:
   - id: warn-missing-show-in-graphql-block-fields
-    pattern: |
-      {
-        ...
-        "location": [
-          [
-            {
-              "param": "block",
-              ...
-            }
-          ]
-        ],
-        ...
-      }
-    pattern-not-inside: |
-      {
-        ...
-        "show_in_graphql": 1,
-        ...
-      }
+    patterns:
+      - pattern-regex: '"param":\s*"block"'
+      - pattern-not-regex: '"show_in_graphql":\s*1'
     paths:
       include:
         - "**/*acf-json/group_*.json"
@@ -37,19 +21,9 @@ rules:
       subcategory: graphql-integration
 
   - id: require-graphql-field-name-when-exposed
-    pattern: |
-      {
-        ...
-        "show_in_graphql": 1
-      }
-    pattern-not-inside: |
-      {
-        ...
-        "show_in_graphql": 1,
-        ...
-        "graphql_field_name": "...",
-        ...
-      }
+    patterns:
+      - pattern-regex: '"show_in_graphql":\s*1'
+      - pattern-not-regex: '"graphql_field_name":\s*"[^"]+"'
     paths:
       include:
         - "**/*acf-json/group_*.json"
@@ -66,13 +40,10 @@ rules:
       subcategory: graphql-integration
 
   - id: prefer-image-id-return-format-graphql
-    pattern: |
-      {
-        "type": "image",
-        "show_in_graphql": 1,
-        ...
-        "return_format": "array"
-      }
+    patterns:
+      - pattern-regex: '"type":\s*"image"'
+      - pattern-regex: '"show_in_graphql":\s*1'
+      - pattern-regex: '"return_format":\s*"array"'
     paths:
       include:
         - "**/*acf-json/*.json"

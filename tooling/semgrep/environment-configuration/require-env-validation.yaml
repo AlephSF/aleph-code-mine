@@ -1,11 +1,13 @@
 rules:
   - id: missing-env-var-validation
-    pattern-not: |
-      const requiredEnvVars = ...
-      ...
-      if (!process.env.$VAR) {
-        throw ...
-      }
+    patterns:
+      - pattern: export default function $FUNC(...) { ... }
+      - pattern-not-inside: |
+          const requiredEnvVars = ...
+          ...
+          if (!process.env.$VAR) {
+            throw ...
+          }
     message: |
       No environment variable validation detected at startup.
       Missing required env vars cause cryptic runtime errors.

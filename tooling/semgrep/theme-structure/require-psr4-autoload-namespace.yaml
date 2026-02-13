@@ -143,10 +143,7 @@ rules:
     patterns:
       - pattern: |
           namespace App\$NAMESPACE;
-
-          class $CLASS {
-            $...BODY
-          }
+          class $CLASS { ... }
       - metavariable-regex:
           metavariable: $NAMESPACE
           regex: .*

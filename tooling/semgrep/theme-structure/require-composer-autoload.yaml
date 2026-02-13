@@ -47,15 +47,14 @@ rules:
 
   - id: sage-theme-missing-vendor-check
     patterns:
-      - pattern-inside: |
-          namespace App\...;
-          ...
+      - pattern-regex: "^namespace\\s+App\\\\.*;"
       - pattern-not-inside: |
           if (!class_exists(...)) {
-              ...
-              require_once ...vendor/autoload.php...;
+              require_once $VENDOR;
           }
-          ...
+      - metavariable-pattern:
+          metavariable: $VENDOR
+          pattern-regex: .*vendor/autoload\.php.*
     message: |
       Potential issue: Sage theme uses App\ namespace but may not check for Composer autoloader.
       Add vendor/autoload.php existence check in resources/functions.php to prevent fatal errors.

@@ -1,7 +1,7 @@
 rules:
   - id: enforce-acf-graphql-field-configuration
     languages:
-      - php
+      - json
     message: |
       ACF field groups for headless WordPress must include four GraphQL-specific
       configurations in their JSON definition:
@@ -20,22 +20,16 @@ rules:
     severity: WARNING
     patterns:
       - pattern: |
-          "key": "group_$KEY",
-          ...,
-          "fields": [
-            {
-              ...,
-              "key": "field_$FIELD_KEY",
-              ...
-            },
-            ...
-          ]
+          {
+            "key": "field_$FIELD_KEY"
+          }
       - pattern-not-inside: |
           {
-            ...,
-            "show_in_graphql": $VALUE,
-            ...
+            "show_in_graphql": $VALUE
           }
+    paths:
+      include:
+        - "**/acf-json/**/*.json"
     metadata:
       category: best-practice
       technology:

@@ -83,10 +83,10 @@ rules:
   - id: recommend-absint-for-ids
     patterns:
       - pattern-either:
-          - pattern: intval( $_POST[$...] )
-          - pattern: intval( $_GET[$...] )
-          - pattern: (int) $_POST[$...]
-          - pattern: (int) $_GET[$...]
+          - pattern: intval( $_POST[$KEY] )
+          - pattern: intval( $_GET[$KEY] )
+          - pattern: (int) $_POST[$KEY]
+          - pattern: (int) $_GET[$KEY]
     message: |
       Use absint() instead of intval() or (int) for IDs.
 

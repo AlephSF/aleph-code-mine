@@ -58,9 +58,9 @@ rules:
           ...
       - pattern-not-inside: |
           function $FUNC(...) { ... }
-      - metavariable-regex:
-          metavariable: $FILE
-          regex: '^(?!.*client-mu-plugins).*$'
+    paths:
+      exclude:
+        - "**/client-mu-plugins/**"
     message: |
       Plugin loading should be centralized in client-mu-plugins/plugin-loader.php
       for maintainability. Avoid loading plugins from theme functions.php or

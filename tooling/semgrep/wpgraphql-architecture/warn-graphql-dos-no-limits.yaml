@@ -103,19 +103,10 @@ rules:
       Consider plugins like WPGraphQL Query Cost Analysis for fine-grained control.
     severity: INFO
     patterns:
-      - pattern-not: |
-          add_filter('graphql_max_query_amount', ...)
-      - pattern-not: |
-          add_filter('graphql_query_cost_analyzer', ...)
       - pattern-either:
-          - pattern: |
-              register_graphql_connection(...)
-          - pattern: |
-              register_graphql_field(..., [
-                ...,
-                'type' => ['list_of' => ...],
-                ...,
-              ])
+          - pattern: register_graphql_connection($NAME, $CONFIG)
+          - pattern: register_graphql_field($PARENT, $NAME, $CONFIG)
+      - pattern-not-regex: graphql_max_query_amount|graphql_query_cost_analyzer
     metadata:
       category: security
       technology:

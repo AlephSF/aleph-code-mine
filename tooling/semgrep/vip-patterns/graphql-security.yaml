@@ -10,25 +10,15 @@
 rules:
   - id: missing-graphql-query-size-limit
     patterns:
-      - pattern-either:
-          - pattern: |
-              add_filter( 'graphql_request_data', function( $data ) {
-                ...
-              });
-          - pattern: |
-              add_filter( 'graphql_request_data', '$CALLBACK' );
-      - pattern-not: |
-          add_filter( 'graphql_request_data', function( $data ) {
-            ...
-            strlen( $... )
-            ...
-          });
-      - pattern-not: |
-          add_filter( 'graphql_request_data', function( $data ) {
-            ...
-            mb_strlen( $... )
-            ...
-          });
+      - pattern: add_filter( 'graphql_request_data', $CALLBACK )
+      - pattern-not-inside: |
+          function $FUNC($data) {
+            strlen( $SIZE );
+          }
+      - pattern-not-inside: |
+          function $FUNC($data) {
+            mb_strlen( $SIZE );
+          }
     message: |
       GraphQL query size limiting not detected in graphql_request_data filter.
 

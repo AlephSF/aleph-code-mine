@@ -4,21 +4,21 @@ rules:
       - pattern-either:
           - pattern: |
               useEffect(() => {
-                ...
+                $...BODY
                 window.addEventListener($EVENT, $HANDLER)
-                ...
-              }, ...)
+                $...MORE
+              }, $DEPS)
           - pattern: |
               useEffect(() => {
-                ...
+                $...BODY
                 document.addEventListener($EVENT, $HANDLER)
-                ...
-              }, ...)
-      - pattern-not: |
+                $...MORE
+              }, $DEPS)
+      - pattern-not-inside: |
           useEffect(() => {
-            ...
-            return () => ...removeEventListener...
-          }, ...)
+            $...STATEMENTS
+            return () => { $...CLEANUP }
+          }, $DEPS)
     message: |
       useEffect with addEventListener must return cleanup function.
 

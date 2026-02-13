@@ -107,31 +107,17 @@ rules:
 
   - id: detect-blog-switching-in-loop
     patterns:
-      - pattern-either:
-          - pattern: |
-              foreach ($ITEMS as $ITEM) {
-                ...
-                switch_to_blog($BLOG_ID);
-                ...
-                restore_current_blog();
-                ...
-              }
-          - pattern: |
-              for ($I = ...; $I < ...; $I++) {
-                ...
-                switch_to_blog($BLOG_ID);
-                ...
-                restore_current_blog();
-                ...
-              }
-          - pattern: |
-              while ($CONDITION) {
-                ...
-                switch_to_blog($BLOG_ID);
-                ...
-                restore_current_blog();
-                ...
-              }
+      - pattern: switch_to_blog($BLOG_ID)
+      - pattern-inside: |
+          foreach ($ITEMS as $ITEM) {
+            ...
+          }
+      - pattern-inside: |
+          foreach ($ITEMS as $ITEM) {
+            ...
+            restore_current_blog();
+            ...
+          }
     message: |
       Blog switching inside loop may cause performance issues.
 

@@ -47,9 +47,8 @@ rules:
 
   - id: get-sites-no-number-limit
     patterns:
-      - pattern: get_sites(...)
-      - pattern-not: get_sites(array(..., 'number' => ..., ...))
-      - pattern-not: get_sites(['number' => ..., ...])
+      - pattern: get_sites($ARGS)
+      - pattern-not-regex: \bget_sites\s*\(\s*(?:array\s*\(|\[).*['"']number['"].*\)
     message: |
       get_sites() called without 'number' limit.
       WordPress defaults to 100, but explicit limit improves code clarity.

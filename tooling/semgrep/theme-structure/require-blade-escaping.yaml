@@ -114,11 +114,9 @@ rules:
         - https://roots.io/sage/docs/blade-templates/
 
   - id: blade-mixed-php-and-blade-syntax
-    pattern-either:
-      - pattern: '<?php ... ?>'
-    paths:
-      include:
-        - "**/*.blade.php"
+    patterns:
+      - pattern-either:
+          - pattern: '<?php ... ?>'
     message: |
       PHP tags <?php ?> found in Blade template. Use Blade directives instead.
       Mixing PHP and Blade syntax reduces readability and bypasses Blade's escaping.

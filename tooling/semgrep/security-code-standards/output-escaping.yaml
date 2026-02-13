@@ -45,13 +45,8 @@ rules:
     patterns:
       - pattern-either:
           # esc_html() in href attribute (should use esc_url)
-          - pattern: |
-              href="<?php echo esc_html($URL); ?>"
-          - pattern: |
-              href='<?php echo esc_html($URL); ?>'
-          # esc_url() in HTML body (should use esc_html)
-          - pattern: |
-              ><?php echo esc_url($TEXT); ?><
+          - pattern: echo esc_html($URL)
+          - pattern: echo esc_url($TEXT)
     message: |
       Wrong escaping function for context detected.
 

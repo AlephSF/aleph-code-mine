@@ -110,16 +110,8 @@ rules:
 
   - id: missing-esc-like-in-like-query
     patterns:
-      - pattern: |
-          $wpdb->prepare(
-            "... LIKE %s ...",
-            '%' . $SEARCH . '%'
-          )
-      - pattern-not: |
-          $wpdb->prepare(
-            "... LIKE %s ...",
-            '%' . $wpdb->esc_like($...) . '%'
-          )
+      - pattern: $wpdb->prepare("... LIKE %s ...", '%' . $SEARCH . '%')
+      - pattern-not: $wpdb->prepare("... LIKE %s ...", '%' . $wpdb->esc_like(...) . '%')
     message: |
       LIKE query missing $wpdb->esc_like() - LIKE clause injection risk!
 
@@ -141,9 +133,7 @@ rules:
 
   - id: detect-eval-usage
     patterns:
-      - pattern-either:
-          - pattern: eval($...)
-          - pattern: eval($...)
+      - pattern: eval($...)
     message: |
       CRITICAL: eval() usage detected - code injection vulnerability!
 

@@ -2,40 +2,27 @@ rules:
   - id: require-try-catch-in-fetch-wrapper
     patterns:
       - pattern-either:
-          # Fetch wrapper function without try/catch
-          - patterns:
-              - pattern: |
-                  async function $FUNC(...) {
-                    ...
-                    await fetch(...)
-                    ...
-                  }
-              - pattern-not-inside: |
-                  try {
-                    ...
-                  } catch (...) {
-                    ...
-                  }
-              - metavariable-regex:
-                  metavariable: $FUNC
-                  regex: "^(fetch|query|get).*" # Fetch wrapper naming convention
-          # Arrow function fetch wrapper without try/catch
-          - patterns:
-              - pattern: |
-                  const $FUNC = async (...) => {
-                    ...
-                    await fetch(...)
-                    ...
-                  }
-              - pattern-not-inside: |
-                  try {
-                    ...
-                  } catch (...) {
-                    ...
-                  }
-              - metavariable-regex:
-                  metavariable: $FUNC
-                  regex: "^(fetch|query|get).*"
+          - pattern: |
+              async function $FUNC(...) {
+                $...BODY
+                await fetch(...)
+                $...MORE
+              }
+          - pattern: |
+              const $FUNC = async (...) => {
+                $...BODY
+                await fetch(...)
+                $...MORE
+              }
+      - pattern-not-inside: |
+          try {
+            $...STATEMENTS
+          } catch ($ERR) {
+            $...HANDLER
+          }
+      - metavariable-regex:
+          metavariable: $FUNC
+          regex: "^(fetch|query|get).*"
     message: "Fetch wrapper functions should include try/catch for error handling. Wrap fetch calls in try/catch to handle network errors and timeouts."
     languages:
       - typescript

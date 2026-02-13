@@ -1,6 +1,6 @@
 rules:
   - id: no-type-t-prefix
-    pattern: type T$NAME = ...
+    pattern-regex: "type\\s+T[A-Z]\\w+\\s*="
     message: |
       Avoid Hungarian notation T prefix on type aliases.
       Use descriptive names that communicate purpose, not implementation.

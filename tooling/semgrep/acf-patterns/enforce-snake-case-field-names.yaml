@@ -26,13 +26,13 @@ rules:
       subcategory: naming-conventions
 
   - id: require-graphql-camelcase
-    pattern: |
-      {
-        "show_in_graphql": 1,
-        ...
-        "graphql_field_name": "$GRAPHQL_NAME"
-      }
-    focus-metavariable: $GRAPHQL_NAME
+    patterns:
+      - pattern: |
+          {
+            "show_in_graphql": 1,
+            "graphql_field_name": "$GRAPHQL_NAME"
+          }
+      - focus-metavariable: $GRAPHQL_NAME
     metavariable-pattern:
       metavariable: $GRAPHQL_NAME
       regex: ^[a-z][a-zA-Z0-9]*$

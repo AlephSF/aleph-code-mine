@@ -14,22 +14,9 @@ rules:
     severity: WARNING
     patterns:
       - pattern-either:
-          - pattern: |
-              register_post_type(..., [...])
-          - pattern: |
-              register_taxonomy(..., [...], [...])
-      - pattern-not-inside: |
-          register_post_type(..., [
-            ...,
-            'show_in_graphql' => ...,
-            ...,
-          ])
-      - pattern-not-inside: |
-          register_taxonomy(..., [...], [
-            ...,
-            'show_in_graphql' => ...,
-            ...,
-          ])
+          - pattern: register_post_type($NAME, $ARGS)
+          - pattern: register_taxonomy($NAME, $POST_TYPES, $ARGS)
+      - pattern-not-regex: show_in_graphql
     metadata:
       category: best-practice
       technology:

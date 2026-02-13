@@ -1,6 +1,6 @@
 rules:
   - id: prefer-string-union-over-enum
-    pattern: enum $NAME { ... }
+    pattern-regex: "enum\\s+\\w+\\s*\\{"
     message: |
       Prefer string literal union types over enums for better tree-shaking and simpler output.
 

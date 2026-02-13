@@ -2,36 +2,32 @@ rules:
   - id: warn-missing-notfound-handling
     patterns:
       - pattern-either:
-          # App Router: async component with data fetch but no notFound() call
-          - patterns:
-              - pattern: |
-                  export default async function $FUNC({ params }: ...) {
-                    ...
-                    const $DATA = await $FETCH(...)
-                    ...
-                    return <$COMPONENT ... />
-                  }
-              - pattern-not-inside: |
-                  if (!$DATA) {
-                    notFound()
-                  }
-              - pattern-not-inside: |
-                  if (!$DATA) notFound()
-          # Pages Router: getStaticProps without notFound in return
-          - patterns:
-              - pattern: |
-                  export const getStaticProps = async ({ params }: ...) => {
-                    ...
-                    const $DATA = await $FETCH(...)
-                    ...
-                    return {
-                      props: { $DATA },
-                    }
-                  }
-              - pattern-not-inside: |
-                  if (!$DATA) {
-                    return { notFound: true }
-                  }
+          - pattern: |
+              export default async function $FUNC($PARAMS) {
+                $...BODY
+                const $DATA = await $FETCH($ARGS)
+                $...MORE
+                return <$COMPONENT $...PROPS />
+              }
+          - pattern: |
+              export const getStaticProps = async ($PARAMS) => {
+                $...BODY
+                const $DATA = await $FETCH($ARGS)
+                $...MORE
+                return {
+                  props: { $PROPS }
+                }
+              }
+      - pattern-not-inside: |
+          if (!$DATA) {
+            notFound()
+          }
+      - pattern-not-inside: |
+          if (!$DATA) notFound()
+      - pattern-not-inside: |
+          if (!$DATA) {
+            return { notFound: true }
+          }
     message: "Data-fetched pages should handle missing content with notFound(). Check if data exists after fetch and call notFound() (App Router) or return { notFound: true } (Pages Router)."
     languages:
       - typescript

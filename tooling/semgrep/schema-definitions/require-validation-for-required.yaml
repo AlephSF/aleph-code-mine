@@ -1,27 +1,15 @@
 rules:
   - id: require-validation-for-required
     patterns:
-      - pattern-inside: |
+      - pattern: |
           defineField({
-            ...,
-            validation: ($RULE) => $RULE.required()...,
-            ...
+            $...FIELDS,
+            validation: ($RULE) => $RULE.required()
           })
-      - pattern-not: |
-          defineField({
-            ...,
-            validation: ($RULE) => $RULE.required().max(...),
-            ...
-          })
-      - pattern-not: |
-          defineField({
-            ...,
-            validation: ($RULE) => $RULE.required().min(...),
-            ...
-          })
-      - metavariable-regex:
-          metavariable: $TYPE
-          regex: ^(string|text|number|url|email)$
+      - pattern-not-inside: |
+          validation: ($RULE) => $RULE.required().max($N)
+      - pattern-not-inside: |
+          validation: ($RULE) => $RULE.required().min($N)
     message: |
       Fields marked as required should include additional validation rules.
       Simply marking a field as required() without constraints can lead to poor data quality.

@@ -1,18 +1,8 @@
 rules:
   - id: warn-missing-spread-before-conditional
-    pattern: |
-      $ARRAY[] {
-        _type == $TYPE => {
-          ...
-        }
-      }
-    pattern-not: |
-      $ARRAY[] {
-        ...,
-        _type == $TYPE => {
-          ...
-        }
-      }
+    patterns:
+      - pattern-regex: '\[\]\s*\{\s*_type\s*==.*=>\s*\{'
+      - pattern-not-regex: '\[\]\s*\{\s*\.\.\.\s*,\s*_type\s*=='
     message: |
       Content arrays with conditional type expansion should include spread operator (...) before conditionals.
       Without spread, default fields (_type, _key) and common fields are omitted from results.
@@ -85,8 +75,8 @@ rules:
       Only omit spread if you explicitly want to exclude default fields,
       but this breaks standard React rendering patterns.
     languages:
-      - typescript
       - javascript
+      - typescript
     severity: ERROR
     metadata:
       category: sanity

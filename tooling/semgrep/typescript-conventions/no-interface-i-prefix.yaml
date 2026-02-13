@@ -1,6 +1,6 @@
 rules:
   - id: no-interface-i-prefix
-    pattern: interface I$NAME { ... }
+    pattern-regex: "interface\\s+I[A-Z]\\w+"
     message: |
       Avoid Hungarian notation I prefix on interfaces.
       Use descriptive names that communicate purpose, not implementation.

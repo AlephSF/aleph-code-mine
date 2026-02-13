@@ -1,14 +1,11 @@
 rules:
   - id: require-restore-current-blog-pairing
-    pattern-either:
-      - patterns:
-          - pattern: |
-              switch_to_blog(...)
-              ...
-          - pattern-not: |
-              switch_to_blog(...)
-              ...
-              restore_current_blog()
+    patterns:
+      - pattern: switch_to_blog(...)
+      - pattern-not-inside: |
+          switch_to_blog(...)
+          $...STATEMENTS
+          restore_current_blog()
     message: |
       Every switch_to_blog() must be paired with restore_current_blog().
       Missing restore causes context pollution and data corruption.
@@ -59,22 +56,18 @@ rules:
 
   - id: switch-without-restore-before-return
     patterns:
-      - pattern-either:
-          - pattern: |
-              switch_to_blog(...);
-              ...
-              return ...;
-          - pattern: |
-              switch_to_blog(...);
-              ...
-              if (...) {
-                return ...;
-              }
-      - pattern-not: |
-          switch_to_blog(...);
-          ...
-          restore_current_blog();
-          return ...;
+      - pattern: switch_to_blog(...)
+      - pattern-inside: |
+          function $FUNC(...) {
+            ...
+            return ...;
+          }
+      - pattern-not-inside: |
+          switch_to_blog(...)
+          $...STATEMENTS
+          restore_current_blog()
+          $...MORE
+          return ...
     message: |
       switch_to_blog() without restore_current_blog() before return statement.
       Early returns must restore blog context to prevent leaked context.

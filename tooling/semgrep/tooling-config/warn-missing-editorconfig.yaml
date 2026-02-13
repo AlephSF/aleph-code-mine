@@ -3,9 +3,6 @@ rules:
     patterns:
       - pattern: |
           {...}
-      - metavariable-pattern:
-          metavariable: $FILE
-          pattern: package.json
     paths:
       include:
         - package.json

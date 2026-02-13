@@ -1,20 +1,8 @@
 rules:
   - id: require-image-metadata
     patterns:
-      - pattern-either:
-          - pattern: |
-              $IMAGE.asset->{
-                url
-              }
-          - pattern: |
-              $IMAGE.asset-> {
-                url
-              }
-      - pattern-not: |
-          $IMAGE.asset->{
-            ...,
-            metadata
-          }
+      - pattern-regex: \.asset->\s*\{\s*url\s*\}
+      - pattern-not-regex: metadata\.dimensions
     message: |
       Image asset dereferencing should include metadata.dimensions for Next.js Image component.
       Fetching only the URL without dimensions causes layout shifts and requires client-side dimension fetching.
@@ -67,8 +55,8 @@ rules:
       - blurHash enables progressive image loading
       - aspectRatio maintains layout during image loading
     languages:
-      - typescript
       - javascript
+      - typescript
     severity: WARNING
     metadata:
       category: sanity

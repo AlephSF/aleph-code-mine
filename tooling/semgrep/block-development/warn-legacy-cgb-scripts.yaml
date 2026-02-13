@@ -46,25 +46,15 @@ rules:
     languages:
       - json
     patterns:
-      - pattern-either:
-          - pattern: |
-              {
-                "scripts": {
-                  ...,
-                  "$SCRIPT": "cgb-scripts ...",
-                  ...
-                },
-                ...
-              }
-          - pattern: |
-              {
-                "scripts": {
-                  ...,
-                  "$SCRIPT": "cgb-scripts ...",
-                  ...
-                },
-                ...
-              }
+      - pattern: |
+          {
+            "scripts": {
+              ...,
+              "$SCRIPT": "cgb-scripts ...",
+              ...
+            },
+            ...
+          }
     metadata:
       category: block-development
       subcategory: build-tools
@@ -85,9 +75,7 @@ rules:
       - javascript
       - typescript
     patterns:
-      - pattern-either:
-          - pattern: import ... from './dist/blocks.build.js'
-          - pattern: import ... from './dist/blocks.style.build.css'
+      - pattern-regex: 'import\s+.*\s+from\s+[''"]\.\/dist\/blocks\.(build\.js|style\.build\.css)[''"]'
     metadata:
       category: block-development
       subcategory: build-tools
