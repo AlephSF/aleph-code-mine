@@ -9,7 +9,7 @@ audience: "fullstack"
 complexity: "beginner"
 doc_type: "standard"
 source_confidence: "12%"
-last_updated: "2026-02-11"
+last_updated: "2026-02-13"
 ---
 
 # Field Groups for Content Organization
@@ -30,7 +30,7 @@ Sanity field groups organize schema fields into tabs within the Studio editor, i
 
 ## Standard Pattern: Content + Meta/SEO Separation
 
-### Two-Group Pattern (Most Common)
+## Two-Group Pattern (Most Common)
 
 The most common field group pattern separates main content from administrative/SEO fields.
 
@@ -75,7 +75,7 @@ export default {
 }
 ```
 
-### Three-Group Pattern (Ripplecom Standard)
+## Three-Group Pattern (Ripplecom Standard)
 
 Ripplecom separates content, metadata, and SEO into distinct tabs for clearer organization.
 
@@ -140,7 +140,7 @@ export default defineType({
 
 ## Group Naming Conventions
 
-### Standard Group Names (100% Consistency)
+## Standard Group Names (100% Consistency)
 
 Across all projects using field groups, naming follows these consistent patterns:
 
@@ -166,7 +166,7 @@ groups: [
 ]
 ```
 
-### Default Tab Configuration
+## Default Tab Configuration
 
 The `default: true` property sets which tab opens when editors create or edit a document.
 
@@ -187,7 +187,7 @@ groups: [
 
 ## Field Assignment to Groups
 
-### Explicit Group Assignment
+## Explicit Group Assignment
 
 Fields must explicitly declare their group via the `group` property.
 
@@ -206,7 +206,7 @@ fields: [
 ]
 ```
 
-### Fields Without Group Assignment
+## Fields Without Group Assignment
 
 Fields without a `group` property appear in a default "Ungrouped" tab.
 
@@ -228,7 +228,7 @@ fields: [
 
 ## When to Use Field Groups
 
-### Schemas That Benefit from Groups
+## Schemas That Benefit from Groups
 
 Field groups provide the most value for schemas with 5+ fields or distinct conceptual sections.
 
@@ -238,7 +238,7 @@ Field groups provide the most value for schemas with 5+ fields or distinct conce
 - **Event**: Details, location, registration, sponsors (10-20 fields)
 - **Product**: Description, pricing, inventory, shipping (8-15 fields)
 
-### Schemas That Don't Need Groups
+## Schemas That Don't Need Groups
 
 Simple schemas with 3-4 fields rarely benefit from tabs.
 
@@ -249,7 +249,7 @@ Simple schemas with 3-4 fields rarely benefit from tabs.
 
 ## Complex Example: Kariusdx Page Schema
 
-### Multi-Section Document with Conditional Fields
+## Multi-Section Document with Conditional Fields
 
 Kariusdx page schema demonstrates groups with extensive conditional field visibility.
 
@@ -316,7 +316,7 @@ export default {
 
 ## Benefits of Field Groups
 
-### Reduced Cognitive Load
+## Reduced Cognitive Load
 
 Editors see 5-7 fields per tab instead of 15-20 fields in one scrolling list.
 
@@ -349,7 +349,7 @@ Tab: Content               Tab: Meta              Tab: SEO
 [ Featured Image ]         [ Tags ]               [ No-Index ]
 ```
 
-### Workflow Optimization
+## Workflow Optimization
 
 Content editors can focus on editorial fields without distraction from technical SEO settings.
 
@@ -360,7 +360,7 @@ Content editors can focus on editorial fields without distraction from technical
 // 3. Switch to "SEO" tab → Optimize for search (optional)
 ```
 
-### Logical Grouping by Responsibility
+## Logical Grouping by Responsibility
 
 Different team members can focus on their domain without navigating irrelevant fields.
 
@@ -370,7 +370,7 @@ Different team members can focus on their domain without navigating irrelevant f
 
 ## Anti-Patterns
 
-### Too Many Groups
+## Too Many Groups
 
 More than 4-5 groups creates excessive tab switching.
 
@@ -397,7 +397,7 @@ groups: [
 // 3 tabs for 6 fields = logical organization
 ```
 
-### Inconsistent Naming
+## Inconsistent Naming
 
 Different group names for the same concept confuses editors across schemas.
 
@@ -423,7 +423,7 @@ groups: [
 ]
 ```
 
-### Forgetting Default Tab
+## Forgetting Default Tab
 
 Without `default: true`, the Studio opens the first alphabetically-sorted tab, not necessarily the logical starting point.
 

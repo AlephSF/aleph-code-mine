@@ -9,7 +9,7 @@ audience: "fullstack"
 complexity: "beginner"
 doc_type: "standard"
 source_confidence: "100%"
-last_updated: "2026-02-11"
+last_updated: "2026-02-13"
 ---
 
 # SEO Metadata Objects
@@ -31,7 +31,7 @@ All analyzed Sanity repositories implement dedicated SEO metadata object schemas
 
 ## Standard SEO Object Pattern
 
-### Core SEO Fields Object
+## Core SEO Fields Object
 
 All projects define a reusable SEO object type with common search optimization fields.
 
@@ -82,7 +82,7 @@ export default {
 }
 ```
 
-### Usage in Document Schemas
+## Usage in Document Schemas
 
 SEO objects are embedded in document schemas via field reference.
 
@@ -121,7 +121,7 @@ export default {
 
 ## Universal SEO Fields (100% Adoption)
 
-### SEO Title Override
+## SEO Title Override
 
 All projects provide a way to override the document title for search results.
 
@@ -139,7 +139,7 @@ All projects provide a way to override the document title for search results.
 }
 ```
 
-### Meta Description
+## Meta Description
 
 All projects include a meta description field for search result snippets.
 
@@ -158,7 +158,7 @@ All projects include a meta description field for search result snippets.
 }
 ```
 
-### Canonical URL
+## Canonical URL
 
 All projects support canonical URL specification to prevent duplicate content issues.
 
@@ -171,7 +171,7 @@ All projects support canonical URL specification to prevent duplicate content is
 }
 ```
 
-### Robots Directives (noindex/nofollow)
+## Robots Directives (noindex/nofollow)
 
 All projects provide boolean flags to control search engine crawling and indexing.
 
@@ -192,7 +192,7 @@ All projects provide boolean flags to control search engine crawling and indexin
 
 ## Open Graph Fields (Social Media)
 
-### Open Graph Image
+## Open Graph Image
 
 All projects include Open Graph image fields for social media sharing.
 
@@ -206,7 +206,7 @@ All projects include Open Graph image fields for social media sharing.
 }
 ```
 
-### Open Graph Title and Description
+## Open Graph Title and Description
 
 Projects provide separate Open Graph fields to customize social media appearance.
 
@@ -227,7 +227,7 @@ Projects provide separate Open Graph fields to customize social media appearance
 
 ## Ripplecom Pattern: Separation of Concerns
 
-### Separate SEO and Meta Objects
+## Separate SEO and Meta Objects
 
 Ripplecom (v4) separates publishing metadata from SEO optimization into distinct object types.
 
@@ -287,7 +287,7 @@ export default defineType({
 })
 ```
 
-### Usage: Separate Tabs for Meta and SEO
+## Usage: Separate Tabs for Meta and SEO
 
 Documents use separate field groups for publishing metadata and SEO optimization.
 
@@ -322,7 +322,7 @@ export default defineType({
 
 ## Focus Keyword Pattern (Helix)
 
-### SEO Analysis Support
+## SEO Analysis Support
 
 Helix includes focus keyword and synonym fields for SEO analysis tools.
 
@@ -345,7 +345,7 @@ Helix includes focus keyword and synonym fields for SEO analysis tools.
 
 ## Schema Validation Best Practices
 
-### Character Limits for SEO Fields
+## Character Limits for SEO Fields
 
 SEO fields should enforce character limits aligned with search engine guidelines.
 
@@ -369,7 +369,7 @@ defineField({
 })
 ```
 
-### Required vs Optional SEO Fields
+## Required vs Optional SEO Fields
 
 Most SEO fields are optional; only page-specific overrides should be required.
 
@@ -383,7 +383,7 @@ validation: (Rule) => Rule.max(60)
 
 ## Default Value Strategy
 
-### Frontend Fallback Pattern
+## Frontend Fallback Pattern
 
 SEO fields are typically optional; frontend code falls back to default values.
 
@@ -417,7 +417,7 @@ export async function generateMetadata({ params }) {
 
 ## Common SEO Object Structures
 
-### Minimal SEO Object
+## Minimal SEO Object
 
 Essential fields only for basic search optimization.
 
@@ -445,7 +445,7 @@ export default defineType({
 })
 ```
 
-### Comprehensive SEO Object
+## Comprehensive SEO Object
 
 Full-featured SEO object with social media and advanced options.
 
@@ -482,7 +482,7 @@ export default defineType({
 
 ## Anti-Patterns
 
-### Duplicating SEO Fields Across Schemas
+## Duplicating SEO Fields Across Schemas
 
 Don't copy SEO fields into every document schema; use a reusable object type.
 
@@ -515,7 +515,7 @@ fields: [{ name: "seo", type: "seo" }]
 fields: [{ name: "seo", type: "seo" }]
 ```
 
-### Required SEO Fields Without Defaults
+## Required SEO Fields Without Defaults
 
 Don't require SEO overrides; use optional fields with frontend fallbacks.
 
@@ -543,7 +543,7 @@ Don't require SEO overrides; use optional fields with frontend fallbacks.
 }
 ```
 
-### Missing Validation on Character Limits
+## Missing Validation on Character Limits
 
 Always validate SEO field lengths to prevent truncation in search results.
 

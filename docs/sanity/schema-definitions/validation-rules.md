@@ -9,7 +9,7 @@ audience: "fullstack"
 complexity: "beginner"
 doc_type: "standard"
 source_confidence: "100%"
-last_updated: "2026-02-11"
+last_updated: "2026-02-13"
 ---
 
 # Validation Rules for Schema Fields
@@ -31,7 +31,7 @@ Sanity validation rules enforce data quality constraints at the schema level, pr
 
 ## Common Validation Patterns
 
-### Required Fields
+## Required Fields
 
 The most common validation pattern ensures fields cannot be empty before publishing.
 
@@ -52,7 +52,7 @@ defineField({
 })
 ```
 
-### String Length Constraints
+## String Length Constraints
 
 Maximum length validation prevents content from exceeding character limits for SEO or design requirements.
 
@@ -82,7 +82,7 @@ defineField({
 })
 ```
 
-### Minimum Length Requirements
+## Minimum Length Requirements
 
 Minimum length validation ensures content meets quality thresholds.
 
@@ -96,7 +96,7 @@ defineField({
 })
 ```
 
-### Numeric Ranges
+## Numeric Ranges
 
 Number fields use `min()` and `max()` to enforce valid ranges.
 
@@ -119,7 +119,7 @@ defineField({
 
 ## Chaining Validation Rules
 
-### Multiple Constraints on Single Field
+## Multiple Constraints on Single Field
 
 Validation rules can be chained to enforce multiple requirements.
 
@@ -140,7 +140,7 @@ defineField({
 })
 ```
 
-### Common Chaining Patterns
+## Common Chaining Patterns
 
 ```typescript
 // Required + length constraint
@@ -158,7 +158,7 @@ validation: (Rule) => Rule.required().regex(/^[A-Z]{2}-\d{4}$/)
 
 ## Custom Validation Functions
 
-### Custom Validation with Error Messages
+## Custom Validation with Error Messages
 
 Custom validation functions provide conditional logic and contextual error messages.
 
@@ -184,7 +184,7 @@ defineField({
 })
 ```
 
-### Cross-Field Validation
+## Cross-Field Validation
 
 Custom validation can reference other fields in the document for complex business rules.
 
@@ -212,7 +212,7 @@ defineField({
 })
 ```
 
-### Async Validation with External Checks
+## Async Validation with External Checks
 
 Validation can perform asynchronous operations like API calls to verify uniqueness.
 
@@ -242,7 +242,7 @@ defineField({
 
 ## Helix Pattern: Hierarchical Slug Validation
 
-### Unique Slugs Across All Documents
+## Unique Slugs Across All Documents
 
 Helix implements a unique slug validation that checks across all document types.
 
@@ -269,7 +269,7 @@ export default {
 }
 ```
 
-### Custom Uniqueness Validator Implementation
+## Custom Uniqueness Validator Implementation
 
 ```javascript
 // helix-dot-com-sanity/lib/isUniqueAcrossAllDocuments.js
@@ -296,7 +296,7 @@ export default async function isUniqueAcrossAllDocuments(slug, context) {
 
 ## Array and Reference Validation
 
-### Required Array with Minimum Items
+## Required Array with Minimum Items
 
 Array fields can require a minimum number of items.
 
@@ -311,7 +311,7 @@ defineField({
 })
 ```
 
-### Reference Field Validation
+## Reference Field Validation
 
 Reference fields can be required and limited to specific quantities.
 
@@ -336,7 +336,7 @@ defineField({
 
 ## URL and Email Validation
 
-### URL Format Validation
+## URL Format Validation
 
 URL fields use regex to enforce valid URL patterns.
 
@@ -353,7 +353,7 @@ defineField({
 })
 ```
 
-### Email Format Validation
+## Email Format Validation
 
 Email fields validate against standard email regex patterns.
 
@@ -372,7 +372,7 @@ defineField({
 
 ## Conditional Validation
 
-### Validation Based on Document State
+## Validation Based on Document State
 
 Validation can vary based on other field values using custom functions.
 
@@ -397,7 +397,7 @@ defineField({
 
 ## Error Severity Levels
 
-### Error vs Warning vs Info
+## Error vs Warning vs Info
 
 Sanity supports different validation severity levels.
 
@@ -416,7 +416,7 @@ validation: (Rule) =>
 
 ## Validation Best Practices
 
-### Progressive Validation Strategy
+## Progressive Validation Strategy
 
 Start with basic required/max validation and add complexity as needed.
 
@@ -441,7 +441,7 @@ validation: (Rule) =>
       })
 ```
 
-### Helpful Validation Messages
+## Helpful Validation Messages
 
 Provide clear, actionable error messages that explain what's wrong and how to fix it.
 
@@ -460,7 +460,7 @@ validation: (Rule) =>
 
 ## Anti-Patterns
 
-### Over-Validation
+## Over-Validation
 
 Excessive validation constraints frustrate editors and slow content creation.
 
@@ -481,7 +481,7 @@ validation: (Rule) =>
 validation: (Rule) => Rule.required().max(180)
 ```
 
-### Validation Without Description
+## Validation Without Description
 
 Validation rules without field descriptions leave editors guessing requirements.
 
@@ -504,7 +504,7 @@ defineField({
 })
 ```
 
-### Blocking Validation for Optional Fields
+## Blocking Validation for Optional Fields
 
 Don't use `.error()` on optional fields; use `.warning()` instead.
 

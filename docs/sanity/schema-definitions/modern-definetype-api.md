@@ -9,7 +9,7 @@ audience: "fullstack"
 complexity: "beginner"
 doc_type: "standard"
 source_confidence: "33%"
-last_updated: "2026-02-11"
+last_updated: "2026-02-13"
 ---
 
 # Modern defineType API for Schema Definitions
@@ -30,7 +30,7 @@ Sanity v3+ introduced the modern `defineType()` and `defineField()` helper funct
 
 ## Modern API Pattern (v3+)
 
-### Document Schema with defineType
+## Document Schema with defineType
 
 Sanity v3+ provides `defineType()` for type-safe schema definitions with full TypeScript autocomplete support.
 
@@ -84,7 +84,7 @@ export default defineType({
 })
 ```
 
-### Object Schema with defineType
+## Object Schema with defineType
 
 Object types (embedded data structures) use the same `defineType()` pattern with `type: "object"`.
 
@@ -121,7 +121,7 @@ export default defineType({
 
 ## Legacy Object-Literal Pattern (v2-Compatible)
 
-### Document Schema (Legacy)
+## Document Schema (Legacy)
 
 Helix v3.10.0 continues using the object-literal pattern for v2 compatibility despite supporting the modern API.
 
@@ -163,7 +163,7 @@ export default {
 }
 ```
 
-### Sanity v2 createSchema Pattern
+## Sanity v2 createSchema Pattern
 
 Kariusdx (v2.30.0) uses the legacy `createSchema()` function to register all schema types.
 
@@ -188,7 +188,7 @@ export default createSchema({
 
 ## Benefits of Modern API
 
-### Enhanced TypeScript Support
+## Enhanced TypeScript Support
 
 The `defineType()` and `defineField()` helpers provide superior type inference compared to object literals.
 
@@ -212,7 +212,7 @@ defineField({
 }
 ```
 
-### Better Error Detection
+## Better Error Detection
 
 The modern API catches configuration errors at development time rather than runtime.
 
@@ -230,7 +230,7 @@ defineField({
 }
 ```
 
-### Clearer Code Structure
+## Clearer Code Structure
 
 The `defineField()` function makes field definitions visually distinct from configuration objects.
 
@@ -262,7 +262,7 @@ fields: [
 
 ## Migration Path
 
-### Incremental Migration Strategy
+## Incremental Migration Strategy
 
 Sanity v3+ supports both patterns simultaneously, allowing gradual migration.
 
@@ -300,7 +300,7 @@ export default defineType({
 })
 ```
 
-### File Extension Consideration
+## File Extension Consideration
 
 The modern API works best with TypeScript (`.ts`/`.tsx`) for full type inference benefits.
 
@@ -320,7 +320,7 @@ import { defineType, defineField } from "sanity"
 
 ## Anti-Patterns
 
-### Mixing Patterns Inconsistently
+## Mixing Patterns Inconsistently
 
 **❌ Bad: Mixed patterns within same schema**
 ```typescript
@@ -344,7 +344,7 @@ export default defineType({
 })
 ```
 
-### Using Modern API Without TypeScript
+## Using Modern API Without TypeScript
 
 The modern API provides limited benefits in plain JavaScript files.
 

@@ -9,7 +9,7 @@ audience: "fullstack"
 complexity: "intermediate"
 doc_type: "standard"
 source_confidence: "67%"
-last_updated: "2026-02-11"
+last_updated: "2026-02-13"
 ---
 
 # Preview Configuration for Schema Types
@@ -31,7 +31,7 @@ Sanity preview configuration controls how documents appear in the Studio sidebar
 
 ## Basic Preview Pattern
 
-### Simple Title + Subtitle
+## Simple Title + Subtitle
 
 The most common pattern shows document title and slug/identifier.
 
@@ -55,7 +55,7 @@ export default {
    about-us
 ```
 
-### Title + Media
+## Title + Media
 
 Display document title with associated image.
 
@@ -79,7 +79,7 @@ export default defineType({
 
 ## Advanced Preview with prepare()
 
-### Custom Subtitle Formatting
+## Custom Subtitle Formatting
 
 The `prepare()` function transforms selected data for display.
 
@@ -110,7 +110,7 @@ export default defineType({
         John Doe | new-feature-launch
 ```
 
-### Fallback for Missing Data
+## Fallback for Missing Data
 
 Use `prepare()` to provide defaults when fields are empty.
 
@@ -133,7 +133,7 @@ preview: {
 
 ## Selecting Referenced Document Data
 
-### Dereferencing Author/Person
+## Dereferencing Author/Person
 
 Preview can fetch data from referenced documents.
 
@@ -154,7 +154,7 @@ preview: {
 }
 ```
 
-### Dereferencing Categories
+## Dereferencing Categories
 
 Display category names in preview subtitle.
 
@@ -178,7 +178,7 @@ preview: {
 
 ## Status and Metadata Display
 
-### Publishing Status Indicators
+## Publishing Status Indicators
 
 Show draft vs published status in previews.
 
@@ -214,7 +214,7 @@ Feature Launch
 Published 2/11/2026
 ```
 
-### Content Statistics
+## Content Statistics
 
 Display content metrics like word count or item counts.
 
@@ -239,7 +239,7 @@ preview: {
 
 ## Preview for Object Types
 
-### Component/Block Previews
+## Component/Block Previews
 
 Object types (components, builder blocks) benefit from clear preview labels.
 
@@ -273,7 +273,7 @@ Contact Us
 secondary → /contact
 ```
 
-### SEO Object Preview
+## SEO Object Preview
 
 Show SEO field status in object previews.
 
@@ -305,7 +305,7 @@ export default defineType({
 
 ## Internationalization (i18n) Preview
 
-### Multi-Language Content
+## Multi-Language Content
 
 Show language indicator in previews for localized content.
 
@@ -342,7 +342,7 @@ Acerca de Nosotros
 
 ## Media Field Selection
 
-### Priority-Based Media Selection
+## Priority-Based Media Selection
 
 Fall back through multiple image fields to find preview media.
 
@@ -366,7 +366,7 @@ preview: {
 }
 ```
 
-### Array Image (First Item)
+## Array Image (First Item)
 
 Select the first image from an array.
 
@@ -387,7 +387,7 @@ preview: {
 
 ## Dynamic Preview Titles
 
-### Computed Titles
+## Computed Titles
 
 Generate preview titles from multiple fields when title doesn't exist.
 
@@ -410,7 +410,7 @@ preview: {
 }
 ```
 
-### Person Name Formatting
+## Person Name Formatting
 
 Format person names from firstName/lastName fields.
 
@@ -436,7 +436,7 @@ preview: {
 
 ## Preview Performance
 
-### Limiting Selected Fields
+## Limiting Selected Fields
 
 Only select fields actually needed for display to improve query performance.
 
@@ -463,7 +463,7 @@ preview: {
 }
 ```
 
-### Avoiding Heavy Computations
+## Avoiding Heavy Computations
 
 Keep `prepare()` functions lightweight; avoid expensive transformations.
 
@@ -493,7 +493,7 @@ prepare({ title, status }) {
 
 ## Default Preview Behavior
 
-### When preview is Omitted
+## When preview is Omitted
 
 Sanity uses sensible defaults when no preview config is provided.
 
@@ -521,7 +521,7 @@ export default defineType({
 
 ## Anti-Patterns
 
-### Overly Complex Preview Logic
+## Overly Complex Preview Logic
 
 Keep preview logic simple; complex computations slow down Studio UI.
 
@@ -550,7 +550,7 @@ prepare({ title, excerpt }) {
 }
 ```
 
-### Selecting Too Many Fields
+## Selecting Too Many Fields
 
 Selecting 10+ fields for preview slows down document lists.
 
@@ -578,7 +578,7 @@ select: {
 }
 ```
 
-### Missing Fallbacks
+## Missing Fallbacks
 
 Always provide fallbacks for undefined values.
 

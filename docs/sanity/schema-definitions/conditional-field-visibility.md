@@ -9,7 +9,7 @@ audience: "fullstack"
 complexity: "intermediate"
 doc_type: "standard"
 source_confidence: "100%"
-last_updated: "2026-02-11"
+last_updated: "2026-02-13"
 ---
 
 # Conditional Field Visibility (hidden)
@@ -30,7 +30,7 @@ Sanity's `hidden` property dynamically shows or hides schema fields based on doc
 
 ## Basic Pattern: Boolean Toggle
 
-### Hide Field Until Toggle Enabled
+## Hide Field Until Toggle Enabled
 
 The most common pattern hides a field until a boolean field is set to true.
 
@@ -65,7 +65,7 @@ export default {
 3. `subheader` field is hidden while checkbox is unchecked
 4. When checkbox is checked, `subheader` field appears
 
-### Multiple Fields Controlled by Single Toggle
+## Multiple Fields Controlled by Single Toggle
 
 One toggle can show/hide multiple related fields simultaneously.
 
@@ -104,7 +104,7 @@ export default {
 
 ## Conditional Visibility Based on Field Values
 
-### Hide Fields Based on Slug/ID
+## Hide Fields Based on Slug/ID
 
 Kariusdx uses slug values to hide fields on specific pages.
 
@@ -137,7 +137,7 @@ export default {
 
 **Use Case:** Special pages (homepage, landing pages) may need different field configurations.
 
-### Hide Fields Based on Select/Radio Values
+## Hide Fields Based on Select/Radio Values
 
 Fields can be hidden based on selection values.
 
@@ -180,7 +180,7 @@ export default defineType({
 
 ## Context Objects: document vs parent
 
-### Document Context (Top-Level Fields)
+## Document Context (Top-Level Fields)
 
 Use `{ document }` to access sibling fields at the document root level.
 
@@ -193,7 +193,7 @@ Use `{ document }` to access sibling fields at the document root level.
 }
 ```
 
-### Parent Context (Nested Object Fields)
+## Parent Context (Nested Object Fields)
 
 Use `{ parent }` to access sibling fields within the same object.
 
@@ -219,7 +219,7 @@ export default defineType({
 })
 ```
 
-### Array Item Context
+## Array Item Context
 
 When hiding fields in array items, use `{ parent }` for the array item data.
 
@@ -252,7 +252,7 @@ When hiding fields in array items, use `{ parent }` for the array item data.
 
 ## Complex Conditional Logic
 
-### Multiple Conditions (AND Logic)
+## Multiple Conditions (AND Logic)
 
 Hide a field only when multiple conditions are met.
 
@@ -270,7 +270,7 @@ defineField({
 })
 ```
 
-### Multiple Conditions (OR Logic)
+## Multiple Conditions (OR Logic)
 
 Hide a field if any condition is true.
 
@@ -288,7 +288,7 @@ defineField({
 })
 ```
 
-### Inverted Logic (Show When Condition False)
+## Inverted Logic (Show When Condition False)
 
 Sometimes it's clearer to express "show when X is false" than "hide when X is true".
 
@@ -302,7 +302,7 @@ hidden: ({ document }) => document?.hideAdvanced === true
 
 ## Performance Considerations
 
-### Memoization for Complex Logic
+## Memoization for Complex Logic
 
 Complex conditional logic should be efficient to avoid re-renders.
 
@@ -320,7 +320,7 @@ hidden: ({ document }) => {
 }
 ```
 
-### Avoid Heavy Computations
+## Avoid Heavy Computations
 
 The `hidden` function runs on every keystroke; avoid expensive operations.
 
@@ -342,7 +342,7 @@ hidden: ({ document }) => !document?.enableAdvanced
 
 ## Validation with Hidden Fields
 
-### Hidden Fields and Required Validation
+## Hidden Fields and Required Validation
 
 Hidden fields bypass validation by default.
 
@@ -357,7 +357,7 @@ defineField({
 
 **Behavior:** Sanity automatically disables required validation for hidden fields.
 
-### Conditional Required Validation
+## Conditional Required Validation
 
 For explicit control, use conditional validation.
 
@@ -381,7 +381,7 @@ defineField({
 
 ## Common Use Cases
 
-### Feature Flags
+## Feature Flags
 
 Toggle experimental or premium features on/off per document.
 
@@ -402,7 +402,7 @@ fields: [
 ]
 ```
 
-### Localization
+## Localization
 
 Show/hide locale-specific fields based on selected language.
 
@@ -430,7 +430,7 @@ fields: [
 ]
 ```
 
-### Progressive Disclosure
+## Progressive Disclosure
 
 Reveal advanced options only when basic setup is complete.
 
@@ -459,7 +459,7 @@ fields: [
 
 ## Anti-Patterns
 
-### Hiding Required Fields by Default
+## Hiding Required Fields by Default
 
 Don't hide required fields unless there's a clear path to make them visible.
 
@@ -482,7 +482,7 @@ Don't hide required fields unless there's a clear path to make them visible.
 }
 ```
 
-### Overusing Conditional Visibility
+## Overusing Conditional Visibility
 
 Too many hidden fields create confusion about what's available.
 
@@ -509,7 +509,7 @@ fields: [
 ]
 ```
 
-### Complex Multi-Level Nesting
+## Complex Multi-Level Nesting
 
 Avoid hiding fields based on deeply nested conditions.
 

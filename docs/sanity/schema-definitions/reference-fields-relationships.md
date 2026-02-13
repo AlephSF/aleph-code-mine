@@ -9,7 +9,7 @@ audience: "fullstack"
 complexity: "intermediate"
 doc_type: "standard"
 source_confidence: "100%"
-last_updated: "2026-02-11"
+last_updated: "2026-02-13"
 ---
 
 # Reference Fields for Content Relationships
@@ -30,7 +30,7 @@ Sanity reference fields create typed relationships between documents, enabling s
 
 ## Basic Reference Pattern
 
-### Single Reference Field
+## Single Reference Field
 
 Reference a single related document with type safety.
 
@@ -58,7 +58,7 @@ export default {
 
 **Use Case:** Hierarchical page structures (parent-child relationships).
 
-### Reference with Multiple Target Types
+## Reference with Multiple Target Types
 
 References can target multiple document types (polymorphic references).
 
@@ -79,7 +79,7 @@ defineField({
 
 ## Array of References Pattern
 
-### Categories and Tags (Most Common)
+## Categories and Tags (Most Common)
 
 The most common reference pattern: arrays of taxonomy references.
 
@@ -117,7 +117,7 @@ export default defineType({
 })
 ```
 
-### Validation for Array References
+## Validation for Array References
 
 Limit the number of selected references to prevent over-categorization.
 
@@ -143,7 +143,7 @@ defineField({
 
 ## Author Reference Pattern
 
-### Single Author Attribution
+## Single Author Attribution
 
 Blog posts and content typically reference a single author.
 
@@ -158,7 +158,7 @@ defineField({
 })
 ```
 
-### Multiple Authors (Array)
+## Multiple Authors (Array)
 
 Some content types support multiple authors.
 
@@ -175,7 +175,7 @@ defineField({
 
 ## Related Content Pattern
 
-### Related Posts/Articles
+## Related Posts/Articles
 
 Arrays of references for "You might also like" sections.
 
@@ -190,7 +190,7 @@ defineField({
 })
 ```
 
-### Excluding Self-References
+## Excluding Self-References
 
 Prevent documents from referencing themselves.
 
@@ -220,7 +220,7 @@ defineField({
 
 ## Reference Options
 
-### Disable Inline Creation (disableNew)
+## Disable Inline Creation (disableNew)
 
 Prevent creating referenced documents inline to maintain content organization.
 
@@ -237,7 +237,7 @@ Prevent creating referenced documents inline to maintain content organization.
 
 **Use Case:** Hierarchical references where the parent must be created first.
 
-### Filter Available References
+## Filter Available References
 
 Limit which documents can be selected based on criteria.
 
@@ -258,7 +258,7 @@ defineField({
 })
 ```
 
-### Custom Reference Filters
+## Custom Reference Filters
 
 Filter references based on field values.
 
@@ -277,7 +277,7 @@ defineField({
 
 ## Weak References
 
-### Standard vs Weak References
+## Standard vs Weak References
 
 Standard references prevent deletion of referenced documents. Weak references allow deletion.
 
@@ -303,7 +303,7 @@ defineField({
 
 ## Hierarchical References (Helix Pattern)
 
-### Parent-Child Page Relationships
+## Parent-Child Page Relationships
 
 Helix uses self-referencing for hierarchical page structures.
 
@@ -354,7 +354,7 @@ export default {
 
 ## Preview Configuration with References
 
-### Displaying Referenced Data in Previews
+## Displaying Referenced Data in Previews
 
 Fetch referenced document data for preview displays.
 
@@ -381,7 +381,7 @@ export default defineType({
 
 ## Querying References in GROQ
 
-### Fetching Referenced Documents
+## Fetching Referenced Documents
 
 GROQ queries dereference relationships using `->` operator.
 
@@ -402,7 +402,7 @@ const query = `*[_type == "blogPost"] {
 }`
 ```
 
-### Filtering by Referenced Fields
+## Filtering by Referenced Fields
 
 Query documents based on referenced document properties.
 
@@ -416,7 +416,7 @@ const query = `*[_type == "blogPost" && "Technology" in categories[]->title]`
 
 ## Common Reference Use Cases
 
-### Taxonomy Systems
+## Taxonomy Systems
 
 Categories, tags, and classification systems.
 
@@ -437,7 +437,7 @@ fields: [
 ]
 ```
 
-### Attribution
+## Attribution
 
 Author, contributor, and creator references.
 
@@ -457,7 +457,7 @@ fields: [
 ]
 ```
 
-### Content Relationships
+## Content Relationships
 
 Related content, recommendations, cross-references.
 
@@ -472,7 +472,7 @@ fields: [
 ]
 ```
 
-### Hierarchical Navigation
+## Hierarchical Navigation
 
 Parent-child, breadcrumb, and tree structures.
 
@@ -489,7 +489,7 @@ fields: [
 
 ## Anti-Patterns
 
-### Over-Referencing Simple Data
+## Over-Referencing Simple Data
 
 Don't use references for simple enum-like data.
 
@@ -518,7 +518,7 @@ defineField({
 })
 ```
 
-### Circular References Without Protection
+## Circular References Without Protection
 
 Allow circular references only with explicit filtering.
 
@@ -547,7 +547,7 @@ defineField({
 })
 ```
 
-### Missing Validation on Required References
+## Missing Validation on Required References
 
 Always validate required reference fields.
 

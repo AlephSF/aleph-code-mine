@@ -9,7 +9,7 @@ audience: "fullstack"
 complexity: "beginner"
 doc_type: "standard"
 source_confidence: "67%"
-last_updated: "2026-02-11"
+last_updated: "2026-02-13"
 ---
 
 # Icon Customization for Schema Types
@@ -31,7 +31,7 @@ Sanity allows custom icons for document and object types to improve visual navig
 
 ## Icon Packages by Sanity Version
 
-### Sanity v2: react-icons Library
+## Sanity v2: react-icons Library
 
 Kariusdx (v2.30.0) uses the `react-icons` library for icon customization.
 
@@ -58,7 +58,7 @@ import { BsPerson } from 'react-icons/bs'         // Bootstrap icons
 import { MdSettings } from 'react-icons/md'       // Material Design
 ```
 
-### Sanity v3+: @sanity/icons Package
+## Sanity v3+: @sanity/icons Package
 
 Ripplecom (v4.3.0) uses the official `@sanity/icons` package designed for Sanity Studio.
 
@@ -88,7 +88,7 @@ import { TagIcon } from "@sanity/icons"
 
 ## Document Type Icon Examples
 
-### Page/Document Icons
+## Page/Document Icons
 
 Standard page and document types typically use document-related icons.
 
@@ -114,7 +114,7 @@ export default defineType({
 })
 ```
 
-### Content Type Icons
+## Content Type Icons
 
 Different content types use semantically appropriate icons.
 
@@ -140,7 +140,7 @@ export default defineType({
 })
 ```
 
-### People/Staff Icons
+## People/Staff Icons
 
 Person-related schemas use user or people icons.
 
@@ -166,7 +166,7 @@ export default defineType({
 })
 ```
 
-### Media Content Icons
+## Media Content Icons
 
 Media-related schemas use appropriate visual icons.
 
@@ -194,7 +194,7 @@ export default defineType({
 
 ## Object Type Icon Examples
 
-### Component/Block Icons
+## Component/Block Icons
 
 Builder blocks and components use component-specific icons.
 
@@ -222,7 +222,7 @@ export default defineType({
 })
 ```
 
-### Configuration Icons
+## Configuration Icons
 
 Settings and configuration objects use gear or settings icons.
 
@@ -250,7 +250,7 @@ export default defineType({
 
 ## Icon Selection Guidelines
 
-### Semantic Matching
+## Semantic Matching
 
 Choose icons that visually represent the content type's purpose.
 
@@ -263,7 +263,7 @@ Choose icons that visually represent the content type's purpose.
 - **Category/Tag**: `TagIcon`, `FaTag`
 - **Media**: `ImageIcon`, `IoVideocamOutline`
 
-### Consistent Icon Style
+## Consistent Icon Style
 
 Use icons from the same library/style throughout your project.
 
@@ -283,7 +283,7 @@ import { CalendarIcon } from "@sanity/icons"
 import { UserIcon } from "@sanity/icons"
 ```
 
-### Visual Hierarchy
+## Visual Hierarchy
 
 Use simpler icons for common types, more distinctive icons for special types.
 
@@ -313,7 +313,7 @@ const leadGeneration = defineType({
 
 ## Installation and Setup
 
-### Installing react-icons (Sanity v2)
+## Installing react-icons (Sanity v2)
 
 ```bash
 npm install react-icons
@@ -328,7 +328,7 @@ import { BsPerson } from 'react-icons/bs'            // Bootstrap
 import { MdSettings } from 'react-icons/md'          // Material Design
 ```
 
-### Using @sanity/icons (Sanity v3+)
+## Using @sanity/icons (Sanity v3+)
 
 The `@sanity/icons` package comes pre-installed with Sanity v3+.
 
@@ -346,7 +346,7 @@ import {
 
 ## Custom SVG Icons
 
-### Using Custom SVG Components
+## Using Custom SVG Components
 
 Custom SVG icons can be used as React components.
 
@@ -365,7 +365,7 @@ export default defineType({
 })
 ```
 
-### SVG Icon Best Practices
+## SVG Icon Best Practices
 
 Custom SVG icons should follow Sanity Studio's design system.
 
@@ -393,7 +393,7 @@ const BadIcon = () => (
 
 ## Icon Benefits
 
-### Improved Navigation
+## Improved Navigation
 
 Icons provide visual landmarks in the Studio sidebar, making navigation faster.
 
@@ -415,7 +415,7 @@ Icons provide visual landmarks in the Studio sidebar, making navigation faster.
 🏷️ Category
 ```
 
-### Faster Content Type Recognition
+## Faster Content Type Recognition
 
 Editors can quickly identify content types in lists and search results.
 
@@ -428,7 +428,7 @@ Editors can quickly identify content types in lists and search results.
 [Icon] Person: John Doe
 ```
 
-### Brand Consistency
+## Brand Consistency
 
 Custom icons can reinforce brand identity throughout the Studio.
 
@@ -442,7 +442,7 @@ const companyPage = defineType({
 
 ## Anti-Patterns
 
-### Overusing Distinctive Icons
+## Overusing Distinctive Icons
 
 Every schema doesn't need a unique icon; related types should share icons.
 
@@ -463,7 +463,7 @@ const article = { icon: DocumentTextIcon }
 const story = { icon: DocumentTextIcon }
 ```
 
-### Using Emoji as Icons
+## Using Emoji as Icons
 
 Emoji don't scale consistently and break accessibility.
 
@@ -481,7 +481,7 @@ const page = {
 }
 ```
 
-### Missing Icons on Important Types
+## Missing Icons on Important Types
 
 Skip icons only on rarely-used object types, not primary document types.
 
