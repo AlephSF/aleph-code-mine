@@ -7,25 +7,8 @@
 rules:
   - id: missing-cache-control-private-saml
     patterns:
-      - pattern-either:
-          - pattern: |
-              if ( ... $_GET['saml_acs'] ... $_POST['SAMLResponse'] ... ) {
-                ...
-              }
-          - pattern: |
-              if ( ... $_GET['saml_sls'] ... ) {
-                ...
-              }
-      - pattern-not: |
-          if ( ... ) {
-            ...
-            header( 'Cache-Control: private' );
-            ...
-          }
-      - pattern-not: |
-          if ( ... ) {
-            ...
-            header( "Cache-Control: private" );
+      - pattern-regex: (saml_acs|saml_sls|SAMLResponse)
+      - pattern-not-regex: Cache-Control:\s*private
             ...
           }
     message: |
@@ -176,20 +159,9 @@ rules:
 
   - id: detect-cache-healthcheck-redirect
     patterns:
-      - pattern-either:
-          - pattern: |
-              if ( ... ) {
-                header( 'Location: ...' );
-                exit;
-              }
-          - pattern: |
-              header( 'Location: ...' );
-              exit;
-      - pattern-not: |
-          if ( '/cache-healthcheck?' !== $request_uri && ... ) {
-            header( 'Location: ...' );
-            exit;
-          }
+      - pattern-regex: "header\\s*\\(\\s*['\"]Location:"
+      - pattern: exit
+      - pattern-not-regex: cache-healthcheck
       - pattern-inside: |
           // vip-config.php
           ...
@@ -217,19 +189,10 @@ rules:
 
   - id: detect-unnecessary-no-store
     patterns:
-      - pattern: header( 'Cache-Control: no-store' );
-      - pattern-not-inside: |
-          if ( is_user_logged_in() || ... ) {
-            ...
-          }
-      - pattern-not-inside: |
-          if ( ... is_cart() ... ) {
-            ...
-          }
-      - pattern-not-inside: |
-          if ( ... is_checkout() ... ) {
-            ...
-          }
+      - pattern-regex: "header\\s*\\(\\s*['\"]Cache-Control:\\s*no-store['\"]"
+      - pattern-not-regex: is_user_logged_in
+      - pattern-not-regex: is_cart
+      - pattern-not-regex: is_checkout
     message: |
       Cache-Control: no-store prevents all caching (client-side and Varnish).
 

@@ -18,9 +18,9 @@ rules:
       - pattern: register_post_type($CPT_NAME, ...)
       - metavariable-regex:
           metavariable: $CPT_NAME
-          regex: '^["\'](?!.+_.+)[a-z]+["\']$'
+          regex: "^[\"'](?!.+_.+)[a-z]+[\"']$"
     fix-regex:
-      regex: 'register_post_type\s*\(\s*["\']([a-z]+)["\']\s*,'
+      regex: "register_post_type\\s*\\(\\s*[\"']([a-z]+)[\"']\\s*,"
       replacement: "register_post_type('prefix_\\1',"
     metadata:
       category: correctness
@@ -56,7 +56,7 @@ rules:
       - pattern: register_taxonomy($TAX_NAME, ...)
       - metavariable-regex:
           metavariable: $TAX_NAME
-          regex: '^["\'](?!.+_.+)[a-z]+["\']$'
+          regex: "^[\"'](?!.+_.+)[a-z]+[\"']$"
     metadata:
       category: correctness
       technology:

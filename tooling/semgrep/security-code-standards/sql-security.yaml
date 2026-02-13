@@ -132,8 +132,7 @@ rules:
       confidence: MEDIUM
 
   - id: detect-eval-usage
-    patterns:
-      - pattern: eval($...)
+    pattern-regex: \beval\s*\(\s*[^\)]+\s*\)
     message: |
       CRITICAL: eval() usage detected - code injection vulnerability!
 

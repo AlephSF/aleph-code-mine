@@ -1,6 +1,6 @@
 rules:
   - id: conventional-commit-format
-    pattern-regex: ^(feat|fix|chore|docs|style|refactor|test|perf|ci|build|revert)(\(.+\))?: .+
+    pattern-regex: "^(feat|fix|chore|docs|style|refactor|test|perf|ci|build|revert)(\\(.+\\))?: .+"
     message: |
       Commit message should follow Conventional Commits format.
 
@@ -25,7 +25,7 @@ rules:
       confidence: HIGH
 
   - id: imperative-mood-check
-    pattern-regex: ^(feat|fix|chore|docs|style|refactor|test)(\(.+\))?: (added|fixed|changed|updated|removed|deleted)
+    pattern-regex: "^(feat|fix|chore|docs|style|refactor|test)(\\(.+\\))?: (added|fixed|changed|updated|removed|deleted)"
     message: |
       Commit message should use imperative mood, not past tense.
 

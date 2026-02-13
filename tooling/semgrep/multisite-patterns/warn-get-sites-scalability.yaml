@@ -66,10 +66,15 @@ rules:
 
   - id: get-sites-in-loop-without-caching
     patterns:
-      - pattern-inside: |
-          for (...) {
-            ...
-          }
+      - pattern-either:
+          - pattern-inside: |
+              foreach ($ITEMS as $ITEM) {
+                ...
+              }
+          - pattern-inside: |
+              while ($CONDITION) {
+                ...
+              }
       - pattern: get_sites(...)
       - pattern-not-inside: |
           $sites = wp_cache_get(...);
@@ -100,8 +105,7 @@ rules:
   - id: get-sites-without-archived-filter
     patterns:
       - pattern: get_sites(...)
-      - pattern-not: get_sites(array(..., 'archived' => ..., ...))
-      - pattern-not: get_sites(['archived' => ..., ...])
+      - pattern-not-regex: 'archived'
     message: |
       get_sites() without 'archived' filter may include archived sites.
       Explicitly filter archived sites unless intentionally including them.
@@ -120,17 +124,13 @@ rules:
       impact: LOW
 
   - id: switch-to-blog-for-every-site-performance
-    patterns:
-      - pattern: |
-          $sites = get_sites(...);
-          foreach ($sites as $site) {
-            switch_to_blog($site->blog_id);
-            ...
-            restore_current_blog();
-          }
-      - metavariable-regex:
-          metavariable: $SITES
-          regex: get_sites
+    pattern: |
+      $sites = get_sites(...);
+      foreach ($sites as $site) {
+        switch_to_blog($site->blog_id);
+        ...
+        restore_current_blog();
+      }
     message: |
       Iterating all sites with switch_to_blog() can be slow for large networks.
       Each switch incurs 0.5-2ms overhead.

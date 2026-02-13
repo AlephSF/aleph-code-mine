@@ -68,12 +68,7 @@ rules:
       subcategory: best-practices
 
   - id: warn-get-field-instead-of-get-sub-field
-    pattern: |
-      while( have_rows('$REPEATER') ): the_row();
-        ...
-        get_field('...')
-        ...
-      endwhile;
+    pattern-regex: while\s*\(\s*have_rows\s*\([^\)]+\)\s*\)\s*:.*get_field\s*\(
     languages: [php]
     message: |
       get_field() called inside have_rows() loop. Use get_sub_field() instead.

@@ -60,19 +60,8 @@ rules:
 
   - id: missing-graphql-complexity-limit
     patterns:
-      - pattern: add_filter( 'graphql_validation_rules', ... );
-      - pattern-not: |
-          add_filter( 'graphql_validation_rules', function( $rules ) {
-            ...
-            new QueryComplexity( $... )
-            ...
-          });
-      - pattern-not: |
-          add_filter( 'graphql_validation_rules', function( $rules ) {
-            ...
-            new \GraphQL\Validator\Rules\QueryComplexity( $... )
-            ...
-          });
+      - pattern: add_filter( 'graphql_validation_rules', $CALLBACK )
+      - pattern-not-regex: QueryComplexity
     message: |
       GraphQL query complexity limiting not detected.
 
@@ -120,8 +109,7 @@ rules:
       - metavariable-regex:
           metavariable: $COMPLEXITY
           regex: '^\d{3,}$'
-      - pattern-not-inside: |
-          apply_filters( $FILTER_NAME, $... )
+      - pattern-not-regex: apply_filters
     message: |
       GraphQL limits are hardcoded. Use apply_filters() for customization.
 
@@ -146,16 +134,8 @@ rules:
 
   - id: missing-graphql-field-deduplication
     patterns:
-      - pattern: |
-          add_filter( 'graphql_request_data', function( $data ) {
-            ...
-          });
-      - pattern-not: |
-          add_filter( 'graphql_request_data', function( $data ) {
-            ...
-            preg_replace( $..., $..., $... )
-            ...
-          });
+      - pattern: add_filter( 'graphql_request_data', $CALLBACK )
+      - pattern-not-regex: preg_replace
     message: |
       GraphQL field deduplication not detected.
 
@@ -185,22 +165,10 @@ rules:
 
   - id: detect-production-graphql-introspection
     patterns:
-      - pattern: |
-          add_filter( 'graphql_introspection_enabled', function( $enabled ) {
-            ...
-            return true;
-            ...
-          });
-      - pattern-not-inside: |
-          if ( ... 'production' ... ) {
-            ...
-            return false;
-            ...
-          }
-      - pattern-not-inside: |
-          if ( ... VIP_GO_ENV ... ) {
-            ...
-          }
+      - pattern: add_filter( 'graphql_introspection_enabled', $CALLBACK )
+      - pattern-regex: return\s+true
+      - pattern-not-regex: production
+      - pattern-not-regex: VIP_GO_ENV
     message: |
       GraphQL introspection should be disabled in production.
 
@@ -232,16 +200,9 @@ rules:
 
   - id: recommend-graphql-security-logging
     patterns:
-      - pattern: |
-          if ( strlen( $query ) > $max_size ) {
-            throw new \GraphQL\Error\UserError( $... );
-          }
-      - pattern-not: |
-          if ( strlen( $query ) > $max_size ) {
-            error_log( $... );
-            ...
-            throw new \GraphQL\Error\UserError( $... );
-          }
+      - pattern-regex: if\s*\(\s*strlen\s*\([^\)]+\)\s*>\s*\$max_size\s*\)
+      - pattern-regex: throw\s+new\s+\\GraphQL\\Error\\UserError
+      - pattern-not-regex: error_log
     message: |
       Consider logging GraphQL security violations for attack pattern analysis.
 

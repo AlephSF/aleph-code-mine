@@ -47,21 +47,9 @@ rules:
       JavaScript naming conventions for frontend consistency.
     severity: ERROR
     patterns:
-      - pattern: |
-          register_post_type(..., [
-            ...,
-            'show_in_graphql' => true,
-            ...,
-          ])
-      - pattern-not-inside: |
-          register_post_type(..., [
-            ...,
-            'show_in_graphql' => true,
-            ...,
-            'graphql_single_name' => ...,
-            'graphql_plural_name' => ...,
-            ...,
-          ])
+      - pattern: register_post_type($NAME, $ARGS)
+      - pattern-regex: 'show_in_graphql'
+      - pattern-not-regex: 'graphql_single_name'
     fix-regex:
       regex: "'show_in_graphql'\\s*=>\\s*true,"
       replacement: |

@@ -150,9 +150,6 @@ rules:
       - pattern-either:
           - pattern: '@php echo $VAR; @endphp'
           - pattern: '@php(echo $VAR)'
-    paths:
-      include:
-        - "**/*.blade.php"
     message: |
       @php echo statement found. Use Blade {{ }} syntax instead.
 
@@ -184,9 +181,6 @@ rules:
           - pattern: '{{ esc_attr($VAR) }}'
           - pattern: '{{ esc_url($VAR) }}'
           - pattern: '{{ htmlspecialchars($VAR) }}'
-    paths:
-      include:
-        - "**/*.blade.php"
     message: |
       Double-escaping detected. Blade {{ }} already escapes with htmlspecialchars().
       Calling esc_html() inside {{ }} escapes twice.

@@ -42,11 +42,7 @@ rules:
         - "CWE-79: Cross-site Scripting"
 
   - id: detect-wrong-escaping-context
-    patterns:
-      - pattern-either:
-          # esc_html() in href attribute (should use esc_url)
-          - pattern: echo esc_html($URL)
-          - pattern: echo esc_url($TEXT)
+    pattern-regex: (esc_html\s*\(\s*\$[a-zA-Z_]*url[a-zA-Z_]*\s*\)|esc_url\s*\(\s*\$[a-zA-Z_]*text[a-zA-Z_]*\s*\))
     message: |
       Wrong escaping function for context detected.
 
@@ -66,16 +62,7 @@ rules:
         - wordpress
 
   - id: recommend-late-escaping
-    patterns:
-      - pattern-either:
-          - pattern: |
-              $VAR = esc_html($...);
-              ...
-              update_post_meta($POST_ID, $KEY, $VAR);
-          - pattern: |
-              $VAR = esc_attr($...);
-              ...
-              update_option($KEY, $VAR);
+    pattern-regex: \$\w+\s*=\s*esc_(html|attr)\s*\([^\)]+\);\s*.*\s*update_(post_meta|option)\s*\(
     message: |
       Early escaping detected - may cause double-escaping.
 
@@ -97,14 +84,7 @@ rules:
         - wordpress
 
   - id: trust-database-data-antipattern
-    patterns:
-      - pattern-either:
-          - pattern: echo get_post_meta($...);
-          - pattern: echo get_option($...);
-          - pattern: echo get_user_meta($...);
-      - pattern-not: echo esc_html(...);
-      - pattern-not: echo esc_attr(...);
-      - pattern-not: echo wp_kses_post(...);
+    pattern-regex: echo\s+(get_post_meta|get_option|get_user_meta)\s*\(
     message: |
       Database data output without escaping - trust no data!
 

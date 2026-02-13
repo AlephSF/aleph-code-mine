@@ -2,10 +2,7 @@ rules:
   - id: require-restore-current-blog-pairing
     patterns:
       - pattern: switch_to_blog(...)
-      - pattern-not-inside: |
-          switch_to_blog(...)
-          $...STATEMENTS
-          restore_current_blog()
+      - pattern-not-regex: restore_current_blog
     message: |
       Every switch_to_blog() must be paired with restore_current_blog().
       Missing restore causes context pollution and data corruption.
@@ -58,16 +55,10 @@ rules:
     patterns:
       - pattern: switch_to_blog(...)
       - pattern-inside: |
-          function $FUNC(...) {
+          function $FUNC($...ARGS) {
             ...
-            return ...;
           }
-      - pattern-not-inside: |
-          switch_to_blog(...)
-          $...STATEMENTS
-          restore_current_blog()
-          $...MORE
-          return ...
+      - pattern-not-regex: restore_current_blog
     message: |
       switch_to_blog() without restore_current_blog() before return statement.
       Early returns must restore blog context to prevent leaked context.
@@ -82,22 +73,9 @@ rules:
 
   - id: recommend-try-finally-for-context-safety
     patterns:
-      - pattern: |
-          switch_to_blog(...);
-          ...
-          restore_current_blog();
-      - pattern-not-inside: |
-          try {
-            ...
-          } finally {
-            restore_current_blog();
-          }
-      - metavariable-pattern:
-          metavariable: $BODY
-          patterns:
-            - pattern-either:
-                - pattern: if (...) { return ...; }
-                - pattern: throw ...;
+      - pattern: switch_to_blog(...)
+      - pattern-regex: (return\s+|throw\s+)
+      - pattern-not-regex: try\s*\{.*finally
     message: |
       Consider using try-finally to guarantee restore_current_blog() execution.
       This prevents context leaks when exceptions or early returns occur.

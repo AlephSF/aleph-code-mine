@@ -140,16 +140,9 @@ rules:
         - "CWE-665: Improper Initialization"
 
   - id: wordpress-class-not-psr4-compliant
-    patterns:
-      - pattern: |
-          namespace App\$NAMESPACE;
-          class $CLASS { ... }
-      - metavariable-regex:
-          metavariable: $NAMESPACE
-          regex: .*
-      - metavariable-regex:
-          metavariable: $CLASS
-          regex: .*
+    pattern: |
+      namespace App\$NAMESPACE;
+      class $CLASS { ... }
     languages: [php]
     paths:
       include:

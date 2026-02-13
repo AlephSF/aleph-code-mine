@@ -31,13 +31,14 @@ rules:
       confidence: LOW
 
   - id: env-var-without-fallback
-    pattern-either:
-      - pattern: process.env.$VAR
-      - pattern: $_ENV['$VAR']
-    pattern-not-inside: |
-      $X ?? $DEFAULT
-    pattern-not-inside: |
-      $X || $DEFAULT
+    patterns:
+      - pattern-either:
+          - pattern: process.env.$VAR
+          - pattern: $_ENV['$VAR']
+      - pattern-not-inside: |
+          $X ?? $DEFAULT
+      - pattern-not-inside: |
+          $X || $DEFAULT
     message: |
       Environment variable accessed without fallback default.
       This can cause undefined errors when variable is missing.

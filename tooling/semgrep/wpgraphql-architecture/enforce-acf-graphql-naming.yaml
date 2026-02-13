@@ -64,20 +64,7 @@ rules:
       This convention ensures consistency with GraphQL best practices and reduces
       naming transformation logic in frontend code.
     severity: INFO
-    patterns:
-      - pattern-either:
-          - pattern: |
-              "graphql_field_name": "$SNAKE_CASE",
-          - pattern: |
-              'graphql_field_name' => '$SNAKE_CASE',
-          - pattern: |
-              'graphql_single_name' => '$SNAKE_CASE',
-      - metavariable-regex:
-          metavariable: $SNAKE_CASE
-          regex: '^[a-z]+_[a-z_]+$|^[A-Z][a-zA-Z]+$'
-    fix-regex:
-      regex: '("graphql_field_name":\s*"[a-z]+)_([a-z_]+)'
-      replacement: '\1\u\2'
+    pattern-regex: ('graphql_field_name'|"graphql_field_name"|'graphql_single_name')\s*(=>|:)\s*['"]([a-z]+_[a-z_]+|[A-Z][a-zA-Z]+)['"]
     metadata:
       category: best-practice
       technology:
@@ -108,19 +95,9 @@ rules:
       documentation, improving developer experience for frontend teams consuming the API.
     severity: INFO
     patterns:
-      - pattern: |
-          {
-            ...,
-            "show_in_graphql": 1,
-            "graphql_field_name": "$NAME",
-            ...,
-          }
-      - pattern-not-inside: |
-          {
-            ...,
-            "graphql_description": $DESC,
-            ...,
-          }
+      - pattern-regex: "show_in_graphql"
+      - pattern-regex: "graphql_field_name"
+      - pattern-not-regex: "graphql_description"
     metadata:
       category: best-practice
       technology:

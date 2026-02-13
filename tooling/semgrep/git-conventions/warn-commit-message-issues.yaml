@@ -24,7 +24,7 @@ rules:
       confidence: MEDIUM
 
   - id: commit-message-too-short
-    pattern-regex: ^(feat|fix|chore|docs|style|refactor|test): .{1,10}$
+    pattern-regex: "^(feat|fix|chore|docs|style|refactor|test): .{1,10}$"
     message: |
       Commit message subject is very short (<10 chars after type).
       Provide more context about what changed.
@@ -67,7 +67,8 @@ rules:
       confidence: HIGH
 
   - id: missing-co-author-for-pair-programming
-    pattern-not: Co-Authored-By
+    pattern-regex: "^(feat|fix|chore)"
+    pattern-not-regex: Co-Authored-By
     message: |
       Consider adding Co-Authored-By tags for pair programming or AI assistance.
 

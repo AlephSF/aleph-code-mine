@@ -14,7 +14,7 @@ rules:
     paths:
       include:
         - app/Controllers/*.php
-        - */Controllers/*.php
+        - "**/Controllers/*.php"
     message: |
       Controller class missing required namespace declaration.
       Add "namespace App\Controllers;" at the top of controller file for PSR-4 autoloading.
@@ -54,7 +54,7 @@ rules:
     paths:
       include:
         - app/Controllers/*.php
-        - */Controllers/*.php
+        - "**/Controllers/*.php"
     message: |
       Controller uses namespace "$NS" but should use "App\Controllers".
       PSR-4 autoloading maps app/Controllers/ directory to App\Controllers namespace.
@@ -142,17 +142,11 @@ rules:
       technology: [soberwp-controller]
 
   - id: controller-file-location-mismatch
-    patterns:
-      - pattern: |
-          namespace App\Controllers;
-          ...
-          class $CLASS ... {
-            ...
-          }
+    pattern-regex: namespace\s+App\\Controllers
     paths:
       exclude:
         - app/Controllers/*.php
-        - */app/Controllers/*.php
+        - "**/app/Controllers/*.php"
     message: |
       Controller with App\Controllers namespace found outside app/Controllers/ directory.
       Move file to app/Controllers/ for PSR-4 autoloading to work correctly.

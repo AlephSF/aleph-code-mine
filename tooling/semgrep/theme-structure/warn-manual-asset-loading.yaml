@@ -67,15 +67,11 @@ rules:
       technology: [webpack]
 
   - id: hardcoded-version-string
-    patterns:
-      - pattern-either:
-          - pattern: wp_enqueue_style(..., '1.0', ...)
-          - pattern: wp_enqueue_style(..., '1.0.0', ...)
-          - pattern: wp_enqueue_script(..., '1.0', ...)
-          - pattern: wp_enqueue_script(..., '1.0.0', ...)
-      - metavariable-regex:
-          metavariable: $VERSION
-          regex: ^\d+\.\d+(\.\d+)?$
+    pattern-either:
+      - pattern: wp_enqueue_style(..., '1.0', ...)
+      - pattern: wp_enqueue_style(..., '1.0.0', ...)
+      - pattern: wp_enqueue_script(..., '1.0', ...)
+      - pattern: wp_enqueue_script(..., '1.0.0', ...)
     message: |
       Hardcoded version string in asset enqueue. Easy to forget updating → stale cache.
 
