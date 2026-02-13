@@ -1,0 +1,99 @@
+rules:
+  - id: require-acf-function-exists-check
+    pattern-either:
+      - pattern: acf_add_options_page(...)
+      - pattern: acf_add_options_sub_page(...)
+      - pattern: acf_register_block_type(...)
+    pattern-not-inside: |
+      if( function_exists('$FUNC') ) {
+        ...
+      }
+    languages: [php]
+    message: |
+      ACF function called without function_exists() check. Code will fatal error if ACF is deactivated.
+      Wrap ACF function calls in: if( function_exists('acf_add_options_page') ) { ... }
+      This prevents fatal errors when ACF Pro plugin is deactivated or missing.
+    severity: ERROR
+    metadata:
+      category: acf-patterns
+      confidence: HIGH
+      cwe: CWE-703
+      references:
+        - https://www.advancedcustomfields.com/resources/acf-settings/
+      subcategory: error-handling
+
+  - id: require-get-field-null-check
+    pattern-either:
+      - pattern: |
+          $VAR = get_field(...)
+          ...
+          echo $VAR
+      - pattern: |
+          $VAR = get_field(...)
+          ...
+          $VAR['...']
+    pattern-not-inside: |
+      if( $VAR ) {
+        ...
+      }
+    languages: [php]
+    message: |
+      ACF field value used without null check. Field may be empty causing undefined variable errors.
+      Check if field has data before using:
+        if( $field_value ) {
+          echo $field_value;
+        }
+      Or use the_field() which handles empty values gracefully.
+    severity: WARNING
+    metadata:
+      category: acf-patterns
+      confidence: MEDIUM
+      cwe: CWE-476
+      subcategory: error-handling
+
+  - id: require-have-rows-check
+    pattern-either:
+      - pattern: |
+          while( have_rows('$REPEATER') ): the_row();
+            ...
+          endwhile;
+    pattern-not-inside: |
+      if( have_rows('$REPEATER') ):
+        while( have_rows('$REPEATER') ): the_row();
+          ...
+        endwhile;
+      endif;
+    languages: [php]
+    message: |
+      Repeater field loop without have_rows() check. Loop will run 0 times but should be explicit.
+      Wrap while loop in if statement:
+        if( have_rows('field_name') ):
+          while( have_rows('field_name') ): the_row();
+            // Loop content
+          endwhile;
+        endif;
+    severity: WARNING
+    metadata:
+      category: acf-patterns
+      confidence: HIGH
+      cwe: CWE-398
+      subcategory: best-practices
+
+  - id: warn-get-field-instead-of-get-sub-field
+    pattern: |
+      while( have_rows('$REPEATER') ): the_row();
+        ...
+        get_field('...')
+        ...
+      endwhile;
+    languages: [php]
+    message: |
+      get_field() called inside have_rows() loop. Use get_sub_field() instead.
+      Inside repeater loops, use get_sub_field() to access sub-field values for the current row.
+      get_field() returns post meta, not the current repeater row's data.
+    severity: ERROR
+    metadata:
+      category: acf-patterns
+      confidence: HIGH
+      cwe: CWE-670
+      subcategory: best-practices

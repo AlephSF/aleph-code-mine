@@ -1,0 +1,167 @@
+# WordPress Nonce Verification Rules
+#
+# Detects missing nonce verification in admin actions and AJAX handlers
+# that could lead to CSRF vulnerabilities.
+
+rules:
+  - id: admin-post-without-nonce
+    patterns:
+      - pattern: |
+          add_action( 'admin_post_$ACTION', '$CALLBACK' );
+          ...
+          function $CALLBACK(...) {
+            ...
+          }
+      - pattern-not-inside: |
+          function $CALLBACK(...) {
+            ...
+            check_admin_referer(...);
+            ...
+          }
+      - pattern-not-inside: |
+          function $CALLBACK(...) {
+            ...
+            wp_verify_nonce(...);
+            ...
+          }
+    message: |
+      admin_post_ action handler missing nonce verification - CSRF vulnerability!
+
+      All admin_post_ handlers must verify nonces to prevent CSRF attacks.
+
+      Example:
+      ❌ add_action( 'admin_post_delete_post', 'delete_post_handler' );
+         function delete_post_handler() {
+             wp_delete_post( $_POST['post_id'] ); // No nonce check!
+         }
+
+      ✅ add_action( 'admin_post_delete_post', 'delete_post_handler' );
+         function delete_post_handler() {
+             check_admin_referer( 'delete-post-' . $_POST['post_id'] );
+             wp_delete_post( absint( $_POST['post_id'] ) );
+         }
+    languages: [php]
+    severity: ERROR
+    metadata:
+      category: security
+      technology:
+        - wordpress
+      confidence: HIGH
+      likelihood: HIGH
+      impact: HIGH
+      subcategory:
+        - csrf
+      cwe:
+        - "CWE-352: Cross-Site Request Forgery"
+
+  - id: ajax-handler-without-nonce
+    patterns:
+      - pattern: |
+          add_action( 'wp_ajax_$ACTION', '$CALLBACK' );
+          ...
+          function $CALLBACK(...) {
+            ...
+          }
+      - pattern-not-inside: |
+          function $CALLBACK(...) {
+            ...
+            check_ajax_referer(...);
+            ...
+          }
+      - pattern-not-inside: |
+          function $CALLBACK(...) {
+            ...
+            wp_verify_nonce(...);
+            ...
+          }
+    message: |
+      AJAX handler missing nonce verification - CSRF vulnerability!
+
+      All wp_ajax_ handlers must verify nonces.
+
+      Example:
+      ❌ add_action( 'wp_ajax_save_data', 'save_data_handler' );
+         function save_data_handler() {
+             update_option( 'data', $_POST['data'] ); // No nonce!
+         }
+
+      ✅ add_action( 'wp_ajax_save_data', 'save_data_handler' );
+         function save_data_handler() {
+             check_ajax_referer( 'save-data-action', 'nonce' );
+             update_option( 'data', sanitize_text_field( $_POST['data'] ) );
+         }
+    languages: [php]
+    severity: ERROR
+    metadata:
+      category: security
+      technology:
+        - wordpress
+      confidence: HIGH
+      subcategory:
+        - csrf
+
+  - id: recommend-nonce-before-capability
+    patterns:
+      - pattern: |
+          if ( ! current_user_can($CAP) ) {
+            ...
+          }
+          ...
+      - pattern-not-inside: |
+          check_admin_referer(...);
+          ...
+          if ( ! current_user_can($CAP) ) {
+            ...
+          }
+      - pattern-not-inside: |
+          wp_verify_nonce(...);
+          ...
+          if ( ! current_user_can($CAP) ) {
+            ...
+          }
+    message: |
+      Capability check without prior nonce verification.
+
+      Best practice: Verify nonce before capability check for defense in depth.
+
+      Security layers:
+      1. Nonce verification (CSRF protection)
+      2. Capability check (authorization)
+
+      Example:
+      ✅ check_admin_referer( 'my-action' );
+         if ( ! current_user_can( 'manage_options' ) ) {
+             wp_die( 'Unauthorized' );
+         }
+    languages: [php]
+    severity: INFO
+    metadata:
+      category: best-practice
+      technology:
+        - wordpress
+
+  - id: generic-nonce-action-name
+    patterns:
+      - pattern-either:
+          - pattern: wp_create_nonce( "save" )
+          - pattern: wp_create_nonce( 'save' )
+          - pattern: wp_create_nonce( "delete" )
+          - pattern: wp_create_nonce( 'delete' )
+          - pattern: wp_create_nonce( "update" )
+          - pattern: wp_create_nonce( 'update' )
+          - pattern: wp_create_nonce( "form" )
+          - pattern: wp_create_nonce( 'form' )
+    message: |
+      Generic nonce action name detected - collision risk!
+
+      Use specific action names to prevent nonce collision across forms.
+
+      Example:
+      ❌ wp_create_nonce( 'save' ); // Too generic
+      ✅ wp_create_nonce( 'save-user-profile-' . $user_id );
+    languages: [php]
+    severity: WARNING
+    metadata:
+      category: security
+      technology:
+        - wordpress

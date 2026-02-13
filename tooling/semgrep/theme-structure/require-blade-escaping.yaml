@@ -1,0 +1,216 @@
+rules:
+  - id: blade-unescaped-user-input-xss
+    patterns:
+      - pattern-either:
+          # User input functions
+          - pattern: '{!! get_the_title(...) !!}'
+          - pattern: '{!! get_the_author(...) !!}'
+          - pattern: '{!! get_the_excerpt(...) !!}'
+          - pattern: '{!! the_title(...) !!}'
+          - pattern: '{!! the_author(...) !!}'
+          - pattern: '{!! the_excerpt(...) !!}'
+          # Comment functions
+          - pattern: '{!! get_comment_text(...) !!}'
+          - pattern: '{!! comment_text(...) !!}'
+          - pattern: '{!! get_comment_author(...) !!}'
+          # Meta functions
+          - pattern: '{!! get_post_meta(...) !!}'
+          - pattern: '{!! get_field(...) !!}'
+    message: |
+      XSS vulnerability: User-controlled content output unescaped with {!! !!}.
+      Use escaped syntax {{ }} to prevent XSS attacks.
+
+      Fix:
+      - Change: {!! get_the_title() !!}
+      - To: {{ get_the_title() }}
+
+      Blade {{ }} syntax automatically escapes output using htmlspecialchars().
+      Only use {!! !!} for trusted WordPress functions returning safe HTML (content, thumbnails, menus).
+    languages: [generic]
+    paths:
+      include:
+        - "**/*.blade.php"
+    severity: ERROR
+    metadata:
+      category: security
+      subcategory: xss-prevention
+      cwe: "CWE-79: Cross-site Scripting (XSS)"
+      owasp: "A03:2021 - Injection"
+      confidence: high
+      likelihood: high
+      impact: high
+      technology: [blade, wordpress]
+      references:
+        - https://laravel.com/docs/8.x/blade#displaying-data
+        - https://owasp.org/www-community/attacks/xss/
+
+  - id: blade-escaped-html-content
+    patterns:
+      - pattern-either:
+          # Content functions that return HTML
+          - pattern: '{{ get_the_content(...) }}'
+          - pattern: '{{ the_content(...) }}'
+          - pattern: '{{ wpautop(...) }}'
+          # Navigation menus
+          - pattern: '{{ wp_nav_menu(...) }}'
+          # Thumbnails
+          - pattern: '{{ get_the_post_thumbnail(...) }}'
+          - pattern: '{{ the_post_thumbnail(...) }}'
+    message: |
+      HTML content double-escaped with {{ }} syntax. Use unescaped {!! !!} for WordPress functions returning safe HTML.
+
+      Fix:
+      - Change: {{ get_the_content() }}
+      - To: {!! get_the_content() !!}
+
+      These WordPress core functions return sanitized HTML (via wp_kses_post) that should be rendered, not escaped.
+      Escaping HTML tags converts <p> to &lt;p&gt; (displays as literal text).
+    languages: [generic]
+    paths:
+      include:
+        - "**/*.blade.php"
+    severity: WARNING
+    metadata:
+      category: theme-structure
+      subcategory: blade-templating
+      confidence: high
+      likelihood: high
+      impact: medium
+      technology: [blade, wordpress]
+
+  - id: blade-wordpress-hook-syntax
+    patterns:
+      - pattern-either:
+          - pattern: '{!! wp_head() !!}'
+          - pattern: '{!! wp_footer() !!}'
+          - pattern: '{!! do_action(...) !!}'
+          - pattern: '{!! body_class() !!}'
+          - pattern: '{!! post_class() !!}'
+    message: |
+      Incorrect syntax for WordPress hooks. Use @php() directive, not {!! !!}.
+      These functions output directly to buffer (no return value), so {!! !!} escapes null.
+
+      Fix:
+      - Change: {!! wp_head() !!}
+      - To: @php(wp_head())
+
+      - Change: {!! do_action('get_header') !!}
+      - To: @php(do_action('get_header'))
+
+      @php() directive executes PHP without capturing output.
+    languages: [generic]
+    paths:
+      include:
+        - "**/*.blade.php"
+    severity: ERROR
+    metadata:
+      category: theme-structure
+      subcategory: blade-templating
+      confidence: high
+      likelihood: high
+      impact: low
+      technology: [blade, wordpress]
+      references:
+        - https://roots.io/sage/docs/blade-templates/
+
+  - id: blade-mixed-php-and-blade-syntax
+    pattern-either:
+      - pattern: '<?php ... ?>'
+    paths:
+      include:
+        - "**/*.blade.php"
+    message: |
+      PHP tags <?php ?> found in Blade template. Use Blade directives instead.
+      Mixing PHP and Blade syntax reduces readability and bypasses Blade's escaping.
+
+      Common conversions:
+      - <?php if (...): ?> → @if(...)
+      - <?php foreach (...): ?> → @foreach(...)
+      - <?php while (...): ?> → @while(...)
+      - <?php echo $var; ?> → {{ $var }}
+      - <?php echo esc_html($var); ?> → {{ $var }}
+      - <?php the_title(); ?> → @php(the_title())
+
+      Only use @php() directive for WordPress hooks that output directly:
+      - @php(wp_head())
+      - @php(body_class())
+      - @php(do_action('hook'))
+    languages: [generic]
+    paths:
+      include:
+        - "**/*.blade.php"
+    severity: WARNING
+    metadata:
+      category: theme-structure
+      subcategory: blade-templating
+      confidence: high
+      likelihood: medium
+      impact: low
+
+  - id: blade-echo-statement
+    patterns:
+      - pattern-either:
+          - pattern: '@php echo $VAR; @endphp'
+          - pattern: '@php(echo $VAR)'
+    paths:
+      include:
+        - "**/*.blade.php"
+    message: |
+      @php echo statement found. Use Blade {{ }} syntax instead.
+
+      Fix:
+      - Change: @php echo $var; @endphp
+      - To: {{ $var }}
+
+      - Change: @php(echo esc_html($var))
+      - To: {{ $var }}
+
+      Blade {{ }} provides automatic escaping, cleaner syntax, and better performance.
+    languages: [generic]
+    paths:
+      include:
+        - "**/*.blade.php"
+    severity: WARNING
+    metadata:
+      category: theme-structure
+      subcategory: blade-templating
+      confidence: high
+      fix_regex:
+        regex: '@php\s*echo\s+([^;]+);\s*@endphp'
+        replacement: '{{ $1 }}'
+
+  - id: blade-variable-double-escaping
+    patterns:
+      - pattern-either:
+          - pattern: '{{ esc_html($VAR) }}'
+          - pattern: '{{ esc_attr($VAR) }}'
+          - pattern: '{{ esc_url($VAR) }}'
+          - pattern: '{{ htmlspecialchars($VAR) }}'
+    paths:
+      include:
+        - "**/*.blade.php"
+    message: |
+      Double-escaping detected. Blade {{ }} already escapes with htmlspecialchars().
+      Calling esc_html() inside {{ }} escapes twice.
+
+      Fix:
+      - Change: {{ esc_html($var) }}
+      - To: {{ $var }}
+
+      Blade {{ $var }} is equivalent to <?php echo esc_html($var); ?>
+      Only use esc_* functions when outputting in @php() blocks or unescaped {!! !!}.
+    languages: [generic]
+    paths:
+      include:
+        - "**/*.blade.php"
+    severity: INFO
+    metadata:
+      category: theme-structure
+      subcategory: blade-templating
+      confidence: high
+      likelihood: medium
+      impact: low
+      technology: [blade]
+      fix_regex:
+        regex: '\{\{\s*esc_(html|attr|url)\(([^)]+)\)\s*\}\}'
+        replacement: '{{ $2 }}'

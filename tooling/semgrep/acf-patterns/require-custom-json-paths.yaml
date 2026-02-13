@@ -1,0 +1,76 @@
+rules:
+  - id: require-acf-custom-json-save-path
+    pattern-either:
+      - pattern: |
+          if( function_exists('acf_add_local_field_group') ) {
+            ...
+          }
+      - pattern: |
+          acf_add_local_field_group(...)
+    pattern-not-inside: |
+      add_filter('acf/settings/save_json', ...)
+    languages: [php]
+    message: |
+      ACF field groups detected but no custom JSON save path filter found.
+      Add acf/settings/save_json filter to store ACF JSON in plugin/mu-plugin directory instead of theme.
+    severity: WARNING
+    metadata:
+      category: acf-patterns
+      confidence: HIGH
+      cwe: CWE-710
+      references:
+        - https://www.advancedcustomfields.com/resources/local-json/
+      subcategory: field-management
+    fix-regex:
+      regex: (function\s+(\w+)\(\)\s*\{)
+      replacement: |
+        \1
+          // ACF JSON save point
+          function acf_json_save_point() {
+            \$path = plugin_dir_path(__FILE__) . 'acf-json';
+            return \$path;
+          }
+          add_filter('acf/settings/save_json', 'acf_json_save_point');
+
+          // ACF JSON load point
+          function acf_json_load_point( \$paths ) {
+            \$paths[] = plugin_dir_path(__FILE__) . 'acf-json';
+            return \$paths;
+          }
+          add_filter('acf/settings/load_json', 'acf_json_load_point');
+
+  - id: require-acf-custom-json-load-path
+    pattern-either:
+      - pattern: |
+          add_filter('acf/settings/save_json', ...)
+    pattern-not-inside: |
+      add_filter('acf/settings/load_json', ...)
+    languages: [php]
+    message: |
+      ACF custom save path configured but no load path filter found.
+      Add acf/settings/load_json filter to load ACF JSON from custom directory.
+    severity: ERROR
+    metadata:
+      category: acf-patterns
+      confidence: HIGH
+      cwe: CWE-710
+      references:
+        - https://www.advancedcustomfields.com/resources/local-json/
+      subcategory: field-management
+
+  - id: warn-acf-default-json-location
+    pattern-either:
+      - pattern: |
+          get_stylesheet_directory() . '/acf-json'
+      - pattern: |
+          get_template_directory() . '/acf-json'
+    languages: [php]
+    message: |
+      ACF JSON stored in theme directory. Consider moving to plugin or mu-plugin for better portability.
+      Theme-based ACF JSON is lost when themes change. Use plugin_dir_path(__FILE__) . 'acf-json' instead.
+    severity: INFO
+    metadata:
+      category: acf-patterns
+      confidence: MEDIUM
+      cwe: CWE-710
+      subcategory: field-management

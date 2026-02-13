@@ -1,0 +1,168 @@
+rules:
+  - id: controller-missing-namespace
+    patterns:
+      - pattern-inside: |
+          class $CLASS extends Controller {
+            ...
+          }
+      - pattern-not-inside: |
+          namespace App\Controllers;
+          ...
+      - pattern-not: |
+          namespace $NS\Controllers;
+          ...
+    paths:
+      include:
+        - app/Controllers/*.php
+        - */Controllers/*.php
+    message: |
+      Controller class missing required namespace declaration.
+      Add "namespace App\Controllers;" at the top of controller file for PSR-4 autoloading.
+
+      Fix:
+      <?php
+
+      namespace App\Controllers;
+
+      use Sober\Controller\Controller;
+
+      class $CLASS extends Controller { ... }
+    languages: [php]
+    severity: ERROR
+    metadata:
+      category: theme-structure
+      subcategory: mvc-architecture
+      confidence: high
+      likelihood: high
+      impact: high
+      technology: [wordpress, sage, soberwp-controller]
+      references:
+        - https://www.php-fig.org/psr/psr-4/
+
+  - id: controller-wrong-namespace
+    patterns:
+      - pattern: |
+          namespace $NS;
+          ...
+          class $CLASS extends Controller {
+            ...
+          }
+      - metavariable-pattern:
+          metavariable: $NS
+          patterns:
+            - pattern-not-regex: App\\Controllers
+    paths:
+      include:
+        - app/Controllers/*.php
+        - */Controllers/*.php
+    message: |
+      Controller uses namespace "$NS" but should use "App\Controllers".
+      PSR-4 autoloading maps app/Controllers/ directory to App\Controllers namespace.
+
+      Expected: namespace App\Controllers;
+      Found: namespace $NS;
+    languages: [php]
+    severity: ERROR
+    metadata:
+      category: theme-structure
+      subcategory: mvc-architecture
+      confidence: high
+      fix_regex:
+        regex: 'namespace\s+[^;]+;'
+        replacement: 'namespace App\\Controllers;'
+
+  - id: controller-missing-use-statement
+    patterns:
+      - pattern: |
+          namespace App\Controllers;
+          ...
+          class $CLASS extends Controller {
+            ...
+          }
+      - pattern-not: |
+          use Sober\Controller\Controller;
+          ...
+    paths:
+      include:
+        - app/Controllers/*.php
+    message: |
+      Controller extends Controller but missing "use Sober\Controller\Controller;" import.
+      Add use statement after namespace declaration.
+
+      Fix:
+      <?php
+
+      namespace App\Controllers;
+
+      use Sober\Controller\Controller;
+
+      class $CLASS extends Controller { ... }
+    languages: [php]
+    severity: ERROR
+    metadata:
+      category: theme-structure
+      subcategory: mvc-architecture
+      confidence: high
+
+  - id: controller-private-method-not-accessible
+    patterns:
+      - pattern-inside: |
+          class $CLASS extends Controller {
+            ...
+          }
+      - patterns:
+          - pattern: |
+              private function $METHOD(...) {
+                ...
+              }
+          - metavariable-pattern:
+              metavariable: $METHOD
+              patterns:
+                - pattern-not-regex: ^__.*
+    paths:
+      include:
+        - app/Controllers/*.php
+    message: |
+      Private method "$METHOD" in controller not accessible as Blade variable.
+      Only public methods become template variables. Change to public or use as internal helper.
+
+      If this method should be available in Blade templates:
+      - Change: private function $METHOD()
+      - To: public function $METHOD()
+
+      If this is an internal helper, consider prefixing with underscore: private function _$METHOD()
+    languages: [php]
+    severity: WARNING
+    metadata:
+      category: theme-structure
+      subcategory: mvc-architecture
+      confidence: high
+      likelihood: medium
+      impact: medium
+      technology: [soberwp-controller]
+
+  - id: controller-file-location-mismatch
+    patterns:
+      - pattern: |
+          namespace App\Controllers;
+          ...
+          class $CLASS ... {
+            ...
+          }
+    paths:
+      exclude:
+        - app/Controllers/*.php
+        - */app/Controllers/*.php
+    message: |
+      Controller with App\Controllers namespace found outside app/Controllers/ directory.
+      Move file to app/Controllers/ for PSR-4 autoloading to work correctly.
+
+      Expected location: app/Controllers/$CLASS.php
+    languages: [php]
+    severity: ERROR
+    metadata:
+      category: theme-structure
+      subcategory: mvc-architecture
+      confidence: high
+      likelihood: high
+      impact: high

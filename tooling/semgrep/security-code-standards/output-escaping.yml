@@ -1,0 +1,127 @@
+# WordPress Output Escaping Rules
+#
+# Detects unescaped echo/print statements that could lead to XSS vulnerabilities.
+
+rules:
+  - id: unescaped-echo-variable
+    patterns:
+      - pattern-either:
+          - pattern: echo $VAR;
+          - pattern: echo $OBJ->$PROP;
+          - pattern: print $VAR;
+      - pattern-not: echo esc_html( ... );
+      - pattern-not: echo esc_attr( ... );
+      - pattern-not: echo esc_url( ... );
+      - pattern-not: echo wp_kses_post( ... );
+      - pattern-not: echo absint( ... );
+      - pattern-not: echo intval( ... );
+    message: |
+      Unescaped echo statement detected - potential XSS vulnerability.
+
+      Always escape output based on context:
+      - HTML context: esc_html()
+      - Attribute context: esc_attr()
+      - URL context: esc_url()
+      - Rich HTML: wp_kses_post()
+
+      Example:
+      ❌ echo $user_input;
+      ✅ echo esc_html( $user_input );
+    languages: [php]
+    severity: WARNING
+    metadata:
+      category: security
+      technology:
+        - wordpress
+      confidence: MEDIUM
+      likelihood: HIGH
+      impact: HIGH
+      subcategory:
+        - xss
+      cwe:
+        - "CWE-79: Cross-site Scripting"
+
+  - id: detect-wrong-escaping-context
+    patterns:
+      - pattern-either:
+          # esc_html() in href attribute (should use esc_url)
+          - pattern: |
+              href="<?php echo esc_html($URL); ?>"
+          - pattern: |
+              href='<?php echo esc_html($URL); ?>'
+          # esc_url() in HTML body (should use esc_html)
+          - pattern: |
+              ><?php echo esc_url($TEXT); ?><
+    message: |
+      Wrong escaping function for context detected.
+
+      Context-specific escaping:
+      - href/src attributes: Use esc_url()
+      - class/id attributes: Use esc_attr()
+      - HTML body text: Use esc_html()
+
+      Example:
+      ❌ <a href="<?php echo esc_html( $url ); ?>">
+      ✅ <a href="<?php echo esc_url( $url ); ?>">
+    languages: [php]
+    severity: WARNING
+    metadata:
+      category: security
+      technology:
+        - wordpress
+
+  - id: recommend-late-escaping
+    patterns:
+      - pattern-either:
+          - pattern: |
+              $VAR = esc_html($...);
+              ...
+              update_post_meta($POST_ID, $KEY, $VAR);
+          - pattern: |
+              $VAR = esc_attr($...);
+              ...
+              update_option($KEY, $VAR);
+    message: |
+      Early escaping detected - may cause double-escaping.
+
+      WordPress best practice: Escape at output, not at storage.
+
+      Example:
+      ❌ $name = esc_html( $_POST['name'] );
+         update_user_meta( $user_id, 'name', $name );
+         // Later: echo esc_html( get_user_meta(...) ); // Double escaped!
+
+      ✅ $name = sanitize_text_field( $_POST['name'] );
+         update_user_meta( $user_id, 'name', $name );
+         // Later: echo esc_html( get_user_meta(...) ); // Correctly escaped
+    languages: [php]
+    severity: INFO
+    metadata:
+      category: best-practice
+      technology:
+        - wordpress
+
+  - id: trust-database-data-antipattern
+    patterns:
+      - pattern-either:
+          - pattern: echo get_post_meta($...);
+          - pattern: echo get_option($...);
+          - pattern: echo get_user_meta($...);
+      - pattern-not: echo esc_html(...);
+      - pattern-not: echo esc_attr(...);
+      - pattern-not: echo wp_kses_post(...);
+    message: |
+      Database data output without escaping - trust no data!
+
+      Even database-stored data should be escaped, as database could be
+      compromised or contain legacy unescaped content.
+
+      Example:
+      ❌ echo get_post_meta( $post_id, 'title', true );
+      ✅ echo esc_html( get_post_meta( $post_id, 'title', true ) );
+    languages: [php]
+    severity: WARNING
+    metadata:
+      category: security
+      technology:
+        - wordpress

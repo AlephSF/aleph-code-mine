@@ -1,0 +1,304 @@
+# Varnish Cache Control Headers for WordPress VIP
+#
+# WordPress VIP uses Varnish caching layer for performance. Authenticated
+# requests, SAML SSO flows, personalized content, and API mutations must
+# bypass Varnish using Cache-Control: private headers.
+
+rules:
+  - id: missing-cache-control-private-saml
+    patterns:
+      - pattern-either:
+          - pattern: |
+              if ( ... $_GET['saml_acs'] ... $_POST['SAMLResponse'] ... ) {
+                ...
+              }
+          - pattern: |
+              if ( ... $_GET['saml_sls'] ... ) {
+                ...
+              }
+      - pattern-not: |
+          if ( ... ) {
+            ...
+            header( 'Cache-Control: private' );
+            ...
+          }
+      - pattern-not: |
+          if ( ... ) {
+            ...
+            header( "Cache-Control: private" );
+            ...
+          }
+    message: |
+      Missing Cache-Control: private header for SAML authentication flow.
+
+      SAML login/logout requests must bypass Varnish cache to prevent
+      authentication tokens from being cached.
+
+      Recommended pattern:
+      ✅ function vipgo_saml_checker() {
+             if ( ( isset( $_GET['saml_acs'] ) && ! empty( $_POST['SAMLResponse'] ) )
+                  || isset( $_GET['saml_sls'] ) ) {
+                 header( 'Cache-Control: private' );
+             }
+         }
+         add_action( 'init', 'vipgo_saml_checker', 0 );
+    languages: [php]
+    severity: ERROR
+    metadata:
+      category: security
+      technology:
+        - wordpress
+        - wordpress-vip
+        - saml
+        - varnish
+      confidence: HIGH
+      likelihood: HIGH
+      impact: HIGH
+      subcategory:
+        - authentication
+      cwe:
+        - "CWE-525: Use of Web Browser Cache Containing Sensitive Information"
+      references:
+        - https://docs.wpvip.com/technical-references/caching/
+
+  - id: recommend-early-hook-cache-headers
+    patterns:
+      - pattern: |
+          add_action( 'init', '$CALLBACK', $PRIORITY );
+      - metavariable-comparison:
+          metavariable: $PRIORITY
+          comparison: $PRIORITY > 0
+      - pattern-inside: |
+          function $CALLBACK(...) {
+            ...
+            header( 'Cache-Control: private' );
+            ...
+          }
+    message: |
+      Cache-Control headers should be sent early (priority 0 on init hook).
+
+      Early hook execution ensures headers sent before WordPress routing and
+      plugin processing.
+
+      Recommended pattern:
+      ✅ add_action( 'init', 'vipgo_saml_checker', 0 ); // Priority 0 = very early
+    languages: [php]
+    severity: INFO
+    metadata:
+      category: best-practice
+      technology:
+        - wordpress
+        - wordpress-vip
+        - varnish
+
+  - id: detect-non-bypass-cookie-prefix
+    patterns:
+      - pattern-either:
+          - pattern: define( '$COOKIE_NAME', '$VALUE' );
+          - pattern: |
+              if ( false === defined( '$COOKIE_NAME' ) ) {
+                define( '$COOKIE_NAME', '$VALUE' );
+              }
+      - metavariable-regex:
+          metavariable: $COOKIE_NAME
+          regex: '.*COOKIE.*'
+      - metavariable-regex:
+          metavariable: $VALUE
+          regex: '^(?!wordpress_)(?!wp-)(?!comment_author_).*$'
+      - pattern-inside: |
+          // SAML ...
+          ...
+    message: |
+      Consider prefixing authentication cookies with 'wordpress_' for Varnish bypass.
+
+      VIP Varnish configuration bypasses cache for cookies prefixed:
+      - wordpress_*
+      - wp-*
+      - comment_author_*
+
+      Recommended pattern:
+      ✅ define( 'SAML_LOGIN_COOKIE', 'wordpress_saml_login' );
+         define( 'SAML_NAMEID_COOKIE', 'wordpress_saml_nameid' );
+    languages: [php]
+    severity: INFO
+    metadata:
+      category: best-practice
+      technology:
+        - wordpress
+        - wordpress-vip
+        - varnish
+        - saml
+
+  - id: detect-global-private-caching
+    patterns:
+      - pattern-either:
+          - pattern: |
+              add_action( 'send_headers', function() {
+                header( 'Cache-Control: private' );
+              });
+          - pattern: |
+              add_action( 'wp', function() {
+                header( 'Cache-Control: private' );
+              });
+      - pattern-not: |
+          add_action( $HOOK, function() {
+            if ( ... ) {
+              header( 'Cache-Control: private' );
+            }
+          });
+    message: |
+      Global private caching detected. This disables Varnish for entire site!
+
+      Cache-Control: private should be conditional (logged-in users, forms, etc.).
+
+      Anti-pattern:
+      ❌ add_action( 'send_headers', function() {
+             header( 'Cache-Control: private' );
+         }); // Disables Varnish globally!
+
+      Recommended pattern:
+      ✅ add_action( 'send_headers', function() {
+             if ( is_user_logged_in() || is_cart() || is_checkout() ) {
+                 header( 'Cache-Control: private' );
+             }
+         });
+    languages: [php]
+    severity: ERROR
+    metadata:
+      category: performance
+      technology:
+        - wordpress
+        - wordpress-vip
+        - varnish
+      confidence: HIGH
+      likelihood: HIGH
+      impact: HIGH
+
+  - id: detect-cache-healthcheck-redirect
+    patterns:
+      - pattern-either:
+          - pattern: |
+              if ( ... ) {
+                header( 'Location: ...' );
+                exit;
+              }
+          - pattern: |
+              header( 'Location: ...' );
+              exit;
+      - pattern-not: |
+          if ( '/cache-healthcheck?' !== $request_uri && ... ) {
+            header( 'Location: ...' );
+            exit;
+          }
+      - pattern-inside: |
+          // vip-config.php
+          ...
+    message: |
+      Redirect logic should skip /cache-healthcheck? endpoint for VIP monitoring.
+
+      VIP monitoring uses /cache-healthcheck? to verify Varnish and WordPress health.
+      Redirecting this endpoint breaks platform monitoring.
+
+      Recommended pattern:
+      ✅ if ( '/cache-healthcheck?' !== $request_uri &&
+             in_array($http_host, $redirect['domains'], true) ) {
+             header('Location: ' . $redirect['target'] . $request_uri);
+             exit;
+         }
+    languages: [php]
+    severity: WARNING
+    metadata:
+      category: reliability
+      technology:
+        - wordpress
+        - wordpress-vip
+        - varnish
+      confidence: LOW
+
+  - id: detect-unnecessary-no-store
+    patterns:
+      - pattern: header( 'Cache-Control: no-store' );
+      - pattern-not-inside: |
+          if ( is_user_logged_in() || ... ) {
+            ...
+          }
+      - pattern-not-inside: |
+          if ( ... is_cart() ... ) {
+            ...
+          }
+      - pattern-not-inside: |
+          if ( ... is_checkout() ... ) {
+            ...
+          }
+    message: |
+      Cache-Control: no-store prevents all caching (client-side and Varnish).
+
+      Use 'private' for user-specific content (allows browser cache) or 'public'
+      with max-age for cacheable content.
+
+      Header options:
+      - Cache-Control: private (bypass Varnish, allow browser cache)
+      - Cache-Control: public, max-age=3600 (Varnish + browser cache)
+      - Cache-Control: no-store (no caching at all - rare use case)
+
+      Use no-store only for:
+      - Checkout pages with payment info
+      - Pages with sensitive personal data
+      - One-time tokens or nonces
+    languages: [php]
+    severity: INFO
+    metadata:
+      category: performance
+      technology:
+        - wordpress
+        - wordpress-vip
+        - varnish
+
+  - id: recommend-vary-header-for-logged-in
+    patterns:
+      - pattern: |
+          if ( is_user_logged_in() ) {
+            ...
+          }
+      - pattern-not: |
+          if ( is_user_logged_in() ) {
+            ...
+            header( 'Vary: Cookie' );
+            ...
+          }
+      - pattern-not: |
+          if ( is_user_logged_in() ) {
+            ...
+            header( "Vary: Cookie" );
+            ...
+          }
+      - pattern-not: |
+          if ( is_user_logged_in() ) {
+            ...
+            header( 'Cache-Control: private' );
+            ...
+          }
+    message: |
+      Consider adding Vary: Cookie header for user-specific cached content.
+
+      Vary header creates separate cache entries for logged-in vs anonymous users.
+
+      Pattern options:
+      ✅ if ( is_user_logged_in() ) {
+             header( 'Vary: Cookie' );
+         }
+
+      Or bypass cache entirely for logged-in users:
+      ✅ if ( is_user_logged_in() ) {
+             header( 'Cache-Control: private' );
+         }
+
+      Note: Vary: Cookie reduces cache hit rate (use sparingly)
+    languages: [php]
+    severity: INFO
+    metadata:
+      category: best-practice
+      technology:
+        - wordpress
+        - wordpress-vip
+        - varnish

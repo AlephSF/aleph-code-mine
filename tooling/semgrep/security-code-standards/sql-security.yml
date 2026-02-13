@@ -1,0 +1,198 @@
+# WordPress SQL Security Rules
+#
+# Detects unprepared SQL queries and unsafe database operations that could
+# lead to SQL injection vulnerabilities.
+
+rules:
+  - id: unprepared-wpdb-query
+    patterns:
+      - pattern-either:
+          - pattern: $WPDB->query( "..." )
+          - pattern: $WPDB->get_results( "..." )
+          - pattern: $WPDB->get_row( "..." )
+          - pattern: $WPDB->get_var( "..." )
+          - pattern: $WPDB->get_col( "..." )
+      - pattern-not: $WPDB->query( $WPDB->prepare(...) )
+      - pattern-not: $WPDB->get_results( $WPDB->prepare(...) )
+      - pattern-not: $WPDB->get_row( $WPDB->prepare(...) )
+      - pattern-not: $WPDB->get_var( $WPDB->prepare(...) )
+      - pattern-not: $WPDB->get_col( $WPDB->prepare(...) )
+    message: |
+      Unprepared $wpdb query detected - SQL injection vulnerability!
+
+      Always use $wpdb->prepare() for queries with user inputs or variables.
+
+      Example:
+      ❌ $wpdb->query( "DELETE FROM {$wpdb->postmeta} WHERE meta_key = '{$key}'" );
+      ✅ $wpdb->query( $wpdb->prepare(
+             "DELETE FROM {$wpdb->postmeta} WHERE meta_key = %s",
+             $key
+         ) );
+
+      Placeholder types:
+      - %d: Integer
+      - %f: Float
+      - %s: String
+    languages: [php]
+    severity: ERROR
+    metadata:
+      category: security
+      technology:
+        - wordpress
+      confidence: HIGH
+      likelihood: HIGH
+      impact: HIGH
+      subcategory:
+        - sql-injection
+      cwe:
+        - "CWE-89: SQL Injection"
+      references:
+        - https://developer.wordpress.org/reference/classes/wpdb/prepare/
+
+  - id: wpdb-query-with-concatenation
+    patterns:
+      - pattern-either:
+          - pattern: $WPDB->query( "..." . $VAR . "..." )
+          - pattern: $WPDB->query( "..." . $OBJ->$PROP . "..." )
+      - pattern-not: $WPDB->query( $WPDB->prepare(...) )
+    message: |
+      $wpdb query with string concatenation - SQL injection risk!
+
+      Never concatenate variables into SQL queries. Use $wpdb->prepare().
+
+      Example:
+      ❌ $wpdb->query( "SELECT * FROM {$wpdb->posts} WHERE ID = " . $post_id );
+      ✅ $wpdb->query( $wpdb->prepare(
+             "SELECT * FROM {$wpdb->posts} WHERE ID = %d",
+             $post_id
+         ) );
+    languages: [php]
+    severity: ERROR
+    metadata:
+      category: security
+      technology:
+        - wordpress
+      confidence: HIGH
+
+  - id: prefer-wordpress-functions-over-sql
+    patterns:
+      - pattern-either:
+          - pattern: |
+              $wpdb->get_row( $wpdb->prepare(
+                "SELECT * FROM {$wpdb->posts} WHERE ID = %d",
+                $POST_ID
+              ) )
+          - pattern: |
+              $wpdb->get_results( $wpdb->prepare(
+                "SELECT * FROM {$wpdb->posts} WHERE post_type = %s",
+                $POST_TYPE
+              ) )
+    message: |
+      Consider using WordPress query functions instead of direct SQL.
+
+      WordPress functions provide automatic prepare() and better caching.
+
+      Examples:
+      - get_post( $post_id ) instead of SELECT from wp_posts
+      - get_posts( array(...) ) instead of SELECT with conditions
+      - get_post_meta( $post_id, $key ) instead of SELECT from wp_postmeta
+
+      Direct SQL is appropriate for:
+      - Complex JOINs
+      - Custom table queries
+      - Performance-critical queries with specific indexes
+    languages: [php]
+    severity: INFO
+    metadata:
+      category: best-practice
+      technology:
+        - wordpress
+
+  - id: missing-esc-like-in-like-query
+    patterns:
+      - pattern: |
+          $wpdb->prepare(
+            "... LIKE %s ...",
+            '%' . $SEARCH . '%'
+          )
+      - pattern-not: |
+          $wpdb->prepare(
+            "... LIKE %s ...",
+            '%' . $wpdb->esc_like($...) . '%'
+          )
+    message: |
+      LIKE query missing $wpdb->esc_like() - LIKE clause injection risk!
+
+      Always escape LIKE wildcards (%, _) in user inputs.
+
+      Example:
+      ❌ $search = '%' . $user_input . '%';
+         $wpdb->prepare( "SELECT * FROM {$wpdb->posts} WHERE post_title LIKE %s", $search );
+
+      ✅ $search = '%' . $wpdb->esc_like( $user_input ) . '%';
+         $wpdb->prepare( "SELECT * FROM {$wpdb->posts} WHERE post_title LIKE %s", $search );
+    languages: [php]
+    severity: WARNING
+    metadata:
+      category: security
+      technology:
+        - wordpress
+      confidence: MEDIUM
+
+  - id: detect-eval-usage
+    patterns:
+      - pattern-either:
+          - pattern: eval($...)
+          - pattern: eval($...)
+    message: |
+      CRITICAL: eval() usage detected - code injection vulnerability!
+
+      eval() executes arbitrary PHP code, enabling remote code execution (RCE).
+      WordPress VIP strictly prohibits eval() usage.
+
+      Alternatives to eval():
+      1. Use WordPress hooks/filters
+      2. Use switch/case for known operations
+      3. Use JSON for configuration
+      4. Refactor to avoid dynamic code execution
+
+      Example:
+      ❌ eval( $_POST['code'] ); // Complete server compromise!
+      ✅ apply_filters( 'dynamic_config', $default_config );
+    languages: [php]
+    severity: ERROR
+    metadata:
+      category: security
+      technology:
+        - wordpress
+      confidence: HIGH
+      likelihood: HIGH
+      impact: CRITICAL
+      subcategory:
+        - code-injection
+      cwe:
+        - "CWE-94: Code Injection"
+
+  - id: vip-disallowed-file-get-contents
+    patterns:
+      - pattern: file_get_contents( "http..." )
+    message: |
+      VIP Disallowed: file_get_contents() for remote URLs.
+
+      WordPress VIP requires VIP-safe alternatives for HTTP requests.
+
+      Alternatives:
+      - wpcom_vip_file_get_contents() (VIP-specific)
+      - vip_safe_wp_remote_get() (VIP-recommended)
+      - wp_remote_get() (WordPress standard)
+
+      Example:
+      ❌ $response = file_get_contents( 'https://api.example.com/data' );
+      ✅ $response = wpcom_vip_file_get_contents( 'https://api.example.com/data' );
+    languages: [php]
+    severity: ERROR
+    metadata:
+      category: security
+      technology:
+        - wordpress
+        - wordpress-vip

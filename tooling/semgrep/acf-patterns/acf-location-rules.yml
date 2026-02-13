@@ -1,0 +1,111 @@
+rules:
+  - id: acf-location-block-value-mismatch
+    message: ACF location rule block value should match registered block name (namespace/block-name)
+    severity: ERROR
+    languages: [json]
+    patterns:
+      - pattern: |
+          {
+            "location": [
+              [
+                {
+                  "param": "block",
+                  "operator": "==",
+                  "value": "$BLOCK_NAME"
+                }
+              ]
+            ],
+            ...
+          }
+      - metavariable-regex:
+          metavariable: $BLOCK_NAME
+          regex: "^[^/]+$"
+    metadata:
+      category: acf-patterns
+      confidence: HIGH
+      subcategory: location-rules
+      cwe: "CWE-628: Function Call with Incorrectly Specified Arguments"
+      references:
+        - /docs/php-wordpress/acf-patterns/acf-location-rules-strategy.md
+        - /docs/php-wordpress/acf-patterns/acf-blocks-gutenberg-integration.md
+      impact: HIGH
+      likelihood: MEDIUM
+
+  - id: acf-location-empty-rules
+    message: ACF field group has no location rules (will never be visible)
+    severity: ERROR
+    languages: [json]
+    patterns:
+      - pattern: |
+          {
+            "location": [],
+            ...
+          }
+    metadata:
+      category: acf-patterns
+      confidence: HIGH
+      subcategory: location-rules
+      cwe: "CWE-710: Improper Adherence to Coding Standards"
+      references:
+        - /docs/php-wordpress/acf-patterns/acf-location-rules-strategy.md
+      impact: HIGH
+      likelihood: LOW
+
+  - id: acf-location-page-id-hardcoded
+    message: Location rule uses page ID (environment-specific, breaks across dev/staging/prod)
+    severity: WARNING
+    languages: [json]
+    patterns:
+      - pattern: |
+          {
+            "location": [
+              [
+                {
+                  "param": "page",
+                  "operator": "==",
+                  "value": "$PAGE_ID"
+                }
+              ]
+            ],
+            ...
+          }
+      - metavariable-regex:
+          metavariable: $PAGE_ID
+          regex: "^[0-9]+$"
+    metadata:
+      category: acf-patterns
+      confidence: HIGH
+      subcategory: location-rules
+      cwe: "CWE-547: Use of Hard-coded, Security-relevant Constants"
+      references:
+        - /docs/php-wordpress/acf-patterns/acf-location-rules-strategy.md
+      impact: MEDIUM
+      likelihood: MEDIUM
+
+  - id: acf-options-page-location-missing-registration
+    message: ACF field group targets options page but no acf_add_options_page() registration found
+    severity: WARNING
+    languages: [json]
+    patterns:
+      - pattern: |
+          {
+            "location": [
+              [
+                {
+                  "param": "options_page",
+                  "operator": "==",
+                  "value": "$OPTIONS_SLUG"
+                }
+              ]
+            ],
+            ...
+          }
+    metadata:
+      category: acf-patterns
+      confidence: MEDIUM
+      subcategory: location-rules
+      cwe: "CWE-710: Improper Adherence to Coding Standards"
+      references:
+        - /docs/php-wordpress/acf-patterns/acf-options-pages-global-settings.md
+      impact: MEDIUM
+      likelihood: LOW

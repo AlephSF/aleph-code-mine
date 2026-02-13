@@ -1,0 +1,110 @@
+# Enforce wpcom_vip_load_plugin() for VIP plugin loading
+#
+# WordPress VIP recommends wpcom_vip_load_plugin() over manual require_once
+# for plugin loading. The VIP helper validates paths, handles plugin headers,
+# and integrates with VIP platform monitoring.
+#
+# Detects: require_once WP_PLUGIN_DIR . '/plugin-name/plugin.php';
+# Suggests: wpcom_vip_load_plugin( 'plugin-name' );
+
+rules:
+  - id: enforce-wpcom-vip-load-plugin
+    patterns:
+      - pattern-either:
+          - pattern: require_once WP_PLUGIN_DIR . $PLUGIN_PATH
+          - pattern: require_once(WP_PLUGIN_DIR . $PLUGIN_PATH)
+          - pattern: require WP_PLUGIN_DIR . $PLUGIN_PATH
+          - pattern: require(WP_PLUGIN_DIR . $PLUGIN_PATH)
+          - pattern: include_once WP_PLUGIN_DIR . $PLUGIN_PATH
+          - pattern: include_once(WP_PLUGIN_DIR . $PLUGIN_PATH)
+      - pattern-not-inside: |
+          function wpcom_vip_load_plugin(...) { ... }
+    message: |
+      Use wpcom_vip_load_plugin() instead of manual require_once for plugin loading.
+
+      VIP helper function provides:
+      - Path validation (prevents directory traversal)
+      - Plugin header parsing
+      - VIP platform monitoring integration
+      - Consistent error handling
+
+      Example:
+      ❌ require_once WP_PLUGIN_DIR . '/wpgraphql-acf/wp-graphql-acf.php';
+      ✅ wpcom_vip_load_plugin( 'wpgraphql-acf' );
+    languages: [php]
+    severity: WARNING
+    metadata:
+      category: best-practice
+      technology:
+        - wordpress
+        - wordpress-vip
+      confidence: HIGH
+      likelihood: MEDIUM
+      impact: LOW
+      subcategory:
+        - plugin-loading
+      cwe:
+        - "CWE-710: Improper Adherence to Coding Standards"
+      references:
+        - https://docs.wpvip.com/technical-references/vip-codebase/loading-plugins/
+
+  - id: detect-plugin-loading-outside-mu-plugins
+    patterns:
+      - pattern-either:
+          - pattern: wpcom_vip_load_plugin($PLUGIN)
+          - pattern: require_once WP_PLUGIN_DIR . $PLUGIN_PATH
+      - pattern-not-inside: |
+          // client-mu-plugins/plugin-loader.php
+          ...
+      - pattern-not-inside: |
+          function $FUNC(...) { ... }
+      - metavariable-regex:
+          metavariable: $FILE
+          regex: '^(?!.*client-mu-plugins).*$'
+    message: |
+      Plugin loading should be centralized in client-mu-plugins/plugin-loader.php
+      for maintainability. Avoid loading plugins from theme functions.php or
+      scattered across codebase.
+
+      Recommended pattern:
+      - Conditional plugin loading in client-mu-plugins/plugin-loader.php
+      - Theme-specific plugins in theme functions.php (acceptable)
+    languages: [php]
+    severity: INFO
+    metadata:
+      category: maintainability
+      technology:
+        - wordpress
+        - wordpress-vip
+      confidence: MEDIUM
+
+  - id: detect-hardcoded-blog-id-in-plugin-loading
+    patterns:
+      - pattern-either:
+          - pattern: |
+              if (get_current_blog_id() === $BLOG_ID) {
+                wpcom_vip_load_plugin($PLUGIN);
+              }
+          - pattern: |
+              if ($BLOG_ID === get_current_blog_id()) {
+                wpcom_vip_load_plugin($PLUGIN);
+              }
+      - metavariable-regex:
+          metavariable: $BLOG_ID
+          regex: '^\d+$'
+    message: |
+      Consider adding comment documenting blog_id mapping for conditional plugin loading.
+
+      Example:
+      ✅ // blog_id 20: Headless site (policy.airbnb.com)
+         if (get_current_blog_id() === 20) {
+             wpcom_vip_load_plugin( 'wpgraphql-acf' );
+         }
+    languages: [php]
+    severity: INFO
+    metadata:
+      category: maintainability
+      technology:
+        - wordpress
+        - wordpress-vip
+        - multisite

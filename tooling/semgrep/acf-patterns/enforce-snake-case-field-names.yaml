@@ -1,0 +1,76 @@
+rules:
+  - id: enforce-acf-field-snake-case
+    pattern-either:
+      - pattern: |
+          "name": "$FIELD_NAME"
+    focus-metavariable: $FIELD_NAME
+    metavariable-pattern:
+      metavariable: $FIELD_NAME
+      regex: ^[a-z][a-zA-Z0-9]*$
+    paths:
+      include:
+        - "**/*acf-json/*.json"
+        - "**/acf-json/*.json"
+    languages: [json]
+    message: |
+      ACF field name "$FIELD_NAME" uses camelCase or PascalCase. Use snake_case instead.
+      Example: "municipalityId" should be "municipality_id"
+      PHP convention is snake_case for field names. GraphQL conversion happens via graphql_field_name.
+    severity: WARNING
+    metadata:
+      category: acf-patterns
+      confidence: HIGH
+      cwe: CWE-710
+      references:
+        - https://www.php-fig.org/psr/psr-12/
+      subcategory: naming-conventions
+
+  - id: require-graphql-camelcase
+    pattern: |
+      {
+        "show_in_graphql": 1,
+        ...
+        "graphql_field_name": "$GRAPHQL_NAME"
+      }
+    focus-metavariable: $GRAPHQL_NAME
+    metavariable-pattern:
+      metavariable: $GRAPHQL_NAME
+      regex: ^[a-z][a-zA-Z0-9]*$
+      regex-not: ^[a-z_]+$
+    paths:
+      include:
+        - "**/*acf-json/*.json"
+        - "**/acf-json/*.json"
+    languages: [json]
+    message: |
+      GraphQL field name "$GRAPHQL_NAME" should use camelCase, not snake_case.
+      GraphQL conventions use camelCase. Example: "municipality_id" should be "municipalityId"
+    severity: ERROR
+    metadata:
+      category: acf-patterns
+      confidence: HIGH
+      cwe: CWE-710
+      subcategory: naming-conventions
+
+  - id: warn-acf-abbreviated-field-names
+    pattern-either:
+      - pattern: |
+          "name": "$FIELD_NAME"
+    focus-metavariable: $FIELD_NAME
+    metavariable-pattern:
+      metavariable: $FIELD_NAME
+      regex: ^[a-z]{1,2}_.*$
+    paths:
+      include:
+        - "**/*acf-json/*.json"
+    languages: [json]
+    message: |
+      ACF field name "$FIELD_NAME" uses abbreviated prefix (1-2 letters). Consider descriptive names.
+      Example: "ta_title" could be "text_aside_title" for clarity.
+      Abbreviated prefixes reduce readability. Use full words unless universally understood.
+    severity: INFO
+    metadata:
+      category: acf-patterns
+      confidence: MEDIUM
+      cwe: CWE-710
+      subcategory: naming-conventions

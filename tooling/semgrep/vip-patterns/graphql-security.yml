@@ -1,0 +1,276 @@
+# GraphQL Security Patterns for WordPress VIP Headless Sites
+#
+# WordPress headless sites using WPGraphQL require DoS protection via:
+# - Query size limiting (10KB max)
+# - Field deduplication (prevent "posts posts posts" attacks)
+# - Query complexity limiting (500 max)
+#
+# Multi-layer defenses catch different attack vectors
+
+rules:
+  - id: missing-graphql-query-size-limit
+    patterns:
+      - pattern-either:
+          - pattern: |
+              add_filter( 'graphql_request_data', function( $data ) {
+                ...
+              });
+          - pattern: |
+              add_filter( 'graphql_request_data', '$CALLBACK' );
+      - pattern-not: |
+          add_filter( 'graphql_request_data', function( $data ) {
+            ...
+            strlen( $... )
+            ...
+          });
+      - pattern-not: |
+          add_filter( 'graphql_request_data', function( $data ) {
+            ...
+            mb_strlen( $... )
+            ...
+          });
+    message: |
+      GraphQL query size limiting not detected in graphql_request_data filter.
+
+      WordPress VIP headless sites should enforce maximum query size to prevent
+      large payload DoS attacks.
+
+      Recommended pattern:
+      ✅ add_filter( 'graphql_request_data', function( $data ) {
+             if ( empty( $data['query'] ) ) {
+                 return $data;
+             }
+
+             $max_size = apply_filters( 'sitename_graphql_max_query_size', 10000 );
+             if ( strlen( $data['query'] ) > $max_size ) {
+                 throw new \GraphQL\Error\UserError(
+                     sprintf( 'Query exceeds maximum size of %d bytes.', $max_size )
+                 );
+             }
+
+             return $data;
+         }, 1 );
+    languages: [php]
+    severity: WARNING
+    metadata:
+      category: security
+      technology:
+        - wordpress
+        - wordpress-vip
+        - wpgraphql
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+      subcategory:
+        - dos-protection
+      cwe:
+        - "CWE-400: Uncontrolled Resource Consumption"
+      references:
+        - https://www.wpgraphql.com/docs/security
+
+  - id: missing-graphql-complexity-limit
+    patterns:
+      - pattern: add_filter( 'graphql_validation_rules', ... );
+      - pattern-not: |
+          add_filter( 'graphql_validation_rules', function( $rules ) {
+            ...
+            new QueryComplexity( $... )
+            ...
+          });
+      - pattern-not: |
+          add_filter( 'graphql_validation_rules', function( $rules ) {
+            ...
+            new \GraphQL\Validator\Rules\QueryComplexity( $... )
+            ...
+          });
+    message: |
+      GraphQL query complexity limiting not detected.
+
+      WordPress VIP headless sites should enforce maximum query complexity to
+      prevent expensive resolver DoS attacks.
+
+      Recommended pattern:
+      ✅ use GraphQL\Validator\Rules\QueryComplexity;
+
+         add_filter( 'graphql_validation_rules', function( $rules ) {
+             $max_complexity = apply_filters( 'sitename_graphql_max_complexity', 500 );
+             $rules['query_complexity'] = new QueryComplexity( $max_complexity );
+             return $rules;
+         } );
+    languages: [php]
+    severity: WARNING
+    metadata:
+      category: security
+      technology:
+        - wordpress
+        - wordpress-vip
+        - wpgraphql
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+      subcategory:
+        - dos-protection
+      cwe:
+        - "CWE-400: Uncontrolled Resource Consumption"
+
+  - id: detect-hardcoded-graphql-limits
+    patterns:
+      - pattern-either:
+          - pattern: |
+              if ( strlen( $query ) > $SIZE ) {
+                ...
+              }
+          - pattern: |
+              new QueryComplexity( $COMPLEXITY )
+          - pattern: |
+              new \GraphQL\Validator\Rules\QueryComplexity( $COMPLEXITY )
+      - metavariable-regex:
+          metavariable: $SIZE
+          regex: '^\d{4,}$'
+      - metavariable-regex:
+          metavariable: $COMPLEXITY
+          regex: '^\d{3,}$'
+      - pattern-not-inside: |
+          apply_filters( $FILTER_NAME, $... )
+    message: |
+      GraphQL limits are hardcoded. Use apply_filters() for customization.
+
+      Filterable limits allow per-site adjustments without modifying security code.
+
+      Recommended pattern:
+      ✅ $max_size = apply_filters( 'sitename_graphql_max_query_size', 10000 );
+         $max_complexity = apply_filters( 'sitename_graphql_max_complexity', 500 );
+
+      Override example:
+      add_filter( 'sitename_graphql_max_complexity', function() {
+          return is_user_logged_in() ? 2000 : 500;
+      } );
+    languages: [php]
+    severity: INFO
+    metadata:
+      category: best-practice
+      technology:
+        - wordpress
+        - wordpress-vip
+        - wpgraphql
+
+  - id: missing-graphql-field-deduplication
+    patterns:
+      - pattern: |
+          add_filter( 'graphql_request_data', function( $data ) {
+            ...
+          });
+      - pattern-not: |
+          add_filter( 'graphql_request_data', function( $data ) {
+            ...
+            preg_replace( $..., $..., $... )
+            ...
+          });
+    message: |
+      GraphQL field deduplication not detected.
+
+      Field deduplication prevents "posts posts posts" DoS attacks by collapsing
+      repeated adjacent field names.
+
+      Recommended pattern:
+      ✅ add_filter( 'graphql_request_data', function( $data ) {
+             if ( empty( $data['query'] ) ) {
+                 return $data;
+             }
+
+             // Dedupe: "posts posts posts" → "posts"
+             $data['query'] = preg_replace( '/\b(\w+)(\s+\1)+\b/', '$1', $data['query'] );
+
+             return $data;
+         }, 1 );
+    languages: [php]
+    severity: INFO
+    metadata:
+      category: security
+      technology:
+        - wordpress
+        - wordpress-vip
+        - wpgraphql
+      confidence: LOW
+
+  - id: detect-production-graphql-introspection
+    patterns:
+      - pattern: |
+          add_filter( 'graphql_introspection_enabled', function( $enabled ) {
+            ...
+            return true;
+            ...
+          });
+      - pattern-not-inside: |
+          if ( ... 'production' ... ) {
+            ...
+            return false;
+            ...
+          }
+      - pattern-not-inside: |
+          if ( ... VIP_GO_ENV ... ) {
+            ...
+          }
+    message: |
+      GraphQL introspection should be disabled in production.
+
+      Introspection allows attackers to enumerate schema fields, mutations, and
+      relationships.
+
+      Recommended pattern:
+      ✅ add_filter( 'graphql_introspection_enabled', function( $enabled ) {
+             if ( defined('VIP_GO_ENV') && 'production' === VIP_GO_ENV ) {
+                 return false; // Disable in production
+             }
+             return $enabled; // Enable in development
+         } );
+    languages: [php]
+    severity: WARNING
+    metadata:
+      category: security
+      technology:
+        - wordpress
+        - wordpress-vip
+        - wpgraphql
+      confidence: MEDIUM
+      likelihood: LOW
+      impact: MEDIUM
+      subcategory:
+        - information-disclosure
+      cwe:
+        - "CWE-200: Exposure of Sensitive Information"
+
+  - id: recommend-graphql-security-logging
+    patterns:
+      - pattern: |
+          if ( strlen( $query ) > $max_size ) {
+            throw new \GraphQL\Error\UserError( $... );
+          }
+      - pattern-not: |
+          if ( strlen( $query ) > $max_size ) {
+            error_log( $... );
+            ...
+            throw new \GraphQL\Error\UserError( $... );
+          }
+    message: |
+      Consider logging GraphQL security violations for attack pattern analysis.
+
+      Logging captures query size, client IP, and user agent for threat intelligence.
+
+      Example:
+      ✅ if ( $size > $max_size ) {
+             error_log( sprintf(
+                 'GraphQL query size violation: %d bytes from %s',
+                 $size,
+                 $_SERVER['REMOTE_ADDR'] ?? 'unknown'
+             ) );
+             throw new \GraphQL\Error\UserError( '...' );
+         }
+    languages: [php]
+    severity: INFO
+    metadata:
+      category: best-practice
+      technology:
+        - wordpress
+        - wordpress-vip
+        - wpgraphql

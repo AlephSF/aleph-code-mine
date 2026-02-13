@@ -1,0 +1,105 @@
+rules:
+  - id: require-composer-autoload-check
+    pattern-either:
+      - pattern: require_once $COMPOSER
+      - pattern: require $COMPOSER
+    metavariable-pattern:
+      metavariable: $COMPOSER
+      patterns:
+        - pattern-regex: vendor/autoload\.php
+    message: |
+      Composer autoloader found. Ensure vendor/autoload.php exists before theme activation.
+      Run `composer install` in theme directory to generate autoloader.
+    languages: [php]
+    severity: INFO
+    metadata:
+      category: theme-structure
+      subcategory: dependency-management
+      confidence: high
+      likelihood: medium
+      impact: high
+      technology: [wordpress, composer]
+      references:
+        - https://getcomposer.org/doc/01-basic-usage.md#autoloading
+
+  - id: missing-composer-error-check
+    patterns:
+      - pattern: |
+          if (!class_exists($CLASS)) {
+              if (!file_exists(...)) {
+                  ...
+              }
+              require_once ...;
+          }
+      - metavariable-pattern:
+          metavariable: $CLASS
+          patterns:
+            - pattern-regex: .*Sage.*Container.*
+    message: |
+      Good practice: Theme checks for Composer autoloader before loading.
+      Prevents fatal "Class not found" errors if vendor/ directory missing.
+    languages: [php]
+    severity: INFO
+    metadata:
+      category: theme-structure
+      subcategory: error-handling
+      confidence: high
+
+  - id: sage-theme-missing-vendor-check
+    patterns:
+      - pattern-inside: |
+          namespace App\...;
+          ...
+      - pattern-not-inside: |
+          if (!class_exists(...)) {
+              ...
+              require_once ...vendor/autoload.php...;
+          }
+          ...
+    message: |
+      Potential issue: Sage theme uses App\ namespace but may not check for Composer autoloader.
+      Add vendor/autoload.php existence check in resources/functions.php to prevent fatal errors.
+    languages: [php]
+    severity: WARNING
+    metadata:
+      category: theme-structure
+      subcategory: dependency-management
+      confidence: medium
+      likelihood: medium
+      impact: high
+
+  - id: composer-json-missing-autoload
+    patterns:
+      - pattern-inside: |
+          {
+            ...,
+            "require": {...},
+            ...
+          }
+      - pattern-not-inside: |
+          {
+            ...,
+            "autoload": {...},
+            ...
+          }
+    paths:
+      include:
+        - composer.json
+    message: |
+      composer.json missing "autoload" section. Add PSR-4 autoloading:
+      "autoload": {
+        "psr-4": {
+          "App\\\\": "app/"
+        }
+      }
+    languages: [json]
+    severity: ERROR
+    metadata:
+      category: theme-structure
+      subcategory: dependency-management
+      confidence: high
+      likelihood: high
+      impact: high
+      fix_regex:
+        regex: '("require":\s*\{[^}]+\})'
+        replacement: '$1,\n  "autoload": {\n    "psr-4": {\n      "App\\\\\\\\": "app/"\n    }\n  }'

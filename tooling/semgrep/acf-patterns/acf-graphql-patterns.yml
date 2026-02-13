@@ -1,0 +1,126 @@
+rules:
+  - id: acf-graphql-missing-field-exposure
+    message: Field group exposed to GraphQL but individual fields not enabled (fields will return null)
+    severity: ERROR
+    languages: [json]
+    patterns:
+      - pattern: |
+          {
+            "show_in_graphql": 1,
+            "fields": [
+              ...,
+              {
+                "name": "$FIELD",
+                ...
+              },
+              ...
+            ],
+            ...
+          }
+      - pattern-not: |
+          {
+            "show_in_graphql": 1,
+            "fields": [
+              ...,
+              {
+                "name": "$FIELD",
+                "show_in_graphql": 1,
+                ...
+              },
+              ...
+            ],
+            ...
+          }
+    metadata:
+      category: acf-patterns
+      confidence: HIGH
+      subcategory: graphql-integration
+      cwe: "CWE-710: Improper Adherence to Coding Standards"
+      references:
+        - /docs/php-wordpress/acf-patterns/acf-wpgraphql-integration.md
+      impact: HIGH
+      likelihood: HIGH
+
+  - id: acf-graphql-missing-custom-field-name
+    message: GraphQL-enabled field should define custom graphql_field_name for camelCase convention
+    severity: WARNING
+    languages: [json]
+    patterns:
+      - pattern: |
+          {
+            "name": "$FIELD_NAME",
+            "show_in_graphql": 1,
+            ...
+          }
+      - pattern-not: |
+          {
+            "name": "$FIELD_NAME",
+            "show_in_graphql": 1,
+            "graphql_field_name": "$GRAPHQL_NAME",
+            ...
+          }
+      - metavariable-regex:
+          metavariable: $FIELD_NAME
+          regex: "^.*_.*$"
+    metadata:
+      category: acf-patterns
+      confidence: MEDIUM
+      subcategory: graphql-integration
+      cwe: "CWE-710: Improper Adherence to Coding Standards"
+      references:
+        - /docs/php-wordpress/acf-patterns/acf-wpgraphql-integration.md
+      impact: MEDIUM
+      likelihood: MEDIUM
+
+  - id: acf-image-wrong-return-format-graphql
+    message: Image fields exposed to GraphQL should use return_format 'id' not 'array' for MediaItem resolution
+    severity: WARNING
+    languages: [json]
+    patterns:
+      - pattern: |
+          {
+            "type": "image",
+            "return_format": "array",
+            "show_in_graphql": 1,
+            ...
+          }
+    fix: |
+      {
+        "type": "image",
+        "return_format": "id",
+        "show_in_graphql": 1,
+        ...
+      }
+    metadata:
+      category: acf-patterns
+      confidence: HIGH
+      subcategory: graphql-integration
+      cwe: "CWE-710: Improper Adherence to Coding Standards"
+      references:
+        - /docs/php-wordpress/acf-patterns/acf-wpgraphql-integration.md
+      impact: MEDIUM
+      likelihood: HIGH
+
+  - id: acf-graphql-sensitive-field-exposed
+    message: Potentially sensitive field exposed to public GraphQL API
+    severity: ERROR
+    languages: [json]
+    patterns:
+      - pattern: |
+          {
+            "name": "$SENSITIVE",
+            "show_in_graphql": 1,
+            ...
+          }
+      - metavariable-regex:
+          metavariable: $SENSITIVE
+          regex: "^.*(api_key|secret|password|token|credential|private|internal_note|admin_flag).*$"
+    metadata:
+      category: acf-patterns
+      confidence: HIGH
+      subcategory: security
+      cwe: "CWE-200: Exposure of Sensitive Information to an Unauthorized Actor"
+      references:
+        - /docs/php-wordpress/acf-patterns/acf-wpgraphql-integration.md
+      impact: HIGH
+      likelihood: MEDIUM

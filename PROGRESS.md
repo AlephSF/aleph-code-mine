@@ -2,8 +2,8 @@
 
 **Last Updated:** February 12, 2026
 **Current Phase:** Phase 4 - WordPress Domains ⏳ IN PROGRESS
-**Overall Progress:** Phase 2 complete (9/9), Phase 3 complete (4/4), Phase 4 in progress (2/8 domains complete)
-**Next Phase:** Continue Phase 4 - WordPress Domains (6 more domains)
+**Overall Progress:** Phase 2 complete (9/9), Phase 3 complete (4/4), Phase 4 in progress (5/8 domains complete)
+**Next Phase:** Continue Phase 4 - WordPress Domains (3 more domains)
 
 ---
 
@@ -425,10 +425,10 @@ aleph-code-mine/
 | - Domain 2: GROQ Queries | ✅ Complete | 3 hours (done) |
 | - Domain 3: Content Modeling | ✅ Complete | 3 hours (done) |
 | - Domain 4: Studio Customization | ⏳ Next | 2-3 hours |
-| Phase 4: WordPress Domains (8) | ⏳ In Progress (2/8) | 16-24 hours (6 hours done) |
+| Phase 4: WordPress Domains (8) | ⏳ In Progress (5/8) | 16-24 hours (15 hours done) |
 | Phase 5: Cross-Stack (4) | ⏳ Pending | 8-12 hours |
 | Phase 6: Tooling Outputs | ⏳ Pending | 8-12 hours |
-| **TOTAL** | **49% Complete** | **41/83 hours done** |
+| **TOTAL** | **62% Complete** | **50/83 hours done** |
 
 ---
 
@@ -658,7 +658,7 @@ Then tell Claude:
 
 ## Phase 4: WordPress Domains ⏳ IN PROGRESS
 
-**Status:** 2 of 8 domains complete (25%)
+**Status:** 5 of 8 domains complete (62.5%)
 **Focus:** Extract patterns from 2 WordPress repositories (airbnb VIP multisite, thekelsey-wp)
 
 ### Domain 1: WPGraphQL Architecture ✅ COMPLETE
@@ -733,19 +733,122 @@ Then tell Claude:
 - Label i18n: 50% complete translation (airbnb 100%, thekelsey 0% for CPTs)
 - Menu icons: 100% Dashicons, airbnb reuses icon for 80% of CPTs (UX issue)
 
-### Remaining WordPress Domains (6)
+### Domain 3: ACF (Advanced Custom Fields) Patterns ✅ COMPLETE
+
+**Duration:** ~3 hours
+**Deliverables:**
+- 8 RAG-optimized documentation files in `docs/php-wordpress/acf-patterns/`
+- 4 Semgrep enforcement rules in `tooling/semgrep/acf-patterns/`
+- 1 cross-project comparison analysis
+
+**Documentation Files:**
+1. ✅ acf-json-version-control.md (100% confidence)
+2. ✅ field-group-organization.md (100% confidence)
+3. ✅ conditional-logic-patterns.md (100% confidence)
+4. ✅ custom-field-location-rules.md (100% confidence)
+5. ✅ acf-flexible-content-pattern.md (100% confidence)
+6. ✅ acf-clone-fields.md (50% confidence)
+7. ✅ acf-options-pages.md (100% confidence)
+8. ✅ acf-field-naming-conventions.md (100% confidence)
+
+**Semgrep Rules:**
+1. ✅ require-acf-json-directory.yaml (2 rules: JSON sync + save point)
+2. ✅ enforce-field-key-prefix.yaml (2 rules: field + group key naming)
+3. ✅ warn-get-field-without-check.yaml (3 rules: null checks + have_rows loops)
+4. ✅ require-location-rules.yaml (2 rules: location + conditional logic)
+
+**Analysis Files:**
+1. ✅ phase4-domain3-acf-patterns-comparison.md
+
+**Key Findings:**
+- ACF adoption: 100% (both repos use ACF Pro for custom fields)
+- JSON sync: 100% adoption (23 field groups in airbnb, 8 in thekelsey)
+- Field groups: 31 total field groups across both repos
+- Flexible content: 100% adoption for page builders (17 layouts in airbnb)
+- Clone fields: 50% adoption (airbnb uses for SEO/meta reusability)
+- Options pages: 100% adoption (site settings, theme options)
+- Field naming: 100% snake_case (0 camelCase usage)
+- Location rules: 100% proper configuration (post type, taxonomy, page template targeting)
+
+### Domain 4: VIP Patterns ✅ COMPLETE
+
+**Duration:** ~3 hours
+**Deliverables:**
+- 8 RAG-optimized documentation files in `docs/php-wordpress/vip-patterns/`
+- 4 Semgrep enforcement rules in `tooling/semgrep/vip-patterns/`
+- 1 cross-project comparison analysis
+
+**Documentation Files:**
+1. ✅ vip-config-php-structure.md (100% confidence)
+2. ✅ client-mu-plugins-pattern.md (100% confidence)
+3. ✅ conditional-plugin-loading.md (100% confidence)
+4. ✅ graphql-security-patterns.md (100% confidence)
+5. ✅ vip-environment-constants.md (100% confidence)
+6. ✅ varnish-cache-control.md (100% confidence)
+7. ✅ multisite-blog-switching.md (100% confidence)
+8. ✅ vip-redirect-patterns.md (100% confidence)
+
+**Semgrep Rules:**
+1. ✅ wpcom-vip-load-plugin.yml (3 rules: enforce VIP helper, detect scattered loading, document blog_id)
+2. ✅ restore-current-blog.yml (4 rules: missing restore, exception safety, loop performance, redundant switches)
+3. ✅ graphql-security.yml (6 rules: query size, complexity, deduplication, introspection, logging)
+4. ✅ varnish-cache-control.yml (7 rules: SAML headers, early hooks, cookies, global caching, healthcheck, no-store, vary)
+
+**Analysis Files:**
+1. ✅ phase4-domain4-vip-patterns-comparison.md
+
+**Key Findings:**
+- VIP adoption: 100% (airbnb is WordPress VIP Go multisite)
+- vip-config.php: 100% usage (early-stage redirects, constants, proxy IP verification)
+- Client MU-plugins: 612 PHP files (security, performance, VIP integrations)
+- wpcom_vip_load_plugin(): 11 instances (conditional plugin loading by blog_id)
+- GraphQL security: Multi-layer DoS protection (10KB query size, 500 complexity, field deduplication)
+- VIP environment constants: 11 VIP_GO_ENV checks, 5 WPCOM_IS_VIP_ENV checks
+- Cache-Control headers: SAML SSO Varnish bypass, cookie prefixing (wordpress_*)
+- Multisite blog switching: 52 get_current_blog_id(), ~30 switch_to_blog() calls
+- VIP redirects: 5+ redirect configurations covering 15+ domains (consolidated array pattern)
+- VIP proxy IP verification: HTTP_TRUE_CLIENT_IP + verification key for real client detection
+
+### Domain 5: Security & Code Standards ✅ COMPLETE
+
+**Duration:** ~3 hours
+**Deliverables:**
+- 8 RAG-optimized documentation files in `docs/php-wordpress/security-code-standards/`
+- 4 Semgrep enforcement rules in `tooling/semgrep/security-code-standards/`
+- 1 cross-project comparison analysis
+
+**Documentation Files:**
+1. ✅ phpcs-vip-configuration.md (100% confidence - WordPressVIPMinimum + WordPress-VIP-Go)
+2. ✅ input-sanitization-patterns.md (100% confidence - 623 sanitization calls)
+3. ✅ output-escaping-patterns.md (100% confidence - 5,841 escaping calls)
+4. ✅ nonce-verification-patterns.md (100% confidence - 462 nonce operations)
+5. ✅ capability-check-patterns.md (100% confidence - 1,166 capability checks)
+6. ✅ sql-security-patterns.md (69% confidence - 291 prepared statements)
+7. ✅ vip-security-patterns.md (78% confidence - VIP-safe functions)
+8. ✅ csrf-protection-patterns.md (100% confidence - multi-layer protection)
+
+**Semgrep Rules:**
+1. ✅ input-sanitization.yml (4 rules: unsanitized $_POST/$_GET, absint for IDs, password anti-pattern)
+2. ✅ output-escaping.yml (4 rules: unescaped echo, wrong context, late escaping, trust database)
+3. ✅ nonce-verification.yml (4 rules: admin_post, AJAX handlers, nonce before capability, generic actions)
+4. ✅ sql-security.yml (6 rules: unprepared queries, concatenation, prefer WP functions, esc_like, eval, VIP file_get_contents)
+
+**Analysis Files:**
+1. ✅ phase4-domain5-security-code-standards-comparison.md
+
+**Key Findings:**
+- PHPCS adoption: 100% airbnb (WordPressVIPMinimum + WordPress-VIP-Go), 0% thekelsey
+- Input sanitization: 623 calls total (sanitize_text_field 385, sanitize_key 157, sanitize_title 76)
+- Output escaping: 5,841 calls total (esc_html 2,105, esc_attr 2,105, esc_url 1,121, wp_kses_post 384)
+- Nonce operations: 462 calls (wp_create_nonce 142, wp_verify_nonce 119, check_ajax_referer 77, check_admin_referer 124)
+- Capability checks: 1,166 calls (current_user_can 574, user_can 592)
+- SQL security: 291 prepared statements (69% coverage), 127 unprepared queries (31% SQL injection risk)
+- VIP-safe functions: 31 calls (wpcom_vip_file_get_contents 9, vip_safe_wp_remote_get 22)
+- Critical gaps: 48 eval() calls, 677 unsanitized $_POST, 519 unsanitized $_GET, 127 unprepared SQL
+
+### Remaining WordPress Domains (3)
 
 **Priority order based on Phase 1 findings:**
-
-3. **ACF (Advanced Custom Fields) Patterns** - High priority
-   - ACF Pro with JSON storage (24MB plugin)
-   - Field groups, field types, conditional logic
-   - Estimated: 2-3 hours
-
-4. **WordPress VIP Patterns** - High priority
-   - VIP-specific patterns (mu-plugins, code sniffer)
-   - Platform utilities, caching, security
-   - Estimated: 2-3 hours
 
 5. **Theme Structure & Organization** - Medium priority
    - Sage framework (Roots), Blade templating

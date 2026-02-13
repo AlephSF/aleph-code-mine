@@ -1,0 +1,195 @@
+# Detect missing restore_current_blog() after switch_to_blog()
+#
+# WordPress multisite requires restore_current_blog() after every switch_to_blog()
+# call. Forgetting restoration causes database queries to target wrong site,
+# corrupting content, settings, and user data.
+#
+# Critical pattern: Always restore context after blog switching
+
+rules:
+  - id: missing-restore-current-blog
+    patterns:
+      - pattern: |
+          switch_to_blog($BLOG_ID);
+          ...
+      - pattern-not: |
+          switch_to_blog($BLOG_ID);
+          ...
+          restore_current_blog();
+      - pattern-not-inside: |
+          switch_to_blog($BLOG_ID);
+          try {
+            ...
+          } finally {
+            restore_current_blog();
+          }
+    message: |
+      Missing restore_current_blog() after switch_to_blog().
+
+      WordPress multisite requires restoring blog context to prevent:
+      - Content from wrong site appearing on pages
+      - Options saved to wrong site database
+      - User permissions checked against wrong site
+      - SEO metadata corrupted (wrong site URLs)
+
+      Correct pattern:
+      ✅ switch_to_blog( 20 );
+         $policy_posts = get_posts();
+         restore_current_blog();
+
+      Exception-safe pattern:
+      ✅ switch_to_blog( 20 );
+         try {
+             $policy_posts = get_posts();
+         } finally {
+             restore_current_blog();
+         }
+    languages: [php]
+    severity: ERROR
+    metadata:
+      category: security
+      technology:
+        - wordpress
+        - wordpress-vip
+        - multisite
+      confidence: HIGH
+      likelihood: HIGH
+      impact: HIGH
+      subcategory:
+        - context-corruption
+      cwe:
+        - "CWE-665: Improper Initialization"
+      references:
+        - https://developer.wordpress.org/reference/functions/switch_to_blog/
+        - https://developer.wordpress.org/reference/functions/restore_current_blog/
+
+  - id: recommend-exception-safe-blog-switching
+    patterns:
+      - pattern: |
+          switch_to_blog($BLOG_ID);
+          ...
+          restore_current_blog();
+      - pattern-not-inside: |
+          try {
+            ...
+          } finally {
+            restore_current_blog();
+          }
+      - pattern-inside: |
+          function $FUNC(...) {
+            ...
+          }
+    message: |
+      Consider using try-finally for exception-safe blog switching.
+
+      If queries throw exceptions, restore_current_blog() may not execute,
+      causing context corruption.
+
+      Recommended pattern:
+      ✅ switch_to_blog( 20 );
+         try {
+             $policy_posts = get_posts();
+             if ( empty( $policy_posts ) ) {
+                 throw new Exception( 'No posts found' );
+             }
+         } finally {
+             restore_current_blog(); // Always executes
+         }
+    languages: [php]
+    severity: INFO
+    metadata:
+      category: best-practice
+      technology:
+        - wordpress
+        - wordpress-vip
+        - multisite
+      confidence: MEDIUM
+
+  - id: detect-blog-switching-in-loop
+    patterns:
+      - pattern-either:
+          - pattern: |
+              foreach ($ITEMS as $ITEM) {
+                ...
+                switch_to_blog($BLOG_ID);
+                ...
+                restore_current_blog();
+                ...
+              }
+          - pattern: |
+              for ($I = ...; $I < ...; $I++) {
+                ...
+                switch_to_blog($BLOG_ID);
+                ...
+                restore_current_blog();
+                ...
+              }
+          - pattern: |
+              while ($CONDITION) {
+                ...
+                switch_to_blog($BLOG_ID);
+                ...
+                restore_current_blog();
+                ...
+              }
+    message: |
+      Blog switching inside loop may cause performance issues.
+
+      Minimize switches by querying all data in single switch or restructuring logic.
+
+      Anti-pattern:
+      ❌ foreach ( $post_ids as $post_id ) {
+             switch_to_blog( 20 );
+             $post = get_post( $post_id );
+             restore_current_blog();
+         }
+
+      Optimized pattern:
+      ✅ switch_to_blog( 20 );
+         $posts = get_posts( array('include' => $post_ids) );
+         restore_current_blog();
+    languages: [php]
+    severity: WARNING
+    metadata:
+      category: performance
+      technology:
+        - wordpress
+        - wordpress-vip
+        - multisite
+      confidence: HIGH
+
+  - id: detect-redundant-blog-switching
+    patterns:
+      - pattern: |
+          switch_to_blog($BLOG_ID);
+          ...
+          restore_current_blog();
+          ...
+          switch_to_blog($BLOG_ID);
+          ...
+          restore_current_blog();
+    message: |
+      Redundant blog switching detected. Consolidate queries into single switch.
+
+      Anti-pattern:
+      ❌ switch_to_blog( 20 );
+         $posts = get_posts();
+         restore_current_blog();
+
+         switch_to_blog( 20 );
+         $pages = get_pages();
+         restore_current_blog();
+
+      Optimized pattern:
+      ✅ switch_to_blog( 20 );
+         $posts = get_posts();
+         $pages = get_pages();
+         restore_current_blog();
+    languages: [php]
+    severity: INFO
+    metadata:
+      category: performance
+      technology:
+        - wordpress
+        - wordpress-vip
+        - multisite

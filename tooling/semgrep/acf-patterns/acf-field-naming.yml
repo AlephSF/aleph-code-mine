@@ -1,0 +1,95 @@
+rules:
+  - id: acf-field-name-not-snake-case
+    message: ACF field names should use snake_case convention (lowercase with underscores)
+    severity: WARNING
+    languages: [json]
+    patterns:
+      - pattern: |
+          {
+            "name": "$FIELD_NAME",
+            "type": "$TYPE",
+            ...
+          }
+      - metavariable-regex:
+          metavariable: $FIELD_NAME
+          regex: "^.*[A-Z].*$|^.*-.*$"
+    metadata:
+      category: acf-patterns
+      confidence: HIGH
+      subcategory: naming-conventions
+      cwe: "CWE-710: Improper Adherence to Coding Standards"
+      references:
+        - /docs/php-wordpress/acf-patterns/acf-field-naming-conventions.md
+      impact: LOW
+      likelihood: HIGH
+
+  - id: acf-graphql-field-not-camelcase
+    message: GraphQL field names should use camelCase convention
+    severity: WARNING
+    languages: [json]
+    patterns:
+      - pattern: |
+          {
+            "show_in_graphql": 1,
+            "graphql_field_name": "$GRAPHQL_NAME",
+            ...
+          }
+      - metavariable-regex:
+          metavariable: $GRAPHQL_NAME
+          regex: "^.*_.*$|^[A-Z].*$"
+    metadata:
+      category: acf-patterns
+      confidence: HIGH
+      subcategory: naming-conventions
+      cwe: "CWE-710: Improper Adherence to Coding Standards"
+      references:
+        - /docs/php-wordpress/acf-patterns/acf-field-naming-conventions.md
+        - /docs/php-wordpress/acf-patterns/acf-wpgraphql-integration.md
+      impact: MEDIUM
+      likelihood: MEDIUM
+
+  - id: acf-field-reserved-name
+    message: ACF field name conflicts with WordPress reserved postmeta keys
+    severity: ERROR
+    languages: [json]
+    patterns:
+      - pattern: |
+          {
+            "name": "$RESERVED",
+            ...
+          }
+      - metavariable-regex:
+          metavariable: $RESERVED
+          regex: "^(post_title|post_content|post_excerpt|post_status|ID|post_id|page_id|user_id|user_login|term_id|taxonomy|menu|sidebar|widget)$"
+    metadata:
+      category: acf-patterns
+      confidence: HIGH
+      subcategory: naming-conventions
+      cwe: "CWE-398: Indicator of Poor Code Quality"
+      references:
+        - /docs/php-wordpress/acf-patterns/acf-field-naming-conventions.md
+      impact: HIGH
+      likelihood: LOW
+
+  - id: acf-get-field-wrong-option-syntax
+    message: Options page fields require 'option' parameter in get_field() call
+    severity: ERROR
+    languages: [php]
+    patterns:
+      - pattern-either:
+          - pattern: get_field('$FIELD')
+          - pattern: get_field("$FIELD")
+      - pattern-inside: |
+          if( function_exists('acf_add_options_page') ) {
+            ...
+          }
+    fix: "get_field('$FIELD', 'option')"
+    metadata:
+      category: acf-patterns
+      confidence: MEDIUM
+      subcategory: field-access
+      cwe: "CWE-628: Function Call with Incorrectly Specified Arguments"
+      references:
+        - /docs/php-wordpress/acf-patterns/acf-options-pages-global-settings.md
+      impact: HIGH
+      likelihood: MEDIUM

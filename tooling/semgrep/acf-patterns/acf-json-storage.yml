@@ -1,0 +1,94 @@
+rules:
+  - id: acf-json-missing-save-filter
+    message: ACF JSON storage requires acf/settings/save_json filter to define custom save path
+    severity: WARNING
+    languages: [php]
+    patterns:
+      - pattern: add_filter('acf/settings/load_json', $CALLBACK)
+      - pattern-not-inside: |
+          add_filter('acf/settings/save_json', $CALLBACK2);
+          ...
+          add_filter('acf/settings/load_json', $CALLBACK);
+    metadata:
+      category: acf-patterns
+      confidence: HIGH
+      subcategory: json-storage
+      cwe: "CWE-710: Improper Adherence to Coding Standards"
+      references:
+        - https://www.advancedcustomfields.com/resources/local-json/
+      impact: MEDIUM
+      likelihood: HIGH
+
+  - id: acf-json-missing-load-filter
+    message: ACF JSON storage requires acf/settings/load_json filter to define custom load path
+    severity: WARNING
+    languages: [php]
+    patterns:
+      - pattern: add_filter('acf/settings/save_json', $CALLBACK)
+      - pattern-not-inside: |
+          add_filter('acf/settings/save_json', $CALLBACK);
+          ...
+          add_filter('acf/settings/load_json', $CALLBACK2);
+    metadata:
+      category: acf-patterns
+      confidence: HIGH
+      subcategory: json-storage
+      cwe: "CWE-710: Improper Adherence to Coding Standards"
+      references:
+        - https://www.advancedcustomfields.com/resources/local-json/
+      impact: MEDIUM
+      likelihood: HIGH
+
+  - id: acf-json-no-function-check
+    message: ACF function calls should be wrapped in function_exists() check to prevent fatal errors
+    severity: ERROR
+    languages: [php]
+    patterns:
+      - pattern-either:
+          - pattern: acf_add_options_page(...)
+          - pattern: acf_add_options_sub_page(...)
+          - pattern: acf_register_block_type(...)
+      - pattern-not-inside: |
+          if ( function_exists('$FUNC') ) {
+            ...
+          }
+      - pattern-not-inside: |
+          if ( ! function_exists('$FUNC') ) {
+            ...
+          }
+    fix: |
+      if ( function_exists('$FUNC') ) {
+          $FUNC(...);
+      }
+    metadata:
+      category: acf-patterns
+      confidence: HIGH
+      subcategory: safety-checks
+      cwe: "CWE-252: Unchecked Return Value"
+      references:
+        - https://www.advancedcustomfields.com/resources/acf-settings/
+      impact: HIGH
+      likelihood: HIGH
+
+  - id: acf-json-path-not-custom
+    message: ACF JSON paths should be customized using __DIR__ or plugin_dir_path() for portability
+    severity: INFO
+    languages: [php]
+    patterns:
+      - pattern-either:
+          - pattern: $PATH = get_template_directory() . '/acf-json';
+          - pattern: $PATH = get_stylesheet_directory() . '/acf-json';
+      - pattern-inside: |
+          function $FUNC(...) {
+            ...
+          }
+          add_filter('acf/settings/save_json', '$FUNC');
+    metadata:
+      category: acf-patterns
+      confidence: MEDIUM
+      subcategory: json-storage
+      cwe: "CWE-710: Improper Adherence to Coding Standards"
+      references:
+        - /docs/php-wordpress/acf-patterns/acf-json-storage-version-control.md
+      impact: LOW
+      likelihood: MEDIUM

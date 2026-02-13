@@ -1,0 +1,91 @@
+rules:
+  - id: warn-missing-show-in-graphql-block-fields
+    pattern: |
+      {
+        ...
+        "location": [
+          [
+            {
+              "param": "block",
+              ...
+            }
+          ]
+        ],
+        ...
+      }
+    pattern-not-inside: |
+      {
+        ...
+        "show_in_graphql": 1,
+        ...
+      }
+    paths:
+      include:
+        - "**/*acf-json/group_*.json"
+    languages: [json]
+    message: |
+      ACF field group attached to Gutenberg block but "show_in_graphql" not enabled.
+      Block-based ACF fields should expose to GraphQL for headless WordPress architectures.
+      Add "show_in_graphql": 1 and "graphql_field_name": "yourFieldName" to field group.
+    severity: WARNING
+    metadata:
+      category: acf-patterns
+      confidence: HIGH
+      cwe: CWE-710
+      references:
+        - https://www.wpgraphql.com/acf/
+      subcategory: graphql-integration
+
+  - id: require-graphql-field-name-when-exposed
+    pattern: |
+      {
+        ...
+        "show_in_graphql": 1
+      }
+    pattern-not-inside: |
+      {
+        ...
+        "show_in_graphql": 1,
+        ...
+        "graphql_field_name": "...",
+        ...
+      }
+    paths:
+      include:
+        - "**/*acf-json/group_*.json"
+    languages: [json]
+    message: |
+      ACF field group has "show_in_graphql": 1 but missing "graphql_field_name".
+      Always provide explicit GraphQL field names in camelCase for consistent API.
+      Add "graphql_field_name": "yourFieldName" to field group configuration.
+    severity: ERROR
+    metadata:
+      category: acf-patterns
+      confidence: HIGH
+      cwe: CWE-710
+      subcategory: graphql-integration
+
+  - id: prefer-image-id-return-format-graphql
+    pattern: |
+      {
+        "type": "image",
+        "show_in_graphql": 1,
+        ...
+        "return_format": "array"
+      }
+    paths:
+      include:
+        - "**/*acf-json/*.json"
+    languages: [json]
+    message: |
+      Image field exposed to GraphQL with "return_format": "array". Use "id" instead.
+      WPGraphQL resolves image IDs to full MediaItem objects automatically.
+      Change "return_format": "array" to "return_format": "id" for optimal GraphQL performance.
+    severity: WARNING
+    metadata:
+      category: acf-patterns
+      confidence: HIGH
+      cwe: CWE-710
+      references:
+        - https://www.wpgraphql.com/acf/
+      subcategory: graphql-integration

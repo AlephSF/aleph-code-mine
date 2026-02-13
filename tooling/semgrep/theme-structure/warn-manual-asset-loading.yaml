@@ -1,0 +1,194 @@
+rules:
+  - id: manual-asset-enqueue-no-versioning
+    patterns:
+      - pattern-either:
+          - pattern: wp_enqueue_style($HANDLE, ..., array(), NULL, ...)
+          - pattern: wp_enqueue_style($HANDLE, ..., array(), '', ...)
+          - pattern: wp_enqueue_script($HANDLE, ..., array(), NULL, ...)
+          - pattern: wp_enqueue_script($HANDLE, ..., array(), '', ...)
+    message: |
+      Asset enqueued without version parameter. No cache-busting when CSS/JS changes.
+
+      Recommended fixes:
+      1. Use file modification time (best for manual enqueue):
+         wp_enqueue_style($HANDLE, $URL, array(), filemtime(get_template_directory() . '/css/styles.css'));
+
+      2. Use theme version:
+         $theme = wp_get_theme();
+         wp_enqueue_style($HANDLE, $URL, array(), $theme->get('Version'));
+
+      3. Use webpack with asset manifest (recommended):
+         wp_enqueue_style($HANDLE, asset_path('styles/main.css'), array(), null);
+    languages: [php]
+    severity: WARNING
+    metadata:
+      category: theme-structure
+      subcategory: asset-pipeline
+      confidence: high
+      likelihood: high
+      impact: medium
+      technology: [wordpress]
+      references:
+        - https://developer.wordpress.org/reference/functions/wp_enqueue_style/
+
+  - id: suggest-webpack-for-multiple-manual-enqueues
+    patterns:
+      - pattern-inside: |
+          function $FUNC(...) {
+            ...
+            wp_enqueue_style(...);
+            ...
+            wp_enqueue_style(...);
+            ...
+            wp_enqueue_style(...);
+            ...
+          }
+      - pattern-not-inside: |
+          wp_enqueue_style(..., asset_path(...), ...);
+          ...
+    message: |
+      Multiple manual CSS enqueues detected. Consider using webpack build pipeline for:
+      - Automatic minification (40-60% size reduction)
+      - Hash-based cache-busting (main_abc123.css)
+      - SCSS compilation with autoprefixer
+      - Code splitting (vendor bundles)
+      - Source maps for debugging
+
+      57% of analyzed themes use build tools (webpack, Laravel Mix, Gulp).
+      See documentation: asset-management-strategies.md
+    languages: [php]
+    severity: INFO
+    metadata:
+      category: theme-structure
+      subcategory: asset-pipeline
+      confidence: high
+      likelihood: low
+      impact: low
+      technology: [webpack]
+
+  - id: hardcoded-version-string
+    patterns:
+      - pattern-either:
+          - pattern: wp_enqueue_style(..., '1.0', ...)
+          - pattern: wp_enqueue_style(..., '1.0.0', ...)
+          - pattern: wp_enqueue_script(..., '1.0', ...)
+          - pattern: wp_enqueue_script(..., '1.0.0', ...)
+      - metavariable-regex:
+          metavariable: $VERSION
+          regex: ^\d+\.\d+(\.\d+)?$
+    message: |
+      Hardcoded version string in asset enqueue. Easy to forget updating → stale cache.
+
+      Better alternatives:
+      1. File modification time (auto-updates on file change):
+         filemtime(get_template_directory() . '/css/styles.css')
+
+      2. Theme version from style.css:
+         wp_get_theme()->get('Version')
+
+      3. webpack with automatic hash-based versioning:
+         asset_path('styles/main.css') → 'styles/main_abc123.css'
+    languages: [php]
+    severity: WARNING
+    metadata:
+      category: theme-structure
+      subcategory: asset-pipeline
+      confidence: high
+      likelihood: high
+      impact: medium
+
+  - id: missing-webpack-config
+    pattern: |
+      "name": "...",
+      ...
+      "devDependencies": {
+        ...
+        "webpack": "...",
+        ...
+      }
+    pattern-not-inside: |
+      {
+        ...,
+        "scripts": {
+          ...,
+          "build": "...",
+          ...
+        },
+        ...
+      }
+    paths:
+      include:
+        - package.json
+    message: |
+      webpack installed in devDependencies but no "build" script in package.json.
+      Add build scripts:
+
+      "scripts": {
+        "start": "webpack --watch",
+        "build": "webpack",
+        "build:production": "cross-env NODE_ENV=production webpack"
+      }
+    languages: [json]
+    severity: WARNING
+    metadata:
+      category: theme-structure
+      subcategory: build-tools
+      confidence: high
+
+  - id: asset-concatenation-opportunity
+    patterns:
+      - pattern-inside: |
+          function $FUNC(...) {
+            ...
+          }
+      - pattern: |
+          wp_enqueue_style($HANDLE1, ...);
+          ...
+          wp_enqueue_style($HANDLE2, ...);
+          ...
+          wp_enqueue_style($HANDLE3, ...);
+          ...
+          wp_enqueue_style($HANDLE4, ...);
+          ...
+    message: |
+      4+ separate stylesheet enqueues detected. Consider concatenating with webpack:
+      - Reduces HTTP requests (4+ → 1 main bundle)
+      - Enables code splitting (application code vs vendor)
+      - Automatic minification and optimization
+
+      With webpack, all styles compile to single main.css with cache-busting hash.
+    languages: [php]
+    severity: INFO
+    metadata:
+      category: theme-structure
+      subcategory: asset-pipeline
+      performance: true
+      likelihood: medium
+      impact: medium
+
+  - id: missing-asset-manifest-helper
+    patterns:
+      - pattern: wp_enqueue_style(..., get_template_directory_uri() . '/dist/styles/main.css', ...)
+      - pattern-not-inside: |
+          wp_enqueue_style(..., asset_path(...), ...);
+          ...
+    paths:
+      include:
+        - app/setup.php
+        - functions.php
+    message: |
+      Hardcoded /dist/ asset path without asset_path() helper.
+      webpack generates hashed filenames (main_abc123.css) requiring manifest lookup.
+
+      Fix:
+      - Change: get_template_directory_uri() . '/dist/styles/main.css'
+      - To: asset_path('styles/main.css')
+
+      Requires asset_path() helper in app/helpers.php that reads dist/assets.json manifest.
+    languages: [php]
+    severity: WARNING
+    metadata:
+      category: theme-structure
+      subcategory: asset-pipeline
+      confidence: high
+      technology: [webpack, sage]
