@@ -12,95 +12,108 @@ source_confidence: "67%"
 last_updated: "2026-02-13"
 ---
 
-# Theme vs MU-Plugins Code Separation in WordPress
+## Overview
 
 Must-use plugins (mu-plugins) provide site-wide functionality independent of theme changes, while themes handle presentation logic exclusively. Analyzed WordPress VIP installation (airbnb) contains 612 mu-plugin PHP files vs 2,006 lines in theme, demonstrating 30% functionality in mu-plugins, 70% in theme.
 
 ## When to Use MU-Plugins
 
-MU-plugins persist across theme changes and cannot be deactivated, making them ideal for critical site functionality.
+MU-plugins persist across theme changes and cannot be deactivated. WordPress loads mu-plugins before themes and regular plugins, making them ideal for critical site functionality that must remain active regardless of active theme.
 
-**Use MU-Plugins For:**
+## Custom Post Types in MU-Plugins
 
-1. **Custom Post Types & Taxonomies**
-   ```php
-   // wp-content/mu-plugins/custom-post-types.php
-   <?php
-   add_action('init', function() {
-       register_post_type('project', [
-           'public' => true,
-           'show_in_rest' => true,
-           'show_in_graphql' => true,
-       ]);
-   });
-   ```
+WordPress custom post types belong in mu-plugins because content types should persist across theme changes:
 
-   **Reason:** CPTs should persist across theme changes. Switching themes shouldn't delete content.
+```php
+// wp-content/mu-plugins/custom-post-types.php
+<?php
+add_action('init', function() {
+    register_post_type('project', [
+        'public' => true,
+        'show_in_rest' => true,
+        'show_in_graphql' => true,
+    ]);
+});
+```
 
-2. **WPGraphQL Custom Fields & Schema Extensions**
-   ```php
-   // wp-content/mu-plugins/graphql-custom-fields.php
-   <?php
-   add_action('graphql_register_types', function() {
-       register_graphql_field('Post', 'readingTime', [
-           'type' => 'Int',
-           'resolve' => function($post) {
-               $content = get_post_field('post_content', $post->ID);
-               return ceil(str_word_count(strip_tags($content)) / 200);
-           },
-       ]);
-   });
-   ```
+**Reason:** CPTs should persist across theme changes. Switching themes shouldn't delete content.
 
-   **Reason:** API structure shouldn't depend on active theme.
+## GraphQL Schema Extensions in MU-Plugins
 
-3. **Security & Access Control**
-   ```php
-   // wp-content/mu-plugins/security-hardening.php
-   <?php
-   // Remove WordPress version from head
-   remove_action('wp_head', 'wp_generator');
+WPGraphQL custom fields and schema extensions belong in mu-plugins because API structure should remain consistent regardless of active theme:
 
-   // Disable XML-RPC
-   add_filter('xmlrpc_enabled', '__return_false');
+```php
+// wp-content/mu-plugins/graphql-custom-fields.php
+<?php
+add_action('graphql_register_types', function() {
+    register_graphql_field('Post', 'readingTime', [
+        'type' => 'Int',
+        'resolve' => function($post) {
+            $content = get_post_field('post_content', $post->ID);
+            return ceil(str_word_count(strip_tags($content)) / 200);
+        },
+    ]);
+});
+```
 
-   // Custom capability checks
-   add_filter('user_has_cap', function($allcaps, $caps, $args) {
-       // Site-wide permission logic
-       return $allcaps;
-   }, 10, 3);
-   ```
+**Reason:** API structure shouldn't depend on active theme. GraphQL clients expect consistent schema.
 
-   **Reason:** Security must remain active regardless of theme.
+## Security Hardening in MU-Plugins
 
-4. **Performance Optimizations (Caching, Object Cache)**
-   ```php
-   // wp-content/mu-plugins/cache-control.php
-   <?php
-   // Aggressive object caching for expensive queries
-   add_action('pre_get_posts', function($query) {
-       if ($query->is_main_query() && !is_admin()) {
-           $query->set('cache_results', true);
-           $query->set('update_post_term_cache', false);
-       }
-   });
-   ```
+WordPress security measures belong in mu-plugins to ensure site protection remains active during theme development or switching:
 
-   **Reason:** Performance optimizations benefit entire site, not just current theme.
+```php
+// wp-content/mu-plugins/security-hardening.php
+<?php
+// Remove WordPress version from head
+remove_action('wp_head', 'wp_generator');
 
-5. **Multisite Network-Wide Functionality**
-   ```php
-   // wp-content/mu-plugins/network-features.php
-   <?php
-   // Network-activated functionality for all sites
-   add_action('init', function() {
-       if (is_multisite()) {
-           // Cross-site shared functionality
-       }
-   });
-   ```
+// Disable XML-RPC
+add_filter('xmlrpc_enabled', '__return_false');
 
-   **Reason:** Network features must work across all site themes.
+// Custom capability checks
+add_filter('user_has_cap', function($allcaps, $caps, $args) {
+    // Site-wide permission logic
+    return $allcaps;
+}, 10, 3);
+```
+
+**Reason:** Security must remain active regardless of theme. Theme changes shouldn't create security windows.
+
+## Performance Optimizations in MU-Plugins
+
+WordPress performance caching and query optimizations belong in mu-plugins to ensure consistent site speed across all themes:
+
+```php
+// wp-content/mu-plugins/cache-control.php
+<?php
+// Aggressive object caching for expensive queries
+add_action('pre_get_posts', function($query) {
+    if ($query->is_main_query() && !is_admin()) {
+        $query->set('cache_results', true);
+        $query->set('update_post_term_cache', false);
+    }
+});
+```
+
+**Reason:** Performance optimizations benefit entire site, not just current theme. Caching logic should persist.
+
+## Multisite Network Functionality in MU-Plugins
+
+WordPress multisite network-wide features belong in mu-plugins because network functionality must work across all site themes:
+
+```php
+// wp-content/mu-plugins/network-features.php
+<?php
+// Network-activated functionality for all sites
+add_action('init', function() {
+    if (is_multisite()) {
+        // Cross-site shared functionality
+    }
+});
+```
+
+**Reason:** Network features must work across all site themes. Subsites may use different themes.
 
 **Pattern:** If functionality needs to persist when theme changes, use mu-plugin. If functionality is presentation-specific, use theme.
 
@@ -108,78 +121,91 @@ MU-plugins persist across theme changes and cannot be deactivated, making them i
 
 ## When to Use Theme Code
 
-Theme code handles all presentation logic, Blade templates, SCSS styling, and theme-specific JavaScript.
+Theme code handles all presentation logic tied to visual design. Blade templates, SCSS styling, theme-specific JavaScript, and display helpers belong in theme files because they only apply to the active theme.
 
-**Use Theme Code For:**
+## Blade Templates in Theme Code
 
-1. **Blade Templates & Template Controllers**
-   ```php
-   // app/Controllers/FrontPage.php
-   namespace App\Controllers;
-   use Sober\Controller\Controller;
+WordPress Sage theme template controllers belong in theme code because template data formatting is theme-specific:
 
-   class FrontPage extends Controller
-   {
-       public function hero()
-       {
-           return get_field('hero_section');
-       }
-   }
-   ```
+```php
+// app/Controllers/FrontPage.php
+namespace App\Controllers;
+use Sober\Controller\Controller;
 
-   **Reason:** Template data formatting is theme-specific.
+class FrontPage extends Controller
+{
+    public function hero()
+    {
+        return get_field('hero_section');
+    }
+}
+```
 
-2. **Asset Enqueueing (CSS, JavaScript)**
-   ```php
-   // app/setup.php
-   add_action('wp_enqueue_scripts', function() {
-       wp_enqueue_style('sage/main.css', asset_path('styles/main.css'));
-       wp_enqueue_script('sage/main.js', asset_path('scripts/main.js'));
-   }, 100);
-   ```
+**Reason:** Template data formatting is theme-specific. Different themes structure data differently.
 
-   **Reason:** Asset loading tied to theme's compiled bundles.
+## Asset Enqueueing in Theme Code
 
-3. **Theme-Specific Filters & Hooks**
-   ```php
-   // app/filters.php
-   add_filter('excerpt_length', function() {
-       return 25; // Theme-specific excerpt length
-   });
+WordPress CSS and JavaScript enqueueing belongs in theme code because assets are compiled specifically for the active theme:
 
-   add_filter('wp_nav_menu_items', function($items, $args) {
-       // Add custom menu items for this theme's design
-       return $items;
-   }, 10, 2);
-   ```
+```php
+// app/setup.php
+add_action('wp_enqueue_scripts', function() {
+    wp_enqueue_style('sage/main.css', asset_path('styles/main.css'));
+    wp_enqueue_script('sage/main.js', asset_path('scripts/main.js'));
+}, 100);
+```
 
-   **Reason:** Filters adjust WordPress output for theme's design requirements.
+**Reason:** Asset loading tied to theme's compiled bundles. Each theme has different stylesheets and scripts.
 
-4. **Helper Functions for Templates**
-   ```php
-   // app/helpers.php
-   namespace App;
+## Theme-Specific Filters and Hooks
 
-   function format_phone_number($phone) {
-       // Theme-specific phone formatting for display
-       return preg_replace('/(\d{3})(\d{3})(\d{4})/', '($1) $2-$3', $phone);
-   }
-   ```
+WordPress excerpt length, navigation menu customization, and display filters belong in theme code:
 
-   **Reason:** Display formatting helpers serve theme templates.
+```php
+// app/filters.php
+add_filter('excerpt_length', function() {
+    return 25; // Theme-specific excerpt length
+});
 
-5. **Admin UI Customizations for Theme Options**
-   ```php
-   // app/admin.php
-   add_action('customize_register', function($wp_customize) {
-       // Theme customizer settings for colors, fonts, layout
-       $wp_customize->add_section('theme_colors', [
-           'title' => 'Theme Colors',
-       ]);
-   });
-   ```
+add_filter('wp_nav_menu_items', function($items, $args) {
+    // Add custom menu items for this theme's design
+    return $items;
+}, 10, 2);
+```
 
-   **Reason:** Theme options specific to active theme's design.
+**Reason:** Filters adjust WordPress output for theme's design requirements. Layout dictates excerpt length.
+
+## Template Helper Functions in Theme Code
+
+WordPress display formatting helpers belong in theme code because they serve theme-specific template rendering:
+
+```php
+// app/helpers.php
+namespace App;
+
+function format_phone_number($phone) {
+    // Theme-specific phone formatting for display
+    return preg_replace('/(\d{3})(\d{3})(\d{4})/', '($1) $2-$3', $phone);
+}
+```
+
+**Reason:** Display formatting helpers serve theme templates. Presentation logic stays with presentation layer.
+
+## Theme Customizer Options in Theme Code
+
+WordPress theme customizer settings for colors, fonts, and layout belong in theme code:
+
+```php
+// app/admin.php
+add_action('customize_register', function($wp_customize) {
+    // Theme customizer settings for colors, fonts, layout
+    $wp_customize->add_section('theme_colors', [
+        'title' => 'Theme Colors',
+    ]);
+});
+```
+
+**Reason:** Theme options specific to active theme's design. Different themes have different customization needs.
 
 **Pattern:** If functionality affects visual presentation or template rendering, use theme code.
 
@@ -187,27 +213,20 @@ Theme code handles all presentation logic, Blade templates, SCSS styling, and th
 
 ## MU-Plugin File Structure
 
-MU-plugins require specific file organization for WordPress to detect and load them correctly.
+MU-plugins require specific file organization patterns. WordPress auto-loads PHP files in the mu-plugins root directory, while subdirectories need explicit loader files.
 
-**Basic Structure:**
+## Single-File MU-Plugin Pattern
+
+WordPress single-file mu-plugins place entire functionality in one PHP file directly in the mu-plugins root directory:
 
 ```
 wp-content/
 └── mu-plugins/
     ├── custom-post-types.php          # Single-file mu-plugin
-    ├── graphql-extensions.php         # Single-file mu-plugin
-    ├── my-plugin/                     # Directory-based mu-plugin
-    │   ├── my-plugin.php              # Main plugin file (same name as directory)
-    │   ├── includes/
-    │   │   ├── class-cpt-manager.php
-    │   │   └── class-graphql-fields.php
-    │   └── config/
-    │       └── post-types.php
-    └── autoload/                      # Airbnb pattern: client mu-plugins
-        └── client-mu-plugins.php      # Autoloader for subdirectories
+    └── graphql-extensions.php         # Single-file mu-plugin
 ```
 
-**Single-File MU-Plugin:**
+Simple mu-plugins with minimal code use single-file pattern:
 
 ```php
 <?php
@@ -225,7 +244,25 @@ add_action('init', function() {
 });
 ```
 
-**Directory-Based MU-Plugin:**
+**Pattern:** Single PHP file with plugin header comment and hooks. WordPress auto-loads on every request.
+
+## Directory-Based MU-Plugin Pattern
+
+WordPress directory-based mu-plugins organize complex functionality across multiple files with main plugin file matching directory name:
+
+```
+wp-content/
+└── mu-plugins/
+    └── my-plugin/                     # Directory-based mu-plugin
+        ├── my-plugin.php              # Main plugin file (same name as directory)
+        ├── includes/
+        │   ├── class-cpt-manager.php
+        │   └── class-graphql-fields.php
+        └── config/
+            └── post-types.php
+```
+
+Directory-based plugins use SPL autoloader for class loading:
 
 ```php
 <?php
@@ -259,7 +296,11 @@ require_once __DIR__ . '/includes/class-custom-fields.php';
 \GraphQLExtensions\CustomFields::init();
 ```
 
-**WordPress VIP Pattern (Airbnb - 612 files):**
+**Critical:** Main file must match directory name. WordPress only auto-loads `my-plugin/my-plugin.php`.
+
+## WordPress VIP Subdirectory Pattern
+
+WordPress VIP installations organize hundreds of mu-plugins using subdirectory pattern with explicit loader file:
 
 ```
 mu-plugins/
@@ -274,7 +315,7 @@ mu-plugins/
 └── client-mu-plugins.php           # Loader file (required!)
 ```
 
-**Loader File (client-mu-plugins.php):**
+Loader file explicitly requires each subdirectory plugin:
 
 ```php
 <?php
@@ -297,17 +338,17 @@ foreach ($client_plugins as $plugin) {
 }
 ```
 
-**Critical Note:** WordPress only auto-loads PHP files in `mu-plugins/` root directory. Subdirectories require manual loading via loader file.
+**Critical:** WordPress only auto-loads PHP files in `mu-plugins/` root directory. Subdirectories require manual loading.
 
 **Source Confidence:** 100% (Airbnb uses subdirectory pattern with 612 mu-plugin files)
 
 ## Code Migration Strategy
 
-When refactoring existing theme code, move site-critical functionality to mu-plugins first, then theme-specific code second.
+WordPress theme refactoring moves site-critical functionality to mu-plugins while keeping presentation logic in theme code. Five-phase migration ensures functionality persists across theme changes.
 
-**Phase 1: Identify Functionality to Extract (30 min)**
+## Phase 1: Identify Functionality to Extract
 
-Review `functions.php` and identify code categories:
+WordPress functions.php audit categorizes code into theme-specific versus site-wide functionality:
 
 ```php
 // functions.php (BEFORE refactoring)
@@ -339,37 +380,37 @@ function format_date($date) {
 remove_action('wp_head', 'wp_generator');
 ```
 
-**Phase 2: Create MU-Plugin Structure (15 min)**
+**Audit Time:** 30 minutes for typical theme. Mark CPTs, taxonomies, API extensions, security code for extraction.
+
+## Phase 2-3: Create MU-Plugin and Move Code
+
+WordPress mu-plugin structure organizes extracted functionality into modular includes:
 
 ```bash
 mkdir -p wp-content/mu-plugins/site-functionality/includes
 touch wp-content/mu-plugins/site-functionality/site-functionality.php
 ```
 
-**Phase 3: Move CPT/Taxonomy Code (30 min)**
+Main plugin file loads modules:
 
 ```php
 <?php
 /**
  * Plugin Name: Site Functionality
- * Description: Custom post types, taxonomies, and API extensions
- * Version: 1.0.0
- *
  * File: wp-content/mu-plugins/site-functionality/site-functionality.php
  */
 
-// Load modular files
 require_once __DIR__ . '/includes/custom-post-types.php';
 require_once __DIR__ . '/includes/custom-taxonomies.php';
 require_once __DIR__ . '/includes/graphql-extensions.php';
 require_once __DIR__ . '/includes/security-hardening.php';
 ```
 
+Modular CPT file with GraphQL support:
+
 ```php
 <?php
 /**
- * Custom Post Types Registration
- *
  * File: wp-content/mu-plugins/site-functionality/includes/custom-post-types.php
  */
 
@@ -391,7 +432,11 @@ add_action('init', function() {
 });
 ```
 
-**Phase 4: Remove from Theme (15 min)**
+**Migration Time:** 45 minutes.
+
+## Phase 4-5: Remove from Theme and Test
+
+WordPress theme functions.php retains only presentation helpers after mu-plugin migration:
 
 ```php
 <?php
@@ -404,7 +449,7 @@ array_map(function ($file) {
 }, ['helpers', 'setup', 'filters', 'admin']);
 ```
 
-**Phase 5: Test Thoroughly (30 min)**
+WordPress migration testing checklist verifies functionality persists:
 
 - [ ] WordPress admin loads without errors
 - [ ] Custom post types appear in admin menu
@@ -413,103 +458,51 @@ array_map(function ($file) {
 - [ ] Switch to different theme: CPTs still work ✅
 - [ ] Deactivate regular plugins: mu-plugin still active ✅
 
-**Total Migration Time:** 2 hours for simple sites, 6-8 hours for complex sites
+**Testing Time:** 30-45 minutes. Test theme switching to verify persistence.
+
+**Total Migration Time:** 2 hours for simple sites, 6-8 hours for complex sites with extensive functions.php.
 
 **Source Confidence:** 67% (recommended migration strategy, not directly observed)
 
 ## Airbnb Case Study (612 MU-Plugin Files)
 
-WordPress VIP multisite implementation demonstrates enterprise-scale mu-plugin organization.
+WordPress VIP multisite demonstrates enterprise-scale mu-plugin organization with 612 files.
 
-**File Count Breakdown:**
+**File Count:**
 
 | Location | Files | Purpose |
 |----------|-------|---------|
-| `mu-plugins/` (root) | 3 | Loader files only |
+| `mu-plugins/` (root) | 3 | Loader files |
 | `client-mu-plugins/` | 612 | Organized subdirectories |
-| `themes/presser/` | 13 | PHP theme files (app/) |
-| **Ratio** | **47:1** | **MU-plugins outnumber theme PHP files** |
+| `themes/presser/` | 13 | PHP theme files |
+| **Ratio** | **47:1** | **MU-plugins outnumber theme files** |
 
-**MU-Plugin Categories (Airbnb):**
+**Categories:**
 
-1. **GraphQL Security (62 files)**
-   - Query complexity limits
-   - DoS protection
-   - Rate limiting
-   - Field-level permissions
+1. **GraphQL Security (62 files)** - Query limits, DoS protection, rate limiting, field permissions
+2. **Performance (83 files)** - Object cache, query optimization, image lazy loading, CDN
+3. **Multisite (127 files)** - Blog switching, network settings, cross-site queries, plugin loading
+4. **CPTs & Taxonomies (45 files)** - 8 post types, 7 taxonomies, GraphQL/REST configuration
+5. **VIP Integrations (118 files)** - Block Data API, Varnish cache, proxy IP, SAML SSO
+6. **Redirects (31 files)** - Domain redirects (15+ domains), legacy URLs, localization
+7. **ACF Extensions (89 files)** - Custom fields, field groups, block registration
+8. **Admin (57 files)** - Dashboard widgets, menu mods, user roles, editorial workflow
 
-2. **Performance Optimizations (83 files)**
-   - Object cache wrappers
-   - Query optimization
-   - Image lazy loading
-   - CDN integration
+**Pattern:** 80% business logic in mu-plugins, 20% presentation in theme.
 
-3. **Multisite Management (127 files)**
-   - Blog switching helpers
-   - Network-wide settings
-   - Cross-site queries
-   - Site-specific plugin loading
-
-4. **Custom Post Types & Taxonomies (45 files)**
-   - 8 custom post types
-   - 7 custom taxonomies
-   - GraphQL registration
-   - REST API configuration
-
-5. **VIP Integrations (118 files)**
-   - Block Data API filters
-   - Varnish cache control
-   - Proxy IP verification
-   - SAML SSO integration
-
-6. **Redirects & Routing (31 files)**
-   - Domain redirects (15+ domains)
-   - Legacy URL mapping
-   - Localization routing
-
-7. **ACF Extensions (89 files)**
-   - Custom ACF field types
-   - Field group configurations
-   - Block registration
-
-8. **Admin Customizations (57 files)**
-   - Custom dashboard widgets
-   - Menu modifications
-   - User role enhancements
-   - Editorial workflow
-
-**Pattern:** 80% of business logic in mu-plugins, 20% presentation logic in theme.
-
-**Source Confidence:** 100% (Airbnb mu-plugins directory analysis)
+**Source Confidence:** 100% (Airbnb mu-plugins analysis)
 
 ## MU-Plugin Load Order
 
-MU-plugins load alphabetically before regular plugins, requiring dependency management for complex setups.
+MU-plugins load alphabetically before regular plugins. WordPress loads MU-plugins → Regular plugins → Theme in sequence.
 
-**Load Order:**
+**Load Sequence:**
 
-1. **MU-Plugins** (alphabetical by filename)
-   ```
-   wp-content/mu-plugins/
-   ├── 00-autoloader.php          # Loads first
-   ├── client-mu-plugins.php      # Loads second
-   └── zzz-last-plugin.php        # Loads last
-   ```
+1. **MU-Plugins** (alphabetical): `00-autoloader.php`, `client-mu-plugins.php`, `zzz-last-plugin.php`
+2. **Regular Plugins** (after mu-plugins): `woocommerce/`, `wp-graphql/`
+3. **Theme** (last): `themes/sage/resources/functions.php`
 
-2. **Regular Plugins** (after all mu-plugins)
-   ```
-   wp-content/plugins/
-   ├── woocommerce/               # After mu-plugins
-   └── wp-graphql/                # After mu-plugins
-   ```
-
-3. **Theme** (after plugins)
-   ```
-   wp-content/themes/sage/
-   └── resources/functions.php    # Loads last
-   ```
-
-**Dependency Management:**
+**Dependency Check Pattern:**
 
 ```php
 <?php
@@ -534,7 +527,7 @@ add_action('graphql_register_types', function() {
 });
 ```
 
-**Load Order Control (Airbnb Pattern):**
+**Load Order Control:**
 
 ```php
 <?php
@@ -546,7 +539,7 @@ add_action('graphql_register_types', function() {
 // Define constants for other plugins
 define('SITE_MU_PLUGIN_DIR', __DIR__);
 
-// Load Composer autoloader (if using Composer in mu-plugins)
+// Load Composer autoloader
 if (file_exists(__DIR__ . '/vendor/autoload.php')) {
     require __DIR__ . '/vendor/autoload.php';
 }
@@ -558,23 +551,21 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 
 ## Performance Implications
 
-MU-plugins add overhead to every request since they cannot be deactivated, requiring careful performance optimization.
+MU-plugins load on every request without deactivation option. Careful optimization required for sites with 100+ mu-plugin files.
 
-**Performance Comparison:**
-
-| Setup | MU-Plugin Count | Load Time (avg) | Memory Usage |
-|-------|----------------|-----------------|--------------|
+| Setup | Files | Load Time | Memory |
+|-------|-------|-----------|--------|
 | Small site | 3 | +2ms | +0.5 MB |
-| Medium site (Airbnb) | 612 | +15ms | +8 MB |
-| Large site (WordPress.com) | 1000+ | +25ms | +15 MB |
+| Airbnb | 612 | +15ms | +8 MB |
+| WordPress.com | 1000+ | +25ms | +15 MB |
 
-**Optimization Strategies:**
+## Conditional Loading Optimization
 
-**1. Conditional Loading:**
+WordPress MU-plugins use conditional requires to load functionality only when needed:
 
 ```php
 <?php
-// Only load on specific pages/contexts
+// Only load on specific contexts
 if (is_admin()) {
     require_once __DIR__ . '/includes/admin-customizations.php';
 }
@@ -588,39 +579,42 @@ if (defined('GRAPHQL_REQUEST') && GRAPHQL_REQUEST) {
 }
 ```
 
-**2. Lazy Initialization:**
+**Pattern:** Check context before requiring files. Admin customizations only load in wp-admin.
+
+## Lazy Initialization and Autoloading
+
+WordPress MU-plugins delay hook registration until functionality needed:
 
 ```php
 <?php
-// Don't register hooks until needed
+// Lazy initialization: check before registering
 add_action('init', function() {
     if (post_type_exists('project')) {
-        return; // CPT already registered
+        return; // Already registered
     }
     register_post_type('project', [/* ... */]);
-}, 1); // Priority 1 (early)
+}, 1);
 ```
 
-**3. Autoloading Over Require:**
+SPL autoloader prevents loading unused classes:
 
 ```php
 <?php
-// BAD: Load all classes upfront
-require __DIR__ . '/includes/class-a.php';
-require __DIR__ . '/includes/class-b.php';
-require __DIR__ . '/includes/class-c.php';
-
-// GOOD: Autoload classes when first used
+// Autoload classes when first used
 spl_autoload_register(function($class) {
-    // Only load class file when class is instantiated
+    // Only load class file when class instantiated
 });
 ```
 
-**4. Object Caching:**
+**Pattern:** Register hooks conditionally, autoload classes lazily.
+
+## Object Caching in MU-Plugins
+
+WordPress mu-plugins cache expensive operations to reduce repeated computation overhead:
 
 ```php
 <?php
-// Cache expensive operations in mu-plugins
+// Cache expensive filter results
 add_filter('some_expensive_filter', function($value) {
     $cache_key = 'expensive_filter_' . md5($value);
     $cached = wp_cache_get($cache_key);
@@ -635,15 +629,17 @@ add_filter('some_expensive_filter', function($value) {
 });
 ```
 
-**Pattern:** MU-plugins should be lean, conditionally loaded, and aggressively cached.
+**Pattern:** Wrap expensive operations in wp_cache_get/set. 1-hour TTL for stable data.
 
 **Source Confidence:** 100% (WordPress VIP performance best practices)
 
 ## Common Pitfalls
 
-Mistakes developers make when organizing code between themes and mu-plugins.
+WordPress developers make predictable mistakes organizing code between themes and mu-plugins.
 
-**Pitfall 1: Putting CPTs in Theme**
+## Antipattern: CPTs in Theme
+
+WordPress custom post types registered in theme functions.php disappear when switching themes:
 
 ```php
 // ❌ BAD: themes/sage/resources/functions.php
@@ -651,10 +647,9 @@ add_action('init', function() {
     register_post_type('project', ['public' => true]);
 });
 
-// Problem: Switching themes deletes all project content from admin menu
+// Problem: Theme switch deletes project content from admin menu
 ```
 
-**Fix:**
 ```php
 // ✅ GOOD: wp-content/mu-plugins/custom-post-types.php
 add_action('init', function() {
@@ -662,7 +657,9 @@ add_action('init', function() {
 });
 ```
 
-**Pitfall 2: Asset Enqueuing in MU-Plugin**
+## Antipattern: Assets in MU-Plugin
+
+WordPress asset enqueuing in mu-plugins breaks when themes change directory structure:
 
 ```php
 // ❌ BAD: wp-content/mu-plugins/site-functionality.php
@@ -670,170 +667,127 @@ add_action('wp_enqueue_scripts', function() {
     wp_enqueue_style('custom-styles', '/path/to/styles.css');
 });
 
-// Problem: Asset paths hardcoded, breaks when theme changes directory structure
-```
-
-**Fix:**
-```php
 // ✅ GOOD: themes/sage/app/setup.php
 add_action('wp_enqueue_scripts', function() {
     wp_enqueue_style('sage/main.css', asset_path('styles/main.css'));
 });
 ```
 
-**Pitfall 3: Complex Blade Logic in Theme Controllers**
+## Antipattern: Query Logic in Theme
+
+WordPress WP_Query logic in theme controllers prevents reuse in headless/API contexts:
 
 ```php
 // ❌ BAD: themes/sage/app/Controllers/Archive.php
 public function posts() {
-    // 200 lines of complex WP_Query logic, filtering, sorting
+    // 200 lines of complex WP_Query logic
     return $complex_query;
 }
 
-// Problem: Query logic tied to theme, can't reuse in headless/API contexts
-```
-
-**Fix:**
-```php
 // ✅ GOOD: wp-content/mu-plugins/includes/query-helpers.php
 function get_filtered_posts($args) {
-    // Reusable query logic available everywhere
     return new WP_Query($args);
-}
-
-// themes/sage/app/Controllers/Archive.php
-public function posts() {
-    return get_filtered_posts(['post_type' => 'post']);
 }
 ```
 
-**Pitfall 4: MU-Plugin Depends on Theme Functions**
+## Antipattern: MU-Plugin Depends on Theme
+
+WordPress REST API extensions in mu-plugins break when themes change if they call theme functions:
 
 ```php
 // ❌ BAD: wp-content/mu-plugins/api-extensions.php
 add_filter('rest_api_init', function() {
     register_rest_field('post', 'formatted_date', [
-        'get_callback' => fn($post) => format_date($post['date']), // format_date() in theme!
+        'get_callback' => fn($post) => format_date($post['date']), // Breaks!
     ]);
 });
 
-// Problem: API breaks when theme changes (format_date() missing)
-```
-
-**Fix:**
-```php
-// ✅ GOOD: wp-content/mu-plugins/api-extensions.php
+// ✅ GOOD: Self-contained formatting
 add_filter('rest_api_init', function() {
     register_rest_field('post', 'formatted_date', [
-        'get_callback' => function($post) {
-            // Self-contained formatting in mu-plugin
-            return date('F j, Y', strtotime($post['date']));
-        },
+        'get_callback' => fn($post) => date('F j, Y', strtotime($post['date'])),
     ]);
 });
 ```
 
-**Pitfall 5: Too Many Small MU-Plugin Files**
+## Antipattern: File Proliferation
+
+WordPress mu-plugin files should group related functionality instead of creating 100+ single-purpose files:
 
 ```
-// ❌ BAD: 100+ single-purpose files
+// ❌ BAD: 100+ files
 mu-plugins/
 ├── custom-post-type-project.php
 ├── custom-post-type-case-study.php
-├── custom-taxonomy-category.php
-├── custom-taxonomy-tag.php
-├── ... (96 more files)
-```
+├── ... (96 more)
 
-**Fix:**
-```
 // ✅ GOOD: Organized by domain
-mu-plugins/
-└── site-functionality/
-    ├── site-functionality.php
-    └── includes/
-        ├── custom-post-types.php    # All CPTs
-        ├── custom-taxonomies.php    # All taxonomies
-        └── graphql-extensions.php   # All GraphQL
+mu-plugins/site-functionality/
+├── site-functionality.php
+└── includes/
+    ├── custom-post-types.php    # All CPTs
+    └── custom-taxonomies.php    # All taxonomies
 ```
 
-**Source Confidence:** 100% (common WordPress development antipatterns)
+**Source Confidence:** 100% (common WordPress antipatterns)
 
 ## Testing Strategy
 
-Verify code separation by testing theme switch scenarios and plugin deactivation.
+WordPress theme/mu-plugin separation verified through theme switching and API testing.
 
-**Test 1: Theme Switch Test**
+**Test 1: Theme Switch**
 
 ```bash
-# 1. Note current custom post types in admin menu
+# Note CPTs, switch theme, verify CPTs persist
 wp post-type list --format=table
-
-# 2. Switch to default WordPress theme
 wp theme activate twentytwentyfour
-
-# 3. Verify CPTs still appear in admin menu
 wp post-type list --format=table
-# ✅ PASS: All CPTs from mu-plugins still present
+# ✅ PASS: CPTs from mu-plugins still present
 
-# 4. Check theme-specific functionality gone
-# ✅ PASS: Custom menus, widgets, page templates missing (expected)
+# Check theme-specific functionality gone
+# ✅ PASS: Custom menus, widgets missing (expected)
 
-# 5. Reactivate original theme
 wp theme activate sage
 ```
 
-**Test 2: MU-Plugin Isolation Test**
+**Test 2: MU-Plugin Isolation**
 
 ```bash
-# 1. Temporarily rename theme directory
+# Rename theme, test mu-plugin functionality directly
 mv themes/sage themes/sage.backup
-
-# 2. Activate default theme
 wp theme activate twentytwentyfour
 
-# 3. Test mu-plugin functionality directly
 wp shell
 > post_type_exists('project');  # Should return true
-> function_exists('format_date');  # Should return false (theme function)
+> function_exists('format_date');  # Should return false
 
-# 4. Restore theme
 mv themes/sage.backup themes/sage
 wp theme activate sage
 ```
 
-**Test 3: GraphQL API Test (Headless)**
+**Test 3: GraphQL API**
 
 ```bash
 # Test API works regardless of active theme
 curl -X POST https://example.com/graphql \
-  -H "Content-Type: application/json" \
   -d '{"query": "{ projects { nodes { title } } }"}'
+# ✅ PASS: Returns data
 
-# ✅ PASS: GraphQL returns data (mu-plugin handles it)
-
-# Switch theme and test again
 wp theme activate twentytwentyfour
 curl -X POST https://example.com/graphql \
-  -H "Content-Type: application/json" \
   -d '{"query": "{ projects { nodes { title } } }"}'
-
-# ✅ PASS: Still works (proves theme-independence)
+# ✅ PASS: Still works (theme-independent)
 ```
 
-**Test 4: Performance Regression Test**
+**Test 4: Performance**
 
 ```bash
-# Before migration (all code in theme)
+# Before/after migration comparison
 wp profile stage --spotlight
-# Note: Total execution time
-
-# After migration (code split into mu-plugins)
-wp profile stage --spotlight
-# Compare: Should be similar or faster (not slower)
+# Compare execution time (should be similar or faster)
 ```
 
-**Source Confidence:** 100% (standard WordPress testing practices)
+**Source Confidence:** 100% (standard WordPress testing)
 
 ## Related Patterns
 
