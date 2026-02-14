@@ -20,96 +20,25 @@ WordPress projects analyzed show 100% adoption of block.json registration for AC
 
 ## block.json Registration Pattern
 
-WordPress 5.8+ introduced block.json as the preferred block registration method. ACF blocks use this same pattern.
+WordPress 5.8+ ACF blocks use block.json for registration. **Structure:** `src/logo-cloud-block/` contains block.json, logo-cloud-block.php (render template), style.css. `acf-json/` stores field groups. Main plugin file loops through blocks and registers with `register_block_type(__DIR__ . '/src/' . $block)`.
 
-### Directory Structure
-
-```
-plugins/
-  airbnb-policy-blocks/
-    src/
-      logo-cloud-block/
-        block.json          ← Block metadata
-        edit.js             ← (Optional) Custom block editor
-        save.js             ← (Optional) Save functionality
-        style.css           ← Frontend styles
-        editor.css          ← Editor-only styles
-        logo-cloud-block.php ← PHP render template
-    acf-json/
-      group_680ad6fe615b8.json  ← ACF fields for this block
-    airbnb-policy-blocks.php  ← Registration code
-```
-
-### block.json Configuration
-
+**block.json config:**
 ```json
-{
-  "$schema": "https://schemas.wp.org/trunk/block.json",
-  "apiVersion": 3,
-  "name": "create-block/logo-cloud-block",
-  "version": "0.1.0",
-  "title": "Logo Cloud Block",
-  "category": "media",
-  "icon": "smiley",
-  "description": "Display a grid of logos with optional links",
-  "example": {},
-  "supports": {
-    "html": false,
-    "anchor": true,
-    "align": ["wide", "full"]
-  },
-  "textdomain": "airbnb-policy-blocks",
-  "editorScript": "file:./index.js",
-  "editorStyle": "file:./index.css",
-  "style": "file:./style-index.css",
-  "render": "file:./logo-cloud-block.php",
-  "acf": {
-    "mode": "preview",
-    "renderTemplate": "logo-cloud-block.php"
-  }
-}
+{"apiVersion":3,"name":"create-block/logo-cloud-block","title":"Logo Cloud Block","category":"media","supports":{"anchor":true,"align":["wide","full"]},"render":"file:./logo-cloud-block.php","acf":{"mode":"preview","renderTemplate":"logo-cloud-block.php"}}
 ```
 
-**Key Fields for ACF Blocks:**
-- `render`: Path to PHP template file (ACF-specific)
-- `acf.mode`: Display mode (`preview`, `edit`, `auto`)
-- `acf.renderTemplate`: Template filename (redundant with `render` but kept for compatibility)
+**Key ACF fields:** `render` (PHP template path), `acf.mode` (preview/edit/auto), `acf.renderTemplate` (template filename).
 
-### PHP Registration Code
-
+**PHP registration:**
 ```php
-// airbnb-policy-blocks.php
 function airbnb_policy_blocks_acf_block_init() {
-  $blocks = [
-    'all-posts-teaser-grid-block',
-    'city-portal-block',
-    'external-news-block',
-    'faq-block',
-    'featured-post-block',
-    'home-page-hero-block',
-    'logo-cloud-block',
-    'municipalities-search-block',
-    'people-grid-block',
-    'policy-toolkit-block',
-    'post-teaser-grid-block',
-    'priorities-block',
-    'public-policy-priorities-block',
-    'stat-block',
-    'text-image-block',
-  ];
-
-  foreach ( $blocks as $block ) {
-    register_block_type( __DIR__ . '/src/' . $block );
-  }
+  $blocks = ['all-posts-teaser-grid-block', 'city-portal-block', 'faq-block', 'featured-post-block', 'home-page-hero-block', 'logo-cloud-block', 'people-grid-block', 'priorities-block', 'stat-block', 'text-image-block'];
+  foreach ($blocks as $block) register_block_type(__DIR__ . '/src/' . $block);
 }
-add_action( 'init', 'airbnb_policy_blocks_acf_block_init' );
+add_action('init', 'airbnb_policy_blocks_acf_block_init');
 ```
 
-**Pattern:**
-- `register_block_type()` accepts a directory path
-- WordPress auto-loads `block.json` from that directory
-- No need to pass block metadata array (block.json provides it)
-- Registers on `init` hook (standard WordPress timing)
+**Pattern:** `register_block_type()` accepts directory path, WordPress auto-loads block.json, no metadata array needed.
 
 ## ACF Field Group Location Rules
 
@@ -150,42 +79,22 @@ ACF fields attach to blocks via location rules in the JSON configuration.
 
 ## PHP Render Template
 
-ACF blocks use PHP templates for rendering, enabling headless WordPress architectures.
+ACF blocks use PHP templates for rendering, enabling headless architectures. **Variables:** `$block` (metadata), `$content` (inner HTML), `$is_preview` (editor preview), `$post_id` (post ID).
 
-### Basic Render Template
-
+**Basic template:**
 ```php
 <?php
-/**
- * Logo Cloud Block Template
- *
- * @param   array $block The block settings and attributes.
- * @param   string $content The block inner HTML (empty).
- * @param   bool $is_preview True during AJAX preview.
- * @param   (int|string) $post_id The post ID this block is saved to.
- */
-
-// Get ACF field values
 $logos = get_field('logos');
-
-// Block wrapper attributes (includes anchor, align, etc.)
-$block_wrapper_attributes = get_block_wrapper_attributes();
+$attrs = get_block_wrapper_attributes();
 ?>
-
-<div <?php echo $block_wrapper_attributes; ?>>
-  <?php if( $logos ): ?>
+<div <?php echo $attrs; ?>>
+  <?php if($logos): ?>
     <div class="logo-grid">
-      <?php foreach( $logos as $logo ): ?>
+      <?php foreach($logos as $logo): ?>
         <div class="logo-item">
-          <?php if( $logo['link'] ): ?>
-            <a href="<?php echo esc_url($logo['link']); ?>">
-          <?php endif; ?>
-
-          <?php echo wp_get_attachment_image( $logo['logo'], 'medium' ); ?>
-
-          <?php if( $logo['link'] ): ?>
-            </a>
-          <?php endif; ?>
+          <?php if($logo['link']): ?><a href="<?php echo esc_url($logo['link']); ?>"><?php endif; ?>
+          <?php echo wp_get_attachment_image($logo['logo'], 'medium'); ?>
+          <?php if($logo['link']): ?></a><?php endif; ?>
         </div>
       <?php endforeach; ?>
     </div>
@@ -193,80 +102,28 @@ $block_wrapper_attributes = get_block_wrapper_attributes();
 </div>
 ```
 
-**Template Variables:**
-- `$block`: Block metadata (name, attributes, anchor, etc.)
-- `$content`: Inner blocks HTML (rarely used in ACF blocks)
-- `$is_preview`: True when rendering in editor preview
-- `$post_id`: Post ID where block is used
-
-### InnerBlocks Support
-
-ACF blocks can contain nested blocks using `<InnerBlocks>`.
-
+**InnerBlocks support:**
 ```php
 <?php
-$allowed_blocks = ['core/paragraph', 'core/heading'];
-$template = [
-  ['core/heading', ['level' => 2, 'placeholder' => 'Enter title...']],
-  ['core/paragraph', ['placeholder' => 'Enter content...']],
-];
-
-$block_wrapper_attributes = get_block_wrapper_attributes();
+$allowed = ['core/paragraph', 'core/heading'];
+$template = [['core/heading', ['level' => 2, 'placeholder' => 'Title...']], ['core/paragraph', ['placeholder' => 'Content...']]];
 ?>
-
-<div <?php echo $block_wrapper_attributes; ?>>
-  <div class="container">
-    <?php if( get_field('heading') ): ?>
-      <h2><?php the_field('heading'); ?></h2>
-    <?php endif; ?>
-
-    <InnerBlocks
-      allowedBlocks="<?php echo esc_attr( wp_json_encode( $allowed_blocks ) ); ?>"
-      template="<?php echo esc_attr( wp_json_encode( $template ) ); ?>"
-    />
-  </div>
+<div <?php echo get_block_wrapper_attributes(); ?>>
+  <?php if(get_field('heading')): ?><h2><?php the_field('heading'); ?></h2><?php endif; ?>
+  <InnerBlocks allowedBlocks="<?php echo esc_attr(wp_json_encode($allowed)); ?>" template="<?php echo esc_attr(wp_json_encode($template)); ?>" />
 </div>
 ```
 
 ## WPGraphQL Integration
 
-ACF blocks automatically expose to WPGraphQL when `show_in_graphql` is enabled on field groups.
+ACF blocks expose to WPGraphQL when `show_in_graphql: 1` is enabled on field groups.
 
-### GraphQL Field Exposure
-
+**Field exposure:**
 ```json
-{
-  "key": "group_680ad6fe615b8",
-  "title": "Logo Cloud Block",
-  "show_in_graphql": 1,
-  "graphql_field_name": "logoCloudBlock",
-  "fields": [
-    {
-      "name": "logos",
-      "type": "repeater",
-      "show_in_graphql": 1,
-      "graphql_field_name": "logos",
-      "sub_fields": [
-        {
-          "name": "logo",
-          "type": "image",
-          "show_in_graphql": 1,
-          "graphql_field_name": "logo"
-        },
-        {
-          "name": "link",
-          "type": "url",
-          "show_in_graphql": 1,
-          "graphql_field_name": "link"
-        }
-      ]
-    }
-  ]
-}
+{"key":"group_680ad6fe615b8","title":"Logo Cloud Block","show_in_graphql":1,"graphql_field_name":"logoCloudBlock","fields":[{"name":"logos","type":"repeater","show_in_graphql":1,"sub_fields":[{"name":"logo","type":"image","show_in_graphql":1},{"name":"link","type":"url","show_in_graphql":1}]}]}
 ```
 
-### GraphQL Query Pattern
-
+**Query pattern:**
 ```graphql
 query GetPageBlocks($id: ID!) {
   page(id: $id, idType: DATABASE_ID) {
@@ -274,13 +131,7 @@ query GetPageBlocks($id: ID!) {
       name
       ... on CreateBlockLogoCloudBlock {
         logoCloudBlock {
-          logos {
-            logo {
-              sourceUrl
-              altText
-            }
-            link
-          }
+          logos { logo { sourceUrl altText } link }
         }
       }
     }
