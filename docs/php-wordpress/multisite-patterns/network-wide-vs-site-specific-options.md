@@ -12,8 +12,6 @@ source_confidence: "100%"
 last_updated: "2026-02-12"
 ---
 
-# Network-Wide vs Site-Specific Options
-
 ## Overview
 
 WordPress multisite provides separate option storage systems: network-wide options (shared across all sites) and site-specific options (isolated per site). Understanding when to use `get_site_option()` versus `get_option()` is critical for multisite architecture decisions.
@@ -34,9 +32,11 @@ WordPress multisite implementations use `get_site_option()` for network-wide sto
 
 **Anti-Use Case:** Do not use network options for site-specific user preferences, theme settings, or per-site feature flags.
 
-## Pattern Implementation
+## Network Option Storage Pattern
 
-### Network Option Storage (get_site_option/update_site_option)
+Network-wide options use get_site_option and update_site_option for shared configuration across all sites.
+
+### License Key Promotion Pattern
 
 ```php
 /**
@@ -64,7 +64,11 @@ if (empty($license)) {
 
 **Source:** `airbnb/plugins/js_composer/include/autoload/bc-multisite-options.php`
 
-### Network-Activated Plugin Detection
+## Network-Activated Plugin Detection
+
+WordPress stores network-activated plugins in wp_sitemeta table under active_sitewide_plugins option.
+
+### Network Activation Check Pattern
 
 ```php
 /**
@@ -88,7 +92,11 @@ if (is_multisite() && is_network_admin()) {
 
 **Source:** `airbnb/plugins/advanced-custom-fields-pro/acf.php`
 
-### Site-Specific Option Storage (get_option/update_option)
+## Site-Specific Option Storage Pattern
+
+Per-site options use standard get_option and update_option functions with site-specific wp_N_options tables.
+
+### Theme Options Per Site
 
 ```php
 /**
@@ -115,9 +123,11 @@ $color = get_option('theme_primary_color', '#000000');
 **Isolation:** Site 1 options do not affect Site 4 options
 **Adoption:** 100% of site-specific settings (theme options, widget config, etc.)
 
-## Advanced Patterns
+## Network Option with Site Override Pattern
 
-### Network Option with Per-Site Override
+Hybrid approach allows network defaults with per-site override capability for special cases.
+
+### Override Cascade Implementation
 
 ```php
 /**
@@ -142,7 +152,11 @@ function get_google_analytics_id() {
 **Use Case:** Most sites use network default, special sites override
 **Flexibility:** 20 sites share network ID, 2 sites use custom IDs
 
-### Per-Site Feature Flags (Using get_blog_option)
+## Per-Site Feature Flags Pattern
+
+get_blog_option function enables reading any site's options without context switching.
+
+### Network-Wide Feature Flag Iteration
 
 ```php
 /**
@@ -167,7 +181,11 @@ foreach ($sites as $site) {
 
 **Source:** `airbnb/plugins/onelogin-saml-sso/php/functions.php`
 
-### Network Menu Permissions
+## Network Menu Permissions Pattern
+
+WordPress Network Admin menu visibility controlled by network option menu_items.
+
+### Role-Based Menu Control
 
 ```php
 /**
@@ -249,9 +267,11 @@ for ($i = 1; $i <= 10; $i++) {
 **Pattern:** Store related network options as single serialized array
 **Performance Gain:** 10 database queries → 1 database query
 
-## Common Antipatterns
+## Antipattern: Storing Per-Site Data in Network Options
 
-### Antipattern 1: Storing Per-Site Data in Network Options
+Site-specific configuration should use per-site options not network options with blog ID prefixes.
+
+### Namespace Pollution Example
 
 ```php
 // ❌ WRONG: Site-specific theme color in network option
@@ -273,7 +293,11 @@ update_option('theme_color', '#0000FF');
 restore_current_blog();
 ```
 
-### Antipattern 2: Using get_option() for Network-Wide Data
+## Antipattern: Using get_option for Network-Wide Data
+
+Network-wide configuration requires get_site_option to avoid per-site context switching.
+
+### Site Option for Network Data Example
 
 ```php
 // ❌ WRONG: License key stored per-site
@@ -291,7 +315,11 @@ $license = get_site_option('plugin_license_key');
 // Available from any site, no context switching
 ```
 
-### Antipattern 3: Not Checking is_multisite() Before Network Options
+## Antipattern: Not Checking is_multisite Before Network Options
+
+Plugins must check is_multisite to ensure compatibility between multisite and single-site installations.
+
+### Missing Multisite Check Example
 
 ```php
 // ❌ WRONG: Assumes multisite, breaks on single site

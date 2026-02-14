@@ -12,8 +12,6 @@ source_confidence: "100%"
 last_updated: "2026-02-12"
 ---
 
-# switch_to_blog and restore_current_blog Pairing
-
 ## Overview
 
 WordPress multisite uses `switch_to_blog()` to temporarily change the global site context, allowing code to query posts, options, and users from different sites within the same network. Every `switch_to_blog()` call must be paired with `restore_current_blog()` to prevent context pollution and data corruption.
@@ -34,9 +32,11 @@ WordPress multisite implementations switch blog context when:
 
 **Anti-Use Case:** Do not switch contexts for simple read operations that can use direct database queries with blog-prefixed table names.
 
-## Basic Pattern Implementation
+## Safe Cross-Site Query Pattern
 
-### Safe Cross-Site Query (With Restore)
+WordPress multisite switch_to_blog pattern enables querying posts from one site while displaying on another.
+
+### Implementation
 
 ```php
 /**
@@ -81,7 +81,11 @@ endif;
 
 **Source:** `airbnb/themes/airbnb-careers/partials/modules/module-news_posts.php` (Blog 4 news query)
 
-### Network-Wide Iteration Pattern
+## Network-Wide Iteration Pattern
+
+Multisite maintenance scripts iterate all sites with switch_to_blog in loop structure.
+
+### foreach Loop Implementation
 
 ```php
 /**
@@ -113,9 +117,11 @@ foreach ($sites as $site) {
 
 **Source:** `airbnb/plugins/wordpress-seo/src/commands/cleanup-command.php` (Yoast SEO WP-CLI)
 
-## Advanced Patterns
+## Exception-Safe Context Restoration
 
-### Exception-Safe Context Restoration
+PHP try-finally blocks ensure restore_current_blog executes even when exceptions occur.
+
+### Try-Finally Pattern
 
 ```php
 /**
@@ -139,7 +145,11 @@ function get_remote_blog_option($blog_id, $option, $default = false) {
 **Compatibility:** PHP 5.5+ required for finally blocks
 **Use Case:** Functions that switch context internally
 
-### Nested Context Switching (Advanced)
+## Nested Context Switching Pattern
+
+WordPress maintains internal stack for nested switch_to_blog calls but pattern should be avoided.
+
+### Nested Switch Implementation
 
 ```php
 /**
@@ -167,7 +177,11 @@ function complex_multi_site_operation() {
 **Best Practice:** Avoid nesting; refactor into separate single-level functions
 **WordPress Stack:** Internally uses `$GLOBALS['_wp_switched_stack']` to track depth
 
-### Early Return Pattern
+## Early Return Pattern
+
+Functions with conditional returns must call restore_current_blog on every code path.
+
+### Multiple Return Path Implementation
 
 ```php
 /**
@@ -197,9 +211,11 @@ function get_blog_featured_post($blog_id) {
 **Critical:** Every return path must call `restore_current_blog()`
 **Alternative:** Use try-finally to avoid multiple restore calls
 
-## Common Antipatterns
+## Antipattern: Missing restore_current_blog()
 
-### Antipattern 1: Missing restore_current_blog()
+Unpaired switch_to_blog calls cause persistent context pollution across all subsequent queries.
+
+### Missing Restore Example
 
 ```php
 // ❌ WRONG: Switch without restore
@@ -212,7 +228,11 @@ $posts = get_posts(['posts_per_page' => 5]);
 **Severity:** High - data corruption, security vulnerabilities
 **Real-World Bug:** 69 switch calls vs 26 restore calls in airbnb codebase (43 missing restores)
 
-### Antipattern 2: Forgetting wp_reset_postdata()
+## Antipattern: Forgetting wp_reset_postdata()
+
+WP_Query loops modify global $post variable requiring reset before context restoration.
+
+### Missing wp_reset_postdata Example
 
 ```php
 // ❌ WRONG: Missing wp_reset_postdata() before restore
@@ -230,7 +250,11 @@ restore_current_blog();
 **Symptom:** Wrong post data appears on original blog after restoration
 **Fix:** Always call `wp_reset_postdata()` after custom WP_Query loops
 
-### Antipattern 3: Switching in Hooks Without Restore
+## Antipattern: Switching in Hooks Without Restore
+
+WordPress hooks with early returns risk skipping restore_current_blog causing persistent context pollution.
+
+### Hook Switch Without Guaranteed Restore
 
 ```php
 // ❌ WRONG: Switch in hook without guaranteed restore
@@ -330,9 +354,11 @@ Current user capabilities (some cases) // User role may differ per site
 
 **Important:** User may have different roles/capabilities on different sites
 
-## Testing Strategies
+## PHPUnit Tests for Context Restoration
 
-### PHPUnit Test for Context Restoration
+Unit tests verify switch_to_blog and restore_current_blog maintain correct context state.
+
+### Context Restoration Test Cases
 
 ```php
 class BlogSwitchingTest extends WP_UnitTestCase {
@@ -370,7 +396,11 @@ class BlogSwitchingTest extends WP_UnitTestCase {
 }
 ```
 
-### Integration Test Pattern
+## Integration Test Pattern
+
+Cross-site data display modules require integration tests verifying correct blog switching and rendering.
+
+### Template Part Integration Test
 
 ```php
 /**
