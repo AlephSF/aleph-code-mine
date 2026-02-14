@@ -12,8 +12,6 @@ source_confidence: "50%"
 last_updated: "2026-02-13"
 ---
 
-# Traditional WordPress Theme Organization with inc/ Directory Pattern
-
 ## Overview
 
 Traditional WordPress theme architecture follows classic template hierarchy with PHP files in theme root and modular code organization in `inc/` directory. **50% of analyzed themes** (7 of 14) use `inc/` directory pattern for separating concerns, while remaining 43% either use Sage framework or minimal structure.
@@ -29,215 +27,155 @@ Traditional themes comprise **71% of analyzed themes** (10 of 14), demonstrating
 
 ## Directory Structure
 
-Traditional theme structure mirrors WordPress template hierarchy with templates in root, modular code in `inc/`, and static assets in subdirectories.
+Traditional theme structure mirrors WordPress template hierarchy with templates in root and modular code in `inc/`:
 
 ```
-airbnbtech/ (traditional theme example)
+airbnbtech/
 ├── inc/                          # Code organization
-│   ├── careers-setup.php         # Careers CPT registration
-│   ├── events-setup.php          # Events CPT registration
-│   ├── teams-setup.php           # Teams CPT registration
-│   ├── research-setup.php        # Research CPT registration
+│   ├── careers-setup.php         # CPT registration
 │   ├── custom-functions.php      # Helper functions
-│   ├── customizer.php            # Theme Customizer API
-│   ├── template-tags.php         # Template helper functions
-│   ├── template-functions.php    # Complex template logic
-│   └── widgets/                  # Custom widget classes
-│       ├── recent-posts-widget.php
-│       └── facebook-like-widget.php
-├── css/                          # Stylesheets
-│   ├── styles.css                # Main stylesheet
-│   └── admin.css                 # Admin styles
-├── js/                           # JavaScript files
-│   ├── site-scripts.js           # Frontend JavaScript
-│   └── custom-admin.js           # Admin JavaScript
+│   ├── customizer.php            # Theme Customizer
+│   ├── template-tags.php         # Template helpers
+│   └── widgets/                  # Custom widgets
+├── css/styles.css                # Stylesheets
+├── js/site-scripts.js            # JavaScript
 ├── images/                       # Image assets
-│   ├── logo.png
-│   └── icons/
 ├── fonts/                        # Web fonts
-│   ├── custom-font.woff2
-│   └── custom-font.woff
 ├── functions.php                 # Main theme file
-├── style.css                     # Theme header + critical CSS
-├── header.php                    # Site header
-├── footer.php                    # Site footer
-├── sidebar.php                   # Primary sidebar
-├── index.php                     # Fallback template
-├── front-page.php                # Homepage template
-├── archive.php                   # Archive pages
-├── single.php                    # Single post
+├── style.css                     # Theme header
+├── header.php, footer.php        # Global templates
+├── index.php                     # Fallback
+├── front-page.php                # Homepage
+├── archive.php, single.php       # Post templates
 ├── page.php                      # Static pages
-├── 404.php                       # Error page
-├── search.php                    # Search results
-├── author.php                    # Author archive
-├── category.php                  # Category archive
-├── tag.php                       # Tag archive
-├── attachment.php                # Media attachment
-└── comments.php                  # Comments template
+├── 404.php, search.php           # Special templates
+└── comments.php                  # Comments
 ```
 
-**Compared to Sage:** No `app/`, `resources/`, `config/`, `dist/`, or `vendor/` directories. All PHP in root or `inc/`.
+**vs Sage:** No `app/`, `resources/`, `config/`, `dist/`, `vendor/`. All PHP in root or `inc/`.
 
 ## functions.php Structure
 
-Central theme file loads `inc/` modules, registers theme support, enqueues assets, and defines global configuration. Organized with clear sections using comments.
+Central theme file organized into sections: cleanup, theme support, module loading, asset enqueuing, helpers, and navigation.
+
+## WordPress Cleanup and Security
+
+Traditional themes remove unnecessary WordPress features for performance and security:
 
 ```php
 <?php
-/**
- * Theme Name: Airbnb Tech
- * Main functions file
- */
-
-/**
- * =============================================================================
- * WORDPRESS CLEANUP (Security & Performance)
- * =============================================================================
- */
-
-// Remove emoji detection script
+// Remove emoji scripts
 remove_action('wp_head', 'print_emoji_detection_script', 7);
-remove_action('admin_print_scripts', 'print_emoji_detection_script');
 remove_action('wp_print_styles', 'print_emoji_styles');
-remove_action('admin_print_styles', 'print_emoji_styles');
 
-// Remove version number from head (security)
+// Remove version number (security)
 remove_action('wp_head', 'wp_generator');
 
-// Remove REST API links from head (reduces HTML bloat)
+// Remove REST API links (reduces bloat)
 remove_action('wp_head', 'rest_output_link_wp_head', 10);
-remove_action('wp_head', 'wp_oembed_add_discovery_links', 10);
 
 // Remove query strings from static resources (CDN caching)
 function cleanup_query_string($src) {
-    $parts = explode('?', $src);
-    return $parts[0];
+    return explode('?', $src)[0];
 }
-add_filter('script_loader_src', 'cleanup_query_string', 15, 1);
-add_filter('style_loader_src', 'cleanup_query_string', 15, 1);
+add_filter('script_loader_src', 'cleanup_query_string', 15);
+add_filter('style_loader_src', 'cleanup_query_string', 15);
+```
 
-/**
- * =============================================================================
- * THEME SETUP
- * =============================================================================
- */
+## Theme Setup and Support
 
-// Add theme support features
+WordPress themes register support for core features and extend post type capabilities:
+
+```php
+<?php
+// Theme support features
 add_theme_support('automatic-feed-links');
 add_theme_support('title-tag');
 add_theme_support('post-thumbnails');
 
-// Add excerpt support to pages
+// Extend pages with excerpt and tags
 add_post_type_support('page', 'excerpt');
-
-// Enable tags on pages for better taxonomy
 function enable_tags_for_pages() {
     register_taxonomy_for_object_type('post_tag', 'page');
 }
 add_action('init', 'enable_tags_for_pages');
+```
 
-/**
- * =============================================================================
- * LOAD INC/ MODULES
- * =============================================================================
- */
+## Loading inc/ Modules
 
+WordPress themes require feature-specific modules from inc/ directory:
+
+```php
+<?php
 require get_template_directory() . '/inc/careers-setup.php';
 require get_template_directory() . '/inc/events-setup.php';
 require get_template_directory() . '/inc/teams-setup.php';
-require get_template_directory() . '/inc/research-setup.php';
 require get_template_directory() . '/inc/custom-functions.php';
 require get_template_directory() . '/inc/customizer.php';
+```
 
-/**
- * =============================================================================
- * ASSET LOADING
- * =============================================================================
- */
+## Asset Enqueuing Pattern
 
+WordPress themes manually enqueue CSS and JavaScript with dependencies and localization:
+
+```php
+<?php
 function site_styles() {
-    wp_register_style('site-styles',
-        get_template_directory_uri() . '/css/styles.css',
-        array(), '1.0', 'all');
-    wp_enqueue_style('site-styles');
+    wp_enqueue_style('site-styles',
+        get_template_directory_uri() . '/css/styles.css', [], '1.0');
 }
 add_action('wp_enqueue_scripts', 'site_styles');
 
 function site_scripts() {
     wp_enqueue_script('sitescripts',
         get_template_directory_uri() . '/js/site-scripts.js',
-        array('jquery'), NULL, true);
+        ['jquery'], null, true);
 
-    // Localize AJAX endpoints
-    wp_localize_script('sitescripts', 'wp_ajax', array(
+    wp_localize_script('sitescripts', 'wp_ajax', [
         'ajax_url' => admin_url('admin-ajax.php'),
         'nonce' => wp_create_nonce('ajax-nonce')
-    ));
+    ]);
 }
 add_action('wp_enqueue_scripts', 'site_scripts');
+```
 
-function enqueue_custom_admin_scripts() {
-    wp_enqueue_media();  // Media library for admin
-    wp_enqueue_script('custom-admin-script',
-        get_template_directory_uri() . '/js/custom-admin.js',
-        array('jquery'), null, true);
-}
-add_action('admin_enqueue_scripts', 'enqueue_custom_admin_scripts');
+## Helper Functions in functions.php
 
-/**
- * =============================================================================
- * HELPER FUNCTIONS
- * =============================================================================
- */
+WordPress themes define utility functions for title formatting and excerpt handling:
 
-// Format page title
+```php
+<?php
 function page_title($title, $sep) {
-    if (is_feed()) {
-        return $title;
-    }
+    if (is_feed()) return $title;
 
-    if (is_home() || is_front_page()) {
-        $title = get_bloginfo('name', 'display') . " | " .
-                 get_bloginfo('description', 'display');
-    } else if (is_post_type_archive('resources')) {
-        $title = "Resource Library | " . get_bloginfo('name', 'display');
-    } else {
-        $title = get_the_title() . " | " . get_bloginfo('name', 'display');
+    if (is_home()) {
+        return get_bloginfo('name') . " | " . get_bloginfo('description');
     }
-
-    return $title;
+    return get_the_title() . " | " . get_bloginfo('name');
 }
 add_filter('wp_title', 'page_title', 10, 2);
 
-// Limit excerpt word count
 function excerpt_limit($wordstring, $word_limit) {
-    $words = explode(' ', $wordstring, ($word_limit + 1));
+    $words = explode(' ', $wordstring, $word_limit + 1);
     if (count($words) > $word_limit) {
         array_pop($words);
         return implode(' ', $words) . '...';
     }
     return implode(' ', $words);
 }
-
-/**
- * =============================================================================
- * NAVIGATION MENUS
- * =============================================================================
- */
-
-register_nav_menus(array(
-    'primary' => __('Primary Menu'),
-    'footer' => __('Footer Menu')
-));
 ```
 
-**Organization Pattern:**
-1. **Security/Cleanup:** Remove unnecessary WordPress features
-2. **Theme Setup:** Register theme support, post type support
-3. **Load Modules:** Require `inc/` files for specific features
-4. **Asset Loading:** Enqueue styles and scripts
-5. **Helper Functions:** Utility functions for templates
-6. **Navigation:** Register menus
+## Navigation Menu Registration
+
+WordPress themes register navigation menus for header and footer locations:
+
+```php
+<?php
+register_nav_menus([
+    'primary' => __('Primary Menu'),
+    'footer' => __('Footer Menu')
+]);
+```
 
 ## inc/ Directory Organization
 
