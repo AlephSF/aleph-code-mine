@@ -178,84 +178,30 @@ endif;
 
 ## Real-World Examples
 
-### Example 1: Social Media Links (thekelsey)
-
+**Social Media Links (thekelsey):**
 ```php
-// mu-plugins/thekelsey-custom/thekelsey-custom.php
-if( function_exists('acf_add_options_page') ) {
-    acf_add_options_page(array(
-        'page_title' => __('Social Media'),
-        'menu_title' => __('Social Media'),
-        'icon_url'   => 'dashicons-networking'
-    ));
-}
+acf_add_options_page(['page_title' => 'Social Media', 'menu_title' => 'Social Media', 'icon_url' => 'dashicons-networking']);
+```
+Location: `{"location":[[{"param":"options_page","operator":"==","value":"acf-options-social-media"}]]}`
+
+Template:
+```php
+<footer class="site-footer"><div class="social-links">
+  <?php if(get_field('facebook_url', 'option')): ?><a href="<?php the_field('facebook_url', 'option'); ?>">Facebook</a><?php endif; ?>
+  <?php if(get_field('twitter_url', 'option')): ?><a href="<?php the_field('twitter_url', 'option'); ?>">Twitter</a><?php endif; ?>
+</div></footer>
 ```
 
-**Field Group Location Rule:**
-```json
-{
-  "location": [
-    [
-      {
-        "param": "options_page",
-        "operator": "==",
-        "value": "acf-options-social-media"
-      }
-    ]
-  ]
-}
-```
-
-**Template Usage (Global Footer):**
+**Global Modules (thekelsey):**
 ```php
-<footer class="site-footer">
-    <div class="social-links">
-        <?php if( get_field('facebook_url', 'option') ): ?>
-            <a href="<?php the_field('facebook_url', 'option'); ?>">Facebook</a>
-        <?php endif; ?>
-
-        <?php if( get_field('twitter_url', 'option') ): ?>
-            <a href="<?php the_field('twitter_url', 'option'); ?>">Twitter</a>
-        <?php endif; ?>
-
-        <?php if( get_field('instagram_url', 'option') ): ?>
-            <a href="<?php the_field('instagram_url', 'option'); ?>">Instagram</a>
-        <?php endif; ?>
-    </div>
-</footer>
+acf_add_options_page(['page_title' => 'Global Modules', 'menu_title' => 'Global Modules', 'icon_url' => 'dashicons-admin-site-alt3']);
 ```
+Use: Reusable content blocks (donation forms, event registration) accessible across all templates.
 
-### Example 2: Global Modules (thekelsey)
-
+**Theme Settings Hierarchy (airbnb):**
 ```php
-if( function_exists('acf_add_options_page') ) {
-    acf_add_options_page(array(
-        'page_title' => __('Global Modules'),
-        'menu_title' => __('Global Modules'),
-        'icon_url'   => 'dashicons-admin-site-alt3'
-    ));
-}
-```
-
-**Use Case:** Reusable content blocks (donation forms, event registration, global announcements) accessible across all templates.
-
-### Example 3: Theme Settings Hierarchy (airbnb a4re theme)
-
-```php
-if( function_exists('acf_add_options_page') ) {
-    acf_add_options_page(array(
-        'page_title' => 'Theme General Settings',
-        'menu_title' => 'Theme Settings',
-        'menu_slug'  => 'theme-general-settings',
-        'capability' => 'edit_posts',
-    ));
-
-    acf_add_options_sub_page(array(
-        'page_title'  => 'Theme Footer Settings',
-        'menu_title'  => 'Footer',
-        'parent_slug' => 'theme-general-settings',
-    ));
-}
+acf_add_options_page(['page_title' => 'Theme General Settings', 'menu_title' => 'Theme Settings', 'menu_slug' => 'theme-general-settings', 'capability' => 'edit_posts']);
+acf_add_options_sub_page(['page_title' => 'Theme Footer Settings', 'menu_title' => 'Footer', 'parent_slug' => 'theme-general-settings']);
 ```
 
 ## Options Page Capabilities
