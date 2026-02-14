@@ -139,170 +139,51 @@ register_block_pattern(
 
 ## Template File Loading Pattern
 
-WordPress block patterns can load content from separate PHP template files for better organization and editor syntax highlighting. This pattern separates pattern registration from block markup.
+WordPress block patterns load from separate PHP template files, separating registration from markup for better organization.
 
 ```php
-function rkv_get_template( $name, $directories, $return = false ) {
-  $template = '';
-
-  foreach ( $directories as $dir ) {
-    $file = $dir . $name . '.php';
-    if ( file_exists( $file ) ) {
-      if ( $return ) {
-        ob_start();
-        include $file;
-        return ob_get_clean();
-      }
-      return $file;
+function rkv_get_template($n, $dirs, $ret = false) {
+  foreach ($dirs as $d) {
+    if (file_exists($f = $d . $n . '.php')) {
+      if ($ret) { ob_start(); include $f; return ob_get_clean(); }
+      return $f;
     }
   }
-
-  return $template;
+  return '';
 }
-
-$template_directories = [
-  get_stylesheet_directory() . '/template-parts/patterns/',
-  get_template_directory() . '/template-parts/patterns/',
-  RKV_BLOCK_EDITOR . 'templates/patterns/',
-];
-
-register_block_pattern(
-  'rkv-block-editor/hero-pattern',
-  array(
-    'title'       => __( 'Hero', 'rkv-block-editor' ),
-    'categories'  => [ 'custom' ],
-    'content'     => rkv_get_template( 'cover-hero', $template_directories, true ),
-  )
-);
+$dirs = [get_stylesheet_directory() . '/template-parts/patterns/', get_template_directory() . '/template-parts/patterns/', RKV_BLOCK_EDITOR . 'templates/patterns/'];
+register_block_pattern('rkv-block-editor/hero-pattern', ['title' => __('Hero', 'rkv-block-editor'), 'categories' => ['custom'], 'content' => rkv_get_template('cover-hero', $dirs, true)]);
 ```
 
-**Template file (templates/patterns/cover-hero.php):**
+**Template file:**
 ```php
-<!-- wp:cover {"url":"<?php echo RKV_BLOCK_EDITOR_URL; ?>assets/hero-placeholder.jpg","dimRatio":50,"align":"full"} -->
-<div class="wp-block-cover alignfull">
-  <div class="wp-block-cover__inner-container">
-    <!-- wp:heading {"level":1,"textAlign":"center"} -->
-    <h1 class="has-text-align-center">Hero Title</h1>
-    <!-- /wp:heading -->
-
-    <!-- wp:paragraph {"align":"center"} -->
-    <p class="has-text-align-center">Compelling tagline or description</p>
-    <!-- /wp:paragraph -->
-
-    <!-- wp:buttons {"layout":{"type":"flex","justifyContent":"center"}} -->
-    <div class="wp-block-buttons">
-      <!-- wp:button -->
-      <div class="wp-block-button"><a class="wp-block-button__link">Learn More</a></div>
-      <!-- /wp:button -->
-    </div>
-    <!-- /wp:buttons -->
-  </div>
-</div>
-<!-- /wp:cover -->
+<!-- wp:cover {"align":"full"} --><div class="wp-block-cover alignfull"><div class="wp-block-cover__inner-container"><!-- wp:heading --><h1>Hero Title</h1><!-- /wp:heading --><!-- wp:paragraph --><p>Description</p><!-- /wp:paragraph --><!-- wp:button --><a class="wp-block-button__link">CTA</a><!-- /wp:button --></div></div><!-- /wp:cover -->
 ```
 
-**Pattern benefits:**
-- Version control friendly (separate files)
-- Editor syntax highlighting (PHP + HTML)
-- Template hierarchy (child/parent theme overrides)
-- Easier maintenance for complex patterns
-
-**Real-world adoption:** rkv-block-editor uses template file pattern for all 6 registered patterns.
+**Benefits:** Version control, syntax highlighting, template hierarchy, easier maintenance. **Adoption:** All 6 rkv-block-editor patterns.
 
 ## Pattern Types Analysis
 
 ## Layout Patterns
 
-WordPress layout patterns combine structural blocks (columns, groups, spacers) to create reusable page sections. Analyzed codebase shows 6 common pattern types.
+WordPress layout patterns combine structural blocks (columns, groups, spacers) for reusable sections. 6 common types (100% adoption).
 
-**1. Hero/Cover Pattern (100% projects with patterns):**
+**Hero/Cover:**
 ```php
-// Full-width cover block with centered content
-'content' => '<!-- wp:cover {"align":"full"} -->
-<div class="wp-block-cover alignfull">
-  <div class="wp-block-cover__inner-container">
-    <!-- wp:heading {"level":1,"textAlign":"center"} -->
-    <h1>Title</h1>
-    <!-- /wp:heading -->
-    <!-- wp:paragraph {"align":"center"} -->
-    <p>Description</p>
-    <!-- /wp:paragraph -->
-    <!-- wp:button -->
-    <div class="wp-block-button"><a class="wp-block-button__link">CTA</a></div>
-    <!-- /wp:button -->
-  </div>
-</div>
-<!-- /wp:cover -->'
+'content' => '<!-- wp:cover --><div class="wp-block-cover"><div class="wp-block-cover__inner-container"><!-- wp:heading --><h1>Title</h1><!-- /wp:heading --><!-- wp:paragraph --><p>Desc</p><!-- /wp:paragraph --><!-- wp:button --><a class="wp-block-button__link">CTA</a><!-- /wp:button --></div></div><!-- /wp:cover -->'
 ```
 
-**2. Three Column Pattern (100% projects with patterns):**
+**Three Columns:**
 ```php
-// Three equal columns with heading + content
-'content' => '<!-- wp:columns -->
-<div class="wp-block-columns">
-  <!-- wp:column -->
-  <div class="wp-block-column">
-    <!-- wp:heading {"level":3} -->
-    <h3>Feature 1</h3>
-    <!-- /wp:heading -->
-    <!-- wp:paragraph -->
-    <p>Description</p>
-    <!-- /wp:paragraph -->
-  </div>
-  <!-- /wp:column -->
-
-  <!-- wp:column -->
-  <div class="wp-block-column">
-    <!-- wp:heading {"level":3} -->
-    <h3>Feature 2</h3>
-    <!-- /wp:heading -->
-    <!-- wp:paragraph -->
-    <p>Description</p>
-    <!-- /wp:paragraph -->
-  </div>
-  <!-- /wp:column -->
-
-  <!-- wp:column -->
-  <div class="wp-block-column">
-    <!-- wp:heading {"level":3} -->
-    <h3>Feature 3</h3>
-    <!-- /wp:heading -->
-    <!-- wp:paragraph -->
-    <p>Description</p>
-    <!-- /wp:paragraph -->
-  </div>
-  <!-- /wp:column -->
-</div>
-<!-- /wp:columns -->'
+'content' => '<!-- wp:columns --><div class="wp-block-columns"><!-- wp:column --><div class="wp-block-column"><!-- wp:heading --><h3>Feature 1</h3><!-- /wp:heading --><!-- wp:paragraph --><p>Desc</p><!-- /wp:paragraph --></div><!-- /wp:column -->[repeat 2x]</div><!-- /wp:columns -->'
 ```
 
-**3. Media & Text Pattern (100% projects with patterns):**
+**Media & Text:**
 ```php
-// Media-text block with right-aligned image
-'content' => '<!-- wp:media-text {"mediaPosition":"right"} -->
-<div class="wp-block-media-text has-media-on-the-right">
-  <figure class="wp-block-media-text__media">
-    <img src="placeholder.jpg" alt=""/>
-  </figure>
-  <div class="wp-block-media-text__content">
-    <!-- wp:heading -->
-    <h2>Content Title</h2>
-    <!-- /wp:heading -->
-    <!-- wp:paragraph -->
-    <p>Content description</p>
-    <!-- /wp:paragraph -->
-  </div>
-</div>
-<!-- /wp:media-text -->'
+'content' => '<!-- wp:media-text --><div class="wp-block-media-text"><figure><img src="img.jpg"/></figure><div><!-- wp:heading --><h2>Title</h2><!-- /wp:heading --><!-- wp:paragraph --><p>Content</p><!-- /wp:paragraph --></div></div><!-- /wp:media-text -->'
 ```
 
-**Pattern distribution in rkv-block-editor:**
-- Hero variants: 1 pattern
-- Media & Text: 1 pattern
-- Three columns: 1 pattern
-- Step-by-step: 1 pattern
-- Heading with breadcrumb: 1 pattern
-- Video with title: 1 pattern
+**rkv-block-editor:** Hero (1), Media & Text (1), Three columns (1), Step-by-step (1), Heading with breadcrumb (1), Video with title (1).
 
 ## Custom Block Integration
 
@@ -410,76 +291,26 @@ register_block_pattern(
 
 ## Centralized Pattern Registration
 
-WordPress themes and plugins should centralize pattern registration in dedicated pattern files for maintainability. Separate pattern logic from plugin/theme initialization.
+WordPress themes/plugins centralize pattern registration in dedicated files for maintainability, separating pattern logic from initialization.
 
-**File structure:**
-```
-rkv-block-editor/
-├── src/
-│   └── patterns.php          # Pattern registration logic
-├── templates/
-│   └── patterns/             # Pattern template files
-│       ├── cover-hero.php
-│       ├── media-text.php
-│       ├── step-with-image.php
-│       ├── three-column.php
-│       ├── heading-breadcrumb.php
-│       └── video-title-border.php
-└── rkv-block-editor.php      # Main plugin file (requires patterns.php)
-```
+**Structure:** `src/patterns.php` (registration logic), `templates/patterns/` (template files: cover-hero.php, media-text.php, three-column.php, etc.), main plugin file requires patterns.php.
 
-**Pattern registration file (src/patterns.php):**
 ```php
 <?php
-/**
- * Block Pattern Registration
- */
+function rkv_register_patterns() {
+  register_block_pattern_category('custom', ['label' => __('Custom Patterns', 'rkv-block-editor')]);
 
-if ( ! function_exists( 'rkv_register_patterns' ) ) {
-  function rkv_register_patterns() {
-    // Register custom category
-    register_block_pattern_category(
-      'custom',
-      array( 'label' => __( 'Custom Patterns', 'rkv-block-editor' ) )
-    );
+  $dirs = [get_stylesheet_directory() . '/template-parts/patterns/', get_template_directory() . '/template-parts/patterns/', RKV_BLOCK_EDITOR . 'templates/patterns/'];
+  $patterns = ['cover-hero' => __('Hero', 'rkv-block-editor'), 'media-text' => __('Media & Text', 'rkv-block-editor'), 'step-with-image' => __('Step with Image', 'rkv-block-editor'), 'three-column' => __('Three Column', 'rkv-block-editor'), 'heading-breadcrumb' => __('Heading with Breadcrumb', 'rkv-block-editor'), 'video-title-border' => __('Video with Title', 'rkv-block-editor')];
 
-    // Define template directories
-    $template_directories = [
-      get_stylesheet_directory() . '/template-parts/patterns/',
-      get_template_directory() . '/template-parts/patterns/',
-      RKV_BLOCK_EDITOR . 'templates/patterns/',
-    ];
-
-    // Register patterns
-    $patterns = [
-      'cover-hero'           => __( 'Hero', 'rkv-block-editor' ),
-      'media-text'           => __( 'Media & Text', 'rkv-block-editor' ),
-      'step-with-image'      => __( 'Step with Image', 'rkv-block-editor' ),
-      'three-column'         => __( 'Three Column', 'rkv-block-editor' ),
-      'heading-breadcrumb'   => __( 'Heading with Breadcrumb', 'rkv-block-editor' ),
-      'video-title-border'   => __( 'Video with Title', 'rkv-block-editor' ),
-    ];
-
-    foreach ( $patterns as $slug => $title ) {
-      register_block_pattern(
-        'rkv-block-editor/' . $slug,
-        array(
-          'title'      => $title,
-          'categories' => [ 'custom' ],
-          'content'    => rkv_get_template( $slug, $template_directories, true ),
-        )
-      );
-    }
+  foreach ($patterns as $slug => $title) {
+    register_block_pattern('rkv-block-editor/' . $slug, ['title' => $title, 'categories' => ['custom'], 'content' => rkv_get_template($slug, $dirs, true)]);
   }
-  add_action( 'init', 'rkv_register_patterns' );
 }
+add_action('init', 'rkv_register_patterns');
 ```
 
-**Benefits:**
-- Single file contains all pattern logic
-- Loop-based registration reduces code duplication
-- Template hierarchy enables child theme overrides
-- Easy to add/remove patterns by modifying array
+**Benefits:** Single file for all logic, loop-based registration reduces duplication, template hierarchy enables overrides, easy array modification.
 
 ## Pattern vs Block Decision
 
