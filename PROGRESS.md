@@ -1,10 +1,11 @@
 # Codebase Mining Progress
 
 **Last Updated:** February 14, 2026
-**Current Phase:** RAG Content Optimization (Wave 1 complete ✅)
+**Current Phase:** RAG Content Optimization (Wave 1-2 complete ✅)
 **Mining Phase:** All phases complete (Phase 1-5 finished)
 **QA Phase:** Complete ✅
 **Optimization Phase:** Wave 1 - 100% complete (46/46 violations fixed) ✅
+**Optimization Phase:** Wave 2 - 100% complete (16/16 violations fixed) ✅
 
 ---
 
@@ -98,6 +99,28 @@
 - Violations fixed: 14
 - Strategy: Split large sections (Migration Checklist, Configuration Breaking Changes, Single Post Template, Custom Widgets), heavy condensing
 - **Wave 1 Complete:** 46/46 violations fixed (100%)
+
+### Wave 2: php-wordpress high-priority files ✅ COMPLETE
+
+| File | Status | Violations | Sessions |
+|------|--------|------------|----------|
+| class-based-cpt-organization.md | ✅ Complete | 8→0 | Session 3 |
+| custom-post-type-graphql-registration.md | ✅ Complete | 8→0 | Session 3 & 4 |
+
+**Wave 2 Progress:** ✅ 100% complete (16 of 16 violations fixed)
+
+**Result:** High-priority php-wordpress files ready for RAG embedding!
+
+**Session 3 (Part 2):**
+- Files: 1 complete, 1 partial (5/8 violations)
+- Violations fixed: 13
+- Strategy: Split massive sections (4000+ chars), condense PHPDoc, combine related content
+
+**Session 4 (Completion):**
+- Files: 1 complete (remaining 3 violations)
+- Violations fixed: 3
+- Strategy: Split security pattern, condense checklist, combine test queries
+- **Wave 2 Complete:** 16/16 violations fixed (100%)
 
 ---
 
