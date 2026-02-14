@@ -488,95 +488,32 @@ define( 'GRAPHQL_QUERY_COMPLEXITY', 300 );
 
 Headless Next.js apps consume WPGraphQL + ACF data via `graphql-request` or Apollo Client.
 
-### GraphQL Client Setup
-
+**Client setup:**
 ```typescript
-// lib/graphql-client.ts
 import { GraphQLClient } from 'graphql-request';
-
-export const client = new GraphQLClient(
-  process.env.NEXT_PUBLIC_WORDPRESS_API_URL || '',
-  {
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  }
-);
+export const client = new GraphQLClient(process.env.NEXT_PUBLIC_WORDPRESS_API_URL || '', {headers: {'Content-Type': 'application/json'}});
 ```
 
-### Query + TypeScript Types
-
+**Query + Types:**
 ```typescript
-// queries/get-page-blocks.ts
-import { gql } from 'graphql-request';
+export const GET_PAGE_BLOCKS = gql`query GetPageBlocks($id: ID!) { page(id: $id, idType: DATABASE_ID) { title editorBlocks { name ... on CreateBlockLogoCloudBlock { logoCloudBlock { logos { logo { sourceUrl altText } link } } } } } }`;
 
-export const GET_PAGE_BLOCKS = gql`
-  query GetPageBlocks($id: ID!) {
-    page(id: $id, idType: DATABASE_ID) {
-      title
-      editorBlocks {
-        name
-        ... on CreateBlockLogoCloudBlock {
-          logoCloudBlock {
-            logos {
-              logo {
-                sourceUrl
-                altText
-              }
-              link
-            }
-          }
-        }
-      }
-    }
-  }
-`;
-
-// TypeScript type generation
-export interface LogoItem {
-  logo: {
-    sourceUrl: string;
-    altText?: string;
-  };
-  link?: string;
-}
-
-export interface LogoCloudBlock {
-  logoCloudBlock: {
-    logos: LogoItem[];
-  };
-}
+interface LogoItem { logo: { sourceUrl: string; altText?: string }; link?: string }
+interface LogoCloudBlock { logoCloudBlock: { logos: LogoItem[] } }
 ```
 
-### Data Fetching (Next.js)
-
+**Data fetching:**
 ```typescript
-// pages/[slug].tsx
-import { client } from '@/lib/graphql-client';
-import { GET_PAGE_BLOCKS } from '@/queries/get-page-blocks';
-
 export async function getStaticProps({ params }) {
-  const data = await client.request(GET_PAGE_BLOCKS, {
-    id: params.slug,
-  });
-
-  return {
-    props: { page: data.page },
-    revalidate: 60, // ISR: revalidate every 60 seconds
-  };
+  const data = await client.request(GET_PAGE_BLOCKS, {id: params.slug});
+  return {props: {page: data.page}, revalidate: 60};
 }
 
 export default function Page({ page }) {
-  return (
-    <>
-      <h1>{page.title}</h1>
-      {page.editorBlocks.map((block) => {
-        if (block.name === 'create-block/logo-cloud-block') {
-          return <LogoCloudBlock data={block.logoCloudBlock} />;
-        }
-      })}
-    </>
-  );
+  return (<>
+    <h1>{page.title}</h1>
+    {page.editorBlocks.map((block) => block.name === 'create-block/logo-cloud-block' && <LogoCloudBlock data={block.logoCloudBlock} />)}
+  </>);
 }
 ```
 
