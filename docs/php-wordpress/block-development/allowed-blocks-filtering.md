@@ -64,63 +64,26 @@ WordPress tiered allowlist merges base blocks with post-type-specific additions.
 
 ## PHP Implementation for Tiered Allowlist
 
-WordPress filter function checks editor context post type and merges universal blocks with appropriate tier-specific blocks. Separate arrays for universal, page-specific, and custom post type blocks enable maintainable management:
+WordPress filter merges universal blocks with tier-specific blocks based on editor context post type:
 
 ```php
-function restrict_blocks( $allowed_block_types, $editor_context ) {
-  // Blocks allowed everywhere
-  $universally_allowed_blocks = array(
-    'core/block',
-    'core/paragraph',
-    'core/heading',
-    'core/list',
-    'core/image',
-    'core/quote',
-    'core/separator',
-    'create-block/section-block',
-    'create-block/slideshow-block',
-  );
+function restrict_blocks($allowed_block_types, $editor_context) {
+  $universally_allowed = ['core/block', 'core/paragraph', 'core/heading', 'core/list', 'core/image', 'create-block/section-block'];
+  $page_blocks = ['create-block/home-page-hero-block', 'create-block/priorities-block'];
+  $local_page_blocks = ['create-block/economic-impact-block', 'create-block/guest-community-block'];
 
-  // Additional blocks for Pages
-  $page_blocks = array(
-    'create-block/home-page-hero-block',
-    'create-block/priorities-block',
-    'create-block/featured-post-block',
-  );
-
-  // Additional blocks for Custom Post Types
-  $local_page_blocks = array(
-    'create-block/economic-impact-block',
-    'create-block/guest-community-block',
-    'create-block/host-community-block',
-  );
-
-  // Check editor context
-  if ( ! empty( $editor_context->post ) ) {
+  if (!empty($editor_context->post)) {
     $post_type = $editor_context->post->post_type;
-
-    if ( $post_type === 'page' ) {
-      return array_merge( $universally_allowed_blocks, $page_blocks );
-    }
-
-    if ( $post_type === 'plc_local_pages' ) {
-      return array_merge( $universally_allowed_blocks, $local_page_blocks );
-    }
-
-    // Default for other post types
-    return $universally_allowed_blocks;
+    if ($post_type === 'page') return array_merge($universally_allowed, $page_blocks);
+    if ($post_type === 'plc_local_pages') return array_merge($universally_allowed, $local_page_blocks);
+    return $universally_allowed;
   }
-
-  return $universally_allowed_blocks;
+  return $universally_allowed;
 }
-add_filter( 'allowed_block_types_all', 'restrict_blocks', 10, 2 );
+add_filter('allowed_block_types_all', 'restrict_blocks', 10, 2);
 ```
 
-**Pattern benefits:**
-- Base allowlist ensures essential blocks always available
-- Post-type-specific blocks appear only where relevant
-- Easy to maintain (add blocks to appropriate tier)
-- Scales to multiple post types without duplication
+**Benefits:** Base allowlist ensures essentials always available, post-type-specific blocks appear only where relevant, maintainable tiers, scales to multiple post types.
 
 **Real-world example:** airbnb-policy-blocks implements 4-tier system (universal, page-type, pages-only, local-pages-only) managing 25+ block types across 3 post types.
 
@@ -185,54 +148,23 @@ WordPress block registry query enables dynamic allowlist combining curated core 
 
 ## PHP Registry Loop Implementation
 
-WordPress registry query iterates all registered blocks, combining curated core blocks with dynamically discovered custom blocks. WP_Block_Type_Registry query filters blocks by namespace:
+WordPress registry query combines curated core blocks with dynamically discovered custom blocks via WP_Block_Type_Registry:
 
 ```php
-function restrict_blocks( $allowed_block_types, $editor_context ) {
-  // Allow essential core blocks only
-  $core_essentials = array(
-    // Text
-    'core/paragraph',
-    'core/heading',
-    'core/list',
-    'core/quote',
+function restrict_blocks($allowed_block_types, $editor_context) {
+  $core_essentials = ['core/paragraph', 'core/heading', 'core/list', 'core/image', 'core/video', 'core/separator', 'core/spacer', 'core/buttons', 'core/group', 'core/columns'];
 
-    // Media
-    'core/image',
-    'core/video',
-    'core/audio',
-
-    // Design
-    'core/separator',
-    'core/spacer',
-    'core/buttons',
-    'core/button',
-
-    // Layout
-    'core/group',
-    'core/columns',
-    'core/column',
-  );
-
-  // Get all registered custom blocks
-  $registered_blocks = WP_Block_Type_Registry::get_instance()->get_all_registered();
-  $custom_blocks = array();
-
-  foreach ( $registered_blocks as $block_name => $block_type ) {
-    // Include blocks with custom namespace (not core/, not core-embed/)
-    if ( strpos( $block_name, 'core/' ) !== 0 ) {
-      $custom_blocks[] = $block_name;
-    }
+  $registered = WP_Block_Type_Registry::get_instance()->get_all_registered();
+  $custom_blocks = [];
+  foreach ($registered as $name => $type) {
+    if (strpos($name, 'core/') !== 0) $custom_blocks[] = $name;
   }
-
-  return array_merge( $core_essentials, $custom_blocks );
+  return array_merge($core_essentials, $custom_blocks);
 }
-add_filter( 'allowed_block_types_all', 'restrict_blocks', 10, 2 );
+add_filter('allowed_block_types_all', 'restrict_blocks', 10, 2);
 ```
 
-**Pattern rationale:**
-- Restrict potentially problematic core blocks (code, custom HTML, embeds)
-- Allow all custom blocks (project-specific, known safe)
+**Rationale:** Restrict problematic core blocks (code, custom HTML, embeds), allow all custom blocks (project-specific, known safe).
 - Maintain essential core functionality (text, media, layout)
 
 **Excluded core blocks:** code, custom-html, shortcode, freeform, missing, all embed variations (twitter, youtube, spotify, etc.).
@@ -386,81 +318,32 @@ WordPress complete allowlist filter combines constants, editor context detection
 
 ## PHP Production Multi-Tier Implementation
 
-WordPress production filter combines constant definitions for maintainability with editor context detection and tiered merging logic. Pattern includes pattern editor exception and post-type-specific merging:
+WordPress production filter uses constants for maintainability with editor context detection and tiered merging:
 
 ```php
 <?php
-/**
- * Allowed Blocks Filter
- */
+define('UNIVERSAL_BLOCKS', ['core/block', 'core/paragraph', 'core/heading', 'core/list', 'core/image', 'core/buttons', 'core/group', 'core/columns', 'create-block/section-block']);
+define('PAGE_SPECIFIC_BLOCKS', ['create-block/home-page-hero-block', 'create-block/priorities-block']);
+define('LOCAL_PAGE_BLOCKS', ['create-block/economic-impact-block', 'create-block/guest-community-block']);
 
-// Define block tiers
-define( 'UNIVERSAL_BLOCKS', [
-  'core/block',
-  'core/paragraph',
-  'core/heading',
-  'core/list',
-  'core/image',
-  'core/quote',
-  'core/separator',
-  'core/buttons',
-  'core/button',
-  'core/group',
-  'core/columns',
-  'core/column',
-  'create-block/section-block',
-  'create-block/slideshow-block',
-] );
-
-define( 'PAGE_SPECIFIC_BLOCKS', [
-  'create-block/home-page-hero-block',
-  'create-block/priorities-block',
-  'create-block/featured-post-block',
-  'create-block/logo-cloud-block',
-] );
-
-define( 'LOCAL_PAGE_BLOCKS', [
-  'create-block/economic-impact-block',
-  'create-block/guest-community-block',
-  'create-block/host-community-block',
-] );
-
-function airbnb_restrict_blocks( $allowed_block_types, $editor_context ) {
-  // Allow all blocks in pattern/template editor
-  if ( ! empty( $editor_context->name ) && $editor_context->name === 'core/edit-site' ) {
-    return array_merge( UNIVERSAL_BLOCKS, PAGE_SPECIFIC_BLOCKS, LOCAL_PAGE_BLOCKS );
+function airbnb_restrict_blocks($allowed_block_types, $editor_context) {
+  // Pattern editor: all blocks
+  if (!empty($editor_context->name) && $editor_context->name === 'core/edit-site') {
+    return array_merge(UNIVERSAL_BLOCKS, PAGE_SPECIFIC_BLOCKS, LOCAL_PAGE_BLOCKS);
   }
 
-  // Post-type-specific allowlists
-  if ( ! empty( $editor_context->post ) ) {
+  if (!empty($editor_context->post)) {
     $post_type = $editor_context->post->post_type;
-
-    // Pages: universal + page-specific blocks
-    if ( $post_type === 'page' ) {
-      return array_merge( UNIVERSAL_BLOCKS, PAGE_SPECIFIC_BLOCKS );
-    }
-
-    // Local pages: universal + local-specific blocks
-    if ( $post_type === 'plc_local_pages' ) {
-      return array_merge( UNIVERSAL_BLOCKS, LOCAL_PAGE_BLOCKS );
-    }
-
-    // Posts and other CPTs: universal blocks only
+    if ($post_type === 'page') return array_merge(UNIVERSAL_BLOCKS, PAGE_SPECIFIC_BLOCKS);
+    if ($post_type === 'plc_local_pages') return array_merge(UNIVERSAL_BLOCKS, LOCAL_PAGE_BLOCKS);
     return UNIVERSAL_BLOCKS;
   }
-
-  // Default fallback
   return UNIVERSAL_BLOCKS;
 }
-add_filter( 'allowed_block_types_all', 'airbnb_restrict_blocks', 10, 2 );
+add_filter('allowed_block_types_all', 'airbnb_restrict_blocks', 10, 2);
 ```
 
-**Implementation features:**
-- Constants for maintainable block lists
-- Pattern editor exception (all blocks for pattern creation)
-- Three-tier system (universal, page-specific, local-page-specific)
-- Post type detection via $editor_context->post
-- Fallback to universal blocks for undefined contexts
+**Features:** Constants for maintainable lists, pattern editor exception (all blocks), three-tier system (universal/page/local), post type detection, fallback to universal.
 
 ## Performance Considerations
 
