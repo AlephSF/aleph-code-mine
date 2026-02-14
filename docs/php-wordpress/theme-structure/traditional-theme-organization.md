@@ -285,89 +285,43 @@ function calculate_reading_time($content) {
 
 ```php
 <?php
-/**
- * Template tags for use in templates
- */
-
-/**
- * Display post meta (author, date, categories)
- */
-function display_post_meta() {
-    ?>
+function display_post_meta() { ?>
     <div class="post-meta">
-        <span class="author">
-            By <?php the_author_posts_link(); ?>
-        </span>
-        <span class="date">
-            <?php echo get_the_date(); ?>
-        </span>
-        <span class="categories">
-            <?php the_category(', '); ?>
-        </span>
+        <span class="author">By <?php the_author_posts_link(); ?></span>
+        <span class="date"><?= get_the_date() ?></span>
+        <span class="categories"><?php the_category(', '); ?></span>
     </div>
-    <?php
-}
+<?php }
 
-/**
- * Display breadcrumbs
- */
 function display_breadcrumbs() {
-    if (is_front_page()) {
-        return;
-    }
-
-    echo '<nav class="breadcrumbs">';
-    echo '<a href="' . home_url('/') . '">Home</a> &raquo; ';
-
+    if (is_front_page()) return;
+    echo '<nav class="breadcrumbs"><a href="' . home_url('/') . '">Home</a> &raquo; ';
     if (is_category() || is_single()) {
         the_category(' &raquo; ');
-        if (is_single()) {
-            echo " &raquo; ";
-            the_title();
-        }
-    } elseif (is_page()) {
-        echo the_title();
-    }
-
+        if (is_single()) { echo " &raquo; "; the_title(); }
+    } elseif (is_page()) { echo the_title(); }
     echo '</nav>';
 }
 
-/**
- * Display social share buttons
- */
 function display_social_share() {
-    $url = urlencode(get_permalink());
-    $title = urlencode(get_the_title());
-    ?>
+    $url = urlencode(get_permalink()); $title = urlencode(get_the_title()); ?>
     <div class="social-share">
-        <a href="https://twitter.com/share?url=<?php echo $url; ?>&text=<?php echo $title; ?>"
-           target="_blank">Share on Twitter</a>
-        <a href="https://www.facebook.com/sharer.php?u=<?php echo $url; ?>"
-           target="_blank">Share on Facebook</a>
-        <a href="https://www.linkedin.com/shareArticle?url=<?php echo $url; ?>&title=<?php echo $title; ?>"
-           target="_blank">Share on LinkedIn</a>
+        <a href="https://twitter.com/share?url=<?= $url ?>&text=<?= $title ?>" target="_blank">Twitter</a>
+        <a href="https://www.facebook.com/sharer.php?u=<?= $url ?>" target="_blank">Facebook</a>
+        <a href="https://www.linkedin.com/shareArticle?url=<?= $url ?>&title=<?= $title ?>" target="_blank">LinkedIn</a>
     </div>
-    <?php
-}
+<?php }
 ```
 
-**Usage in Templates:**
+**Usage:**
 ```php
 <?php get_header(); ?>
-
 <article>
     <h1><?php the_title(); ?></h1>
-
-    <?php display_post_meta(); ?>
-    <?php display_breadcrumbs(); ?>
-
-    <div class="content">
-        <?php the_content(); ?>
-    </div>
-
+    <?php display_post_meta(); display_breadcrumbs(); ?>
+    <div class="content"><?php the_content(); ?></div>
     <?php display_social_share(); ?>
 </article>
-
 <?php get_footer(); ?>
 ```
 
@@ -375,52 +329,21 @@ function display_social_share() {
 
 ```php
 <?php
-/**
- * Theme Customizer settings
- */
-
 function customize_register($wp_customize) {
-    // Add header section
-    $wp_customize->add_section('header_settings', array(
-        'title' => 'Header Settings',
-        'priority' => 30,
-    ));
+    $wp_customize->add_section('header_settings', ['title' => 'Header Settings', 'priority' => 30]);
 
     // Logo upload
-    $wp_customize->add_setting('header_logo', array(
-        'default' => '',
-        'sanitize_callback' => 'esc_url_raw',
-    ));
+    $wp_customize->add_setting('header_logo', ['default' => '', 'sanitize_callback' => 'esc_url_raw']);
+    $wp_customize->add_control(new WP_Customize_Image_Control($wp_customize, 'header_logo',
+        ['label' => 'Logo', 'section' => 'header_settings', 'settings' => 'header_logo']));
 
-    $wp_customize->add_control(new WP_Customize_Image_Control($wp_customize, 'header_logo', array(
-        'label' => 'Header Logo',
-        'section' => 'header_settings',
-        'settings' => 'header_logo',
-    )));
+    // CTA text
+    $wp_customize->add_setting('header_cta_text', ['default' => 'Get Started', 'sanitize_callback' => 'sanitize_text_field']);
+    $wp_customize->add_control('header_cta_text', ['label' => 'CTA Text', 'section' => 'header_settings', 'type' => 'text']);
 
-    // Header CTA text
-    $wp_customize->add_setting('header_cta_text', array(
-        'default' => 'Get Started',
-        'sanitize_callback' => 'sanitize_text_field',
-    ));
-
-    $wp_customize->add_control('header_cta_text', array(
-        'label' => 'Call to Action Text',
-        'section' => 'header_settings',
-        'type' => 'text',
-    ));
-
-    // Header CTA URL
-    $wp_customize->add_setting('header_cta_url', array(
-        'default' => '',
-        'sanitize_callback' => 'esc_url_raw',
-    ));
-
-    $wp_customize->add_control('header_cta_url', array(
-        'label' => 'Call to Action URL',
-        'section' => 'header_settings',
-        'type' => 'url',
-    ));
+    // CTA URL
+    $wp_customize->add_setting('header_cta_url', ['default' => '', 'sanitize_callback' => 'esc_url_raw']);
+    $wp_customize->add_control('header_cta_url', ['label' => 'CTA URL', 'section' => 'header_settings', 'type' => 'url']);
 }
 add_action('customize_register', 'customize_register');
 ```
@@ -428,98 +351,75 @@ add_action('customize_register', 'customize_register');
 **Usage in header.php:**
 ```php
 <?php if (get_theme_mod('header_logo')) : ?>
-    <img src="<?php echo esc_url(get_theme_mod('header_logo')); ?>" alt="Logo">
+    <img src="<?= esc_url(get_theme_mod('header_logo')) ?>" alt="Logo">
 <?php endif; ?>
-
 <?php if (get_theme_mod('header_cta_url')) : ?>
-    <a href="<?php echo esc_url(get_theme_mod('header_cta_url')); ?>" class="cta-button">
-        <?php echo esc_html(get_theme_mod('header_cta_text', 'Get Started')); ?>
+    <a href="<?= esc_url(get_theme_mod('header_cta_url')) ?>" class="cta-button">
+        <?= esc_html(get_theme_mod('header_cta_text', 'Get Started')) ?>
     </a>
 <?php endif; ?>
 ```
 
-## Custom Widgets (inc/widgets/recent-posts-widget.php)
+## Custom Widgets: Class Structure
+
+WordPress widget class extends WP_Widget with constructor and widget() method for frontend display.
 
 ```php
 <?php
-/**
- * Custom Recent Posts Widget
- */
-
 class Custom_Recent_Posts_Widget extends WP_Widget {
-
     public function __construct() {
-        parent::__construct(
-            'custom_recent_posts',
-            'Custom Recent Posts',
-            array('description' => 'Display recent posts with thumbnails')
-        );
+        parent::__construct('custom_recent_posts', 'Custom Recent Posts',
+            ['description' => 'Display recent posts with thumbnails']);
     }
 
     public function widget($args, $instance) {
         echo $args['before_widget'];
-
         $title = !empty($instance['title']) ? $instance['title'] : 'Recent Posts';
         echo $args['before_title'] . esc_html($title) . $args['after_title'];
-
         $count = !empty($instance['count']) ? intval($instance['count']) : 5;
-
-        $recent_posts = get_posts(array(
-            'numberposts' => $count,
-            'post_status' => 'publish',
-        ));
-
+        $recent_posts = get_posts(['numberposts' => $count, 'post_status' => 'publish']);
         if (!empty($recent_posts)) {
             echo '<ul class="recent-posts-widget">';
-            foreach ($recent_posts as $post) {
-                ?>
+            foreach ($recent_posts as $post) { ?>
                 <li>
-                    <?php if (has_post_thumbnail($post)) : ?>
-                        <div class="thumbnail">
-                            <?php echo get_the_post_thumbnail($post, 'thumbnail'); ?>
-                        </div>
-                    <?php endif; ?>
-                    <div class="post-info">
-                        <a href="<?php echo get_permalink($post); ?>">
-                            <?php echo esc_html($post->post_title); ?>
-                        </a>
-                        <span class="date"><?php echo get_the_date('', $post); ?></span>
-                    </div>
+                    <?php if (has_post_thumbnail($post)) : ?><div class="thumbnail"><?= get_the_post_thumbnail($post, 'thumbnail') ?></div><?php endif; ?>
+                    <div class="post-info"><a href="<?= get_permalink($post) ?>"><?= esc_html($post->post_title) ?></a>
+                        <span class="date"><?= get_the_date('', $post) ?></span></div>
                 </li>
-                <?php
-            }
+            <?php }
             echo '</ul>';
         }
-
         echo $args['after_widget'];
     }
+```
 
+## Custom Widgets: Admin Form and Registration
+
+WordPress widget admin form uses form() for settings UI and update() for data sanitization.
+
+```php
+    // ... continuing Custom_Recent_Posts_Widget class
     public function form($instance) {
         $title = !empty($instance['title']) ? $instance['title'] : '';
-        $count = !empty($instance['count']) ? intval($instance['count']) : 5;
-        ?>
+        $count = !empty($instance['count']) ? intval($instance['count']) : 5; ?>
         <p>
-            <label for="<?php echo $this->get_field_id('title'); ?>">Title:</label>
-            <input class="widefat" id="<?php echo $this->get_field_id('title'); ?>"
-                   name="<?php echo $this->get_field_name('title'); ?>" type="text"
-                   value="<?php echo esc_attr($title); ?>">
+            <label for="<?= $this->get_field_id('title') ?>">Title:</label>
+            <input class="widefat" id="<?= $this->get_field_id('title') ?>"
+                   name="<?= $this->get_field_name('title') ?>" type="text" value="<?= esc_attr($title) ?>">
         </p>
         <p>
-            <label for="<?php echo $this->get_field_id('count'); ?>">Number of posts:</label>
-            <input class="widefat" id="<?php echo $this->get_field_id('count'); ?>"
-                   name="<?php echo $this->get_field_name('count'); ?>" type="number"
-                   value="<?php echo esc_attr($count); ?>" min="1" max="20">
+            <label for="<?= $this->get_field_id('count') ?>">Number of posts:</label>
+            <input class="widefat" id="<?= $this->get_field_id('count') ?>"
+                   name="<?= $this->get_field_name('count') ?>" type="number"
+                   value="<?= esc_attr($count) ?>" min="1" max="20">
         </p>
-        <?php
-    }
+    <?php }
 
     public function update($new_instance, $old_instance) {
-        $instance = array();
-        $instance['title'] = !empty($new_instance['title']) ?
-            sanitize_text_field($new_instance['title']) : '';
-        $instance['count'] = !empty($new_instance['count']) ?
-            intval($new_instance['count']) : 5;
-        return $instance;
+        return [
+            'title' => !empty($new_instance['title']) ? sanitize_text_field($new_instance['title']) : '',
+            'count' => !empty($new_instance['count']) ? intval($new_instance['count']) : 5,
+        ];
     }
 }
 
@@ -537,166 +437,75 @@ WordPress template hierarchy determines which template file loads. Traditional t
 
 ```php
 <?php get_header(); ?>
-
 <div class="container">
     <div class="content-area">
-
         <?php if (have_posts()) : ?>
-
             <header class="page-header">
-                <?php
-                the_archive_title('<h1 class="page-title">', '</h1>');
-                the_archive_description('<div class="archive-description">', '</div>');
-                ?>
+                <?php the_archive_title('<h1>', '</h1>'); the_archive_description('<div>', '</div>'); ?>
             </header>
-
             <div class="posts-grid">
                 <?php while (have_posts()) : the_post(); ?>
-
-                    <article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
-                        <?php if (has_post_thumbnail()) : ?>
-                            <div class="post-thumbnail">
-                                <a href="<?php the_permalink(); ?>">
-                                    <?php the_post_thumbnail('medium'); ?>
-                                </a>
-                            </div>
-                        <?php endif; ?>
-
-                        <header class="entry-header">
-                            <h2 class="entry-title">
-                                <a href="<?php the_permalink(); ?>">
-                                    <?php the_title(); ?>
-                                </a>
-                            </h2>
-
-                            <?php display_post_meta(); ?>
-                        </header>
-
-                        <div class="entry-summary">
-                            <?php the_excerpt(); ?>
-                        </div>
-
-                        <a href="<?php the_permalink(); ?>" class="read-more">
-                            Read More
-                        </a>
+                    <article id="post-<?= the_ID() ?>" <?php post_class(); ?>>
+                        <?php if (has_post_thumbnail()) : ?><div class="post-thumbnail"><a href="<?= the_permalink() ?>"><?php the_post_thumbnail('medium'); ?></a></div><?php endif; ?>
+                        <header class="entry-header"><h2><a href="<?= the_permalink() ?>"><?php the_title(); ?></a></h2><?php display_post_meta(); ?></header>
+                        <div class="entry-summary"><?php the_excerpt(); ?></div>
+                        <a href="<?= the_permalink() ?>" class="read-more">Read More</a>
                     </article>
-
                 <?php endwhile; ?>
             </div>
-
-            <?php
-            the_posts_pagination(array(
-                'prev_text' => '&laquo; Previous',
-                'next_text' => 'Next &raquo;',
-            ));
-            ?>
-
-        <?php else : ?>
-
-            <p>No posts found.</p>
-
-        <?php endif; ?>
-
+            <?php the_posts_pagination(['prev_text' => '&laquo; Prev', 'next_text' => 'Next &raquo;']); ?>
+        <?php else : ?><p>No posts found.</p><?php endif; ?>
     </div>
-
-    <?php if (has_sidebar()) : ?>
-        <?php get_sidebar(); ?>
-    <?php endif; ?>
+    <?php if (has_sidebar()) : get_sidebar(); endif; ?>
 </div>
-
 <?php get_footer(); ?>
 ```
 
-**Template Hierarchy:** WordPress checks for specific templates in order: `category-{slug}.php`, `category-{id}.php`, `category.php`, `archive.php`, `index.php`.
+**Template Hierarchy:** `category-{slug}.php` → `category-{id}.php` → `category.php` → `archive.php` → `index.php`.
 
-## Single Post Template (single.php)
+## Single Post Template: Main Article
 
 ```php
 <?php get_header(); ?>
-
 <div class="container">
     <div class="content-area">
-
         <?php while (have_posts()) : the_post(); ?>
-
-            <article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
-
-                <header class="entry-header">
-                    <h1 class="entry-title"><?php the_title(); ?></h1>
-                    <?php display_post_meta(); ?>
-                    <?php display_breadcrumbs(); ?>
-                </header>
-
-                <?php if (has_post_thumbnail()) : ?>
-                    <div class="featured-image">
-                        <?php the_post_thumbnail('large'); ?>
-                    </div>
-                <?php endif; ?>
-
-                <div class="entry-content">
-                    <?php the_content(); ?>
-
-                    <?php
-                    wp_link_pages(array(
-                        'before' => '<div class="page-links">Pages: ',
-                        'after' => '</div>',
-                    ));
-                    ?>
-                </div>
-
-                <footer class="entry-footer">
-                    <?php display_social_share(); ?>
-
-                    <div class="tags">
-                        <?php the_tags('Tags: ', ', ', ''); ?>
-                    </div>
-                </footer>
-
+            <article id="post-<?= the_ID() ?>" <?php post_class(); ?>>
+                <header class="entry-header"><h1><?php the_title(); ?></h1><?php display_post_meta(); display_breadcrumbs(); ?></header>
+                <?php if (has_post_thumbnail()) : ?><div class="featured-image"><?php the_post_thumbnail('large'); ?></div><?php endif; ?>
+                <div class="entry-content"><?php the_content(); wp_link_pages(['before' => '<div>Pages: ', 'after' => '</div>']); ?></div>
+                <footer class="entry-footer"><?php display_social_share(); ?><div class="tags"><?php the_tags('Tags: ', ', ', ''); ?></div></footer>
             </article>
-
-            <?php
-            // Related posts
-            $related_posts = get_related_posts(get_the_ID(), 3);
-            if (!empty($related_posts)) :
-                ?>
-                <section class="related-posts">
-                    <h2>Related Posts</h2>
-                    <div class="related-posts-grid">
-                        <?php foreach ($related_posts as $post) : setup_postdata($post); ?>
-                            <article>
-                                <?php if (has_post_thumbnail($post)) : ?>
-                                    <a href="<?php the_permalink($post); ?>">
-                                        <?php echo get_the_post_thumbnail($post, 'medium'); ?>
-                                    </a>
-                                <?php endif; ?>
-                                <h3>
-                                    <a href="<?php the_permalink($post); ?>">
-                                        <?php echo get_the_title($post); ?>
-                                    </a>
-                                </h3>
-                            </article>
-                        <?php endforeach; wp_reset_postdata(); ?>
-                    </div>
-                </section>
-            <?php endif; ?>
-
-            <?php
-            // Comments
-            if (comments_open() || get_comments_number()) :
-                comments_template();
-            endif;
-            ?>
-
+            <?php /* See next section for related posts and comments */ ?>
         <?php endwhile; ?>
-
     </div>
-
-    <?php if (has_sidebar()) : ?>
-        <?php get_sidebar(); ?>
-    <?php endif; ?>
+    <?php if (has_sidebar()) : get_sidebar(); endif; ?>
 </div>
-
 <?php get_footer(); ?>
+```
+
+## Single Post Template: Related Posts and Comments
+
+WordPress single post template includes related posts via custom function and comments template.
+
+```php
+<?php
+// Related posts (inside single.php loop)
+$related = get_related_posts(get_the_ID(), 3);
+if (!empty($related)) : ?>
+    <section class="related-posts"><h2>Related Posts</h2><div class="grid">
+            <?php foreach ($related as $post) : setup_postdata($post); ?>
+                <article>
+                    <?php if (has_post_thumbnail($post)) : ?><a href="<?= the_permalink($post) ?>"><?= get_the_post_thumbnail($post, 'medium') ?></a><?php endif; ?>
+                    <h3><a href="<?= the_permalink($post) ?>"><?= get_the_title($post) ?></a></h3>
+                </article>
+            <?php endforeach; wp_reset_postdata(); ?>
+        </div></section>
+<?php endif;
+
+// Comments
+if (comments_open() || get_comments_number()) : comments_template(); endif;
+?>
 ```
 
 ## Page Template (page.php)
@@ -865,60 +674,26 @@ Break repeated markup into reusable template parts loaded via `get_template_part
 
 ## Asset Management (Manual Enqueue)
 
-Traditional themes manually register and enqueue stylesheets and scripts without build tools. No minification, concatenation, or cache-busting unless manually added.
+Traditional themes manually enqueue stylesheets and scripts without build tools. No minification, concatenation, or cache-busting unless manually added.
 
 ```php
-/**
- * Enqueue stylesheets
- */
+// Enqueue stylesheets
 function site_styles() {
-    // Main stylesheet
-    wp_register_style('site-styles',
-        get_template_directory_uri() . '/css/styles.css',
-        array(),  // Dependencies
-        '1.0',    // Version (manual cache-busting)
-        'all'     // Media type
-    );
-    wp_enqueue_style('site-styles');
-
-    // Google Fonts
-    wp_enqueue_style('google-fonts',
-        'https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap',
-        array(),
-        null
-    );
-
-    // Conditional admin styles
+    wp_enqueue_style('site-styles', get_template_directory_uri() . '/css/styles.css', [], '1.0');
+    wp_enqueue_style('google-fonts', 'https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
     if (is_admin()) {
-        wp_enqueue_style('admin-styles',
-            get_template_directory_uri() . '/css/admin.css',
-            array(),
-            '1.0'
-        );
+        wp_enqueue_style('admin-styles', get_template_directory_uri() . '/css/admin.css', [], '1.0');
     }
 }
 add_action('wp_enqueue_scripts', 'site_styles');
 
-/**
- * Enqueue scripts
- */
+// Enqueue scripts
 function site_scripts() {
-    // Main JavaScript (footer placement)
-    wp_enqueue_script('sitescripts',
-        get_template_directory_uri() . '/js/site-scripts.js',
-        array('jquery'),  // Depends on jQuery
-        NULL,             // No version (use file modification time)
-        true              // Load in footer
-    );
-
-    // Localize script with PHP data
-    wp_localize_script('sitescripts', 'wp_ajax', array(
+    wp_enqueue_script('sitescripts', get_template_directory_uri() . '/js/site-scripts.js', ['jquery'], NULL, true);
+    wp_localize_script('sitescripts', 'wp_ajax', [
         'ajax_url' => admin_url('admin-ajax.php'),
         'nonce' => wp_create_nonce('ajax-nonce'),
-        'home_url' => home_url('/'),
-    ));
-
-    // Conditional comment reply script
+    ]);
     if (is_single() && comments_open() && get_option('thread_comments')) {
         wp_enqueue_script('comment-reply');
     }
@@ -926,66 +701,41 @@ function site_scripts() {
 add_action('wp_enqueue_scripts', 'site_scripts');
 ```
 
-**Limitations:**
-- Manual version management (forget to update → stale cache)
-- No minification (serves full CSS/JS in production)
-- No concatenation (multiple HTTP requests)
-- No critical CSS extraction
-- No tree-shaking unused code
+**Limitations:** Manual version management (stale cache), no minification/concatenation, no critical CSS, no tree-shaking.
 
 **Alternative:** See `build-tool-configuration.md` for webpack/Gulp integration.
 
 ## Performance Optimizations
 
-Traditional themes manually optimize WordPress output by removing unnecessary features, query strings, and bloat. No automated build pipeline unless Gulp/webpack added.
+Traditional themes manually optimize WordPress output by removing unnecessary features and query strings. No automated build pipeline unless Gulp/webpack added.
 
 ```php
-/**
- * Remove emoji detection script (reduces page weight by ~15 KB)
- */
+// Remove emoji scripts (~15 KB savings)
 remove_action('wp_head', 'print_emoji_detection_script', 7);
-remove_action('admin_print_scripts', 'print_emoji_detection_script');
 remove_action('wp_print_styles', 'print_emoji_styles');
-remove_action('admin_print_styles', 'print_emoji_styles');
 
-/**
- * Remove version numbers from head (security + clean HTML)
- */
+// Remove version numbers (security + clean HTML)
 remove_action('wp_head', 'wp_generator');
 
-/**
- * Remove post relational links (rarely used, bloats <head>)
- */
+// Remove post relational links (bloats <head>)
 remove_action('wp_head', 'start_post_rel_link');
 remove_action('wp_head', 'index_rel_link');
-remove_action('wp_head', 'adjacent_posts_rel_link');
 
-/**
- * Remove REST API links from head (unless using REST API)
- */
+// Remove REST API links (unless using REST API)
 remove_action('wp_head', 'rest_output_link_wp_head', 10);
 remove_action('wp_head', 'wp_oembed_add_discovery_links', 10);
-remove_action('template_redirect', 'rest_output_link_header', 11, 0);
 
-/**
- * Remove query strings from static resources (improves CDN caching)
- * Converts /style.css?ver=5.8 to /style.css
- */
+// Remove query strings (improves CDN caching: /style.css?ver=5.8 → /style.css)
 function cleanup_query_string($src) {
-    $parts = explode('?', $src);
-    return $parts[0];
+    return explode('?', $src)[0];
 }
 add_filter('script_loader_src', 'cleanup_query_string', 15, 1);
 add_filter('style_loader_src', 'cleanup_query_string', 15, 1);
 
-/**
- * Remove Live Writer manifest (obsolete service)
- */
+// Remove obsolete Live Writer manifest
 remove_action('wp_head', 'wlwmanifest_link');
 
-/**
- * Clean up excerpt formatting (remove auto <p> tags)
- */
+// Clean excerpt formatting
 remove_filter('the_excerpt', 'wpautop');
 ```
 
