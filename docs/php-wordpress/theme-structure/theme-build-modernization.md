@@ -42,304 +42,168 @@ Legacy webpack configurations create security vulnerabilities, slower builds, an
 
 **Source Confidence:** 67% (extrapolated from Presser performance vs Kelsey patterns)
 
-## Migration Checklist
+## Migration Checklist Overview
 
-Step-by-step process to migrate Sage theme from Webpack 3 to Webpack 5.
+Step-by-step process to migrate Sage theme from Webpack 3 to Webpack 5 in 7 phases.
 
-**Phase 1: Preparation (15-30 min)**
+**Total Migration Time:** 3-5 hours (experienced), 6-8 hours (first migration)
+
+**Phase 1:** Backup configuration (15-30 min)
+**Phase 2:** Update Node.js to v20 (5 min)
+**Phase 3:** Update package.json dependencies (30-45 min)
+**Phase 4:** Install dependencies (5-10 min)
+**Phase 5:** Rewrite webpack configuration (1-2 hours)
+**Phase 6:** Test development and production builds (15 min)
+**Phase 7:** Verify all entry points and bundles (15 min)
+
+**Source Confidence:** 67% (estimated based on webpack migration guides + Presser config analysis)
+
+## Migration Phases 1-3: Preparation
+
+Backup current configuration, update Node.js, and update package.json dependencies.
+
+**Phase 1: Backup**
 
 ```bash
-# 1. Backup current configuration
 cp package.json package.json.backup
 cp resources/assets/build/webpack.config.js webpack.config.backup.js
-
-# 2. Create feature branch
 git checkout -b webpack-5-migration
-
-# 3. Document current dependencies
 npm list --depth=0 > current-deps.txt
 ```
 
-**Phase 2: Update Node.js (5 min)**
+**Phase 2: Update Node.js**
 
 ```bash
-# 1. Check current Node version
-node --version  # Should show v8.x
-
-# 2. Update .nvmrc
+nvm install 20.11.0 && nvm use 20.11.0
 echo "20.11.0" > .nvmrc
-
-# 3. Install new Node version
-nvm install 20.11.0
-nvm use 20.11.0
-
-# 4. Verify installation
-node --version  # Should show v20.11.0
+node --version  # Verify v20.11.0
 ```
 
-**Phase 3: Update package.json (30-45 min)**
+**Phase 3: Update package.json**
 
 ```json
 {
-  "engines": {
-    "node": ">= 20"
-  },
+  "engines": { "node": ">= 20" },
   "devDependencies": {
-    "webpack": "^5.96.1",
-    "webpack-cli": "^5.1.4",
-    "webpack-dev-middleware": "^7.4.2",
-    "webpack-hot-middleware": "^2.26.1",
-    "webpack-merge": "^6.0.1",
-
+    "webpack": "^5.96.1", "webpack-cli": "^5.1.4",
     "mini-css-extract-plugin": "^2.9.2",
     "terser-webpack-plugin": "^5.3.10",
-    "css-minimizer-webpack-plugin": "^7.0.0",
-
-    "sass": "^1.81.0",
-    "sass-loader": "^16.0.3",
-    "css-loader": "^7.1.2",
-    "postcss-loader": "^8.1.1",
-    "postcss": "^8.4.49",
-    "autoprefixer": "^10.4.20",
-
-    "babel-loader": "^9.2.1",
-    "@babel/core": "^7.26.0",
-    "@babel/preset-env": "^7.26.0",
-
-    "eslint": "^9.15.0",
-    "@eslint/js": "^9.15.0",
-    "eslint-webpack-plugin": "^4.2.0",
-
-    "stylelint": "^16.11.0",
-    "stylelint-config-standard-scss": "^13.1.0",
-    "stylelint-webpack-plugin": "^5.0.1",
-
-    "browsersync-webpack-plugin": "^0.6.0",
-    "webpack-assets-manifest": "^5.2.1",
-    "clean-webpack-plugin": "^4.0.0"
+    "sass": "^1.81.0", "sass-loader": "^16.0.3",
+    "babel-loader": "^9.2.1", "@babel/preset-env": "^7.26.0",
+    "eslint": "^9.15.0", "stylelint": "^16.11.0"
   }
 }
 ```
 
-**Phase 4: Install Updated Dependencies (5-10 min)**
+**Source Confidence:** 67%
+
+## Migration Phases 4-7: Install and Test
+
+Install dependencies, test builds, and verify output bundles.
+
+**Phase 4: Install Dependencies**
 
 ```bash
-# Remove old node_modules and lock file
 rm -rf node_modules yarn.lock
-
-# Install updated dependencies
 yarn install
-
-# Audit for vulnerabilities
-yarn audit
+yarn audit  # Verify 0 vulnerabilities
 ```
 
-**Phase 5: Update Webpack Configuration (1-2 hours)**
+**Phase 5:** See Configuration Breaking Changes section for webpack.config.js rewrites (1-2 hours).
 
-See detailed configuration updates in next section.
-
-**Phase 6: Test Build (15 min)**
+**Phase 6: Test Builds**
 
 ```bash
-# Development build
-yarn start
-# Check: BrowserSync opens, no errors
-
-# Production build
-yarn build:production
-# Check: dist/ folder created, manifest exists
-
-# Verify WordPress theme
-# Activate theme in WordPress admin, check frontend loads correctly
+yarn start  # Check BrowserSync opens, no errors
+yarn build:production  # Check dist/ folder created
 ```
 
-**Phase 7: Verify All Entry Points (15 min)**
+**Phase 7: Verify Entry Points**
 
 ```bash
-# Test all generated bundles
-ls -lh dist/scripts/
-# Should see: main.js, customizer.js, admin-custom.js
-
-ls -lh dist/styles/
-# Should see: main.css, admin.css
-
-# Test asset manifest
-cat dist/assets-manifest.json
-# Should contain all bundles with hashes
+ls -lh dist/scripts/  # Should see main.js, customizer.js
+ls -lh dist/styles/   # Should see main.css, admin.css
+cat dist/assets-manifest.json  # Should contain all hashes
 ```
 
-**Total Migration Time:** 3-5 hours for experienced developers, 6-8 hours for first-time migration
+**Source Confidence:** 67%
 
-**Source Confidence:** 67% (estimated based on webpack migration guides + Presser config analysis)
+## Configuration Breaking Changes: Plugins
 
-## Configuration Breaking Changes
+Webpack 5 replaces ExtractTextPlugin and UglifyJsPlugin with modern alternatives.
 
-Webpack 5 introduces breaking changes requiring configuration rewrites for mode, plugins, and loaders.
-
-**1. Replace ExtractTextPlugin with MiniCssExtractPlugin**
-
-**Old (Webpack 3):**
+**Replace ExtractTextPlugin → MiniCssExtractPlugin:**
 
 ```javascript
+// Old (Webpack 3)
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
-
 module.exports = {
-  module: {
-    rules: [
-      {
-        test: /\.scss$/,
-        use: ExtractTextPlugin.extract({
-          use: ['css-loader', 'sass-loader'],
-        }),
-      },
-    ],
-  },
-  plugins: [
-    new ExtractTextPlugin('styles/main.css'),
-  ],
+  plugins: [new ExtractTextPlugin('styles/main.css')],
 };
-```
 
-**New (Webpack 5):**
-
-```javascript
+// New (Webpack 5)
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
-
 export default {
-  module: {
-    rules: [
-      {
-        test: /\.scss$/,
-        use: [
-          MiniCssExtractPlugin.loader,
-          'css-loader',
-          'sass-loader',
-        ],
-      },
-    ],
-  },
-  plugins: [
-    new MiniCssExtractPlugin({
-      filename: 'styles/[name].css',
-    }),
-  ],
+  plugins: [new MiniCssExtractPlugin({ filename: 'styles/[name].css' })],
 };
 ```
 
-**2. Replace UglifyJsPlugin with TerserPlugin**
-
-**Old (Webpack 3):**
+**Replace UglifyJsPlugin → TerserPlugin:**
 
 ```javascript
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+// Old (Webpack 3)
+plugins: [new UglifyJsPlugin({ uglifyOptions: { compress: { warnings: false } } })],
 
-module.exports = {
-  plugins: [
-    new UglifyJsPlugin({
-      uglifyOptions: {
-        compress: { warnings: false },
-      },
-    }),
-  ],
-};
-```
-
-**New (Webpack 5):**
-
-```javascript
+// New (Webpack 5)
 import TerserPlugin from 'terser-webpack-plugin';
-
 export default {
   optimization: {
-    minimizer: [
-      new TerserPlugin({
-        terserOptions: {
-          compress: {
-            drop_console: true,
-          },
-        },
-      }),
-    ],
+    minimizer: [new TerserPlugin({ terserOptions: { compress: { drop_console: true } } })],
   },
 };
 ```
 
-**3. Add Mode Configuration**
-
-**Old (Webpack 3):**
+**Add Explicit Mode:**
 
 ```javascript
-// Mode implicitly set via NODE_ENV
-module.exports = {
-  // No mode property
-};
-```
-
-**New (Webpack 5):**
-
-```javascript
-// Explicitly set mode
-export default {
-  mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
-};
-```
-
-**4. Update File Loader to Asset Modules**
-
-**Old (Webpack 3):**
-
-```javascript
-module.exports = {
-  module: {
-    rules: [
-      {
-        test: /\.(png|jpg|gif)$/,
-        use: 'file-loader',
-      },
-    ],
-  },
-};
-```
-
-**New (Webpack 5):**
-
-```javascript
-export default {
-  module: {
-    rules: [
-      {
-        test: /\.(png|jpg|gif)$/,
-        type: 'asset/resource',
-        generator: {
-          filename: 'images/[name].[hash][ext]',
-        },
-      },
-    ],
-  },
-};
-```
-
-**5. ESM Syntax (CommonJS → ES Modules)**
-
-**Old (Webpack 3):**
-
-```javascript
-const webpack = require('webpack');
-const config = require('./config');
-
-module.exports = { /* ... */ };
-```
-
-**New (Webpack 5):**
-
-```javascript
-import webpack from 'webpack';
-import config from './config.js';
-
-export default { /* ... */ };
+// Old (Webpack 3): No mode property
+// New (Webpack 5): Explicit mode
+mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
 ```
 
 **Source Confidence:** 100% (Presser uses all modern patterns)
+
+## Configuration Breaking Changes: Loaders and Modules
+
+Webpack 5 replaces file-loader with asset modules and requires ESM syntax.
+
+**Replace file-loader → Asset Modules:**
+
+```javascript
+// Old (Webpack 3)
+{ test: /\.(png|jpg|gif)$/, use: 'file-loader' }
+
+// New (Webpack 5)
+{
+  test: /\.(png|jpg|gif)$/,
+  type: 'asset/resource',
+  generator: { filename: 'images/[name].[hash][ext]' },
+}
+```
+
+**Migrate CommonJS → ESM:**
+
+```javascript
+// Old (Webpack 3)
+const webpack = require('webpack');
+module.exports = { /* ... */ };
+
+// New (Webpack 5)
+import webpack from 'webpack';
+export default { /* ... */ };
+```
+
+**Source Confidence:** 100%
 
 ## Node.js Version Upgrade
 
@@ -405,72 +269,33 @@ const url = new URL('https://example.com');
 
 Buble (lightweight transpiler) lacks polyfill support and modern syntax features compared to Babel.
 
-**Feature Comparison:**
-
 | Feature | Buble | Babel | Recommendation |
 |---------|-------|-------|----------------|
 | ES2015 Support | ✅ Full | ✅ Full | Either |
 | ES2016+ Support | ⚠️ Limited | ✅ Full | Babel |
-| Polyfills | ❌ None | ✅ Automatic (useBuiltIns) | Babel |
-| Async/Await | ✅ Yes | ✅ Yes | Either |
+| Polyfills | ❌ None | ✅ Automatic | Babel |
 | Optional Chaining | ❌ No | ✅ Yes | Babel |
-| Nullish Coalescing | ❌ No | ✅ Yes | Babel |
 | Bundle Size | Smaller | Larger (+20 KB) | Depends |
-| Build Speed | Faster | Slower (20% slower) | Depends |
+| Build Speed | Faster | 20% slower | Depends |
 
-**Buble Configuration (Kelsey - Legacy):**
-
-```javascript
-module.exports = {
-  module: {
-    rules: [
-      {
-        test: /\.js$/,
-        exclude: /node_modules/,
-        use: 'buble-loader',
-      },
-    ],
-  },
-};
-```
-
-**Babel Configuration (Presser - Modern):**
+**Babel Configuration (Recommended):**
 
 ```javascript
 // babel.config.cjs
 module.exports = {
-  presets: [
-    ['@babel/preset-env', {
-      targets: { browsers: ['last 2 versions', '> 1%'] },
-      useBuiltIns: 'usage',
-      corejs: 3,
-    }],
-  ],
+  presets: [['@babel/preset-env', {
+    targets: { browsers: ['last 2 versions', '> 1%'] },
+    useBuiltIns: 'usage', corejs: 3,
+  }]],
 };
 
-// webpack.config.js
-export default {
-  module: {
-    rules: [
-      {
-        test: /\.js$/,
-        exclude: /node_modules/,
-        use: {
-          loader: 'babel-loader',
-          options: {
-            cacheDirectory: true,
-          },
-        },
-      },
-    ],
-  },
-};
+// webpack.config.js - use babel-loader with cacheDirectory
+{ test: /\.js$/, exclude: /node_modules/, use: { loader: 'babel-loader', options: { cacheDirectory: true } } }
 ```
 
 **Migration Decision:**
-
-- **Keep Buble if:** Project uses only ES2015 syntax, no polyfills needed, build speed critical
-- **Migrate to Babel if:** Project needs ES2020+ features (optional chaining, nullish coalescing), polyfills required
+- **Keep Buble if:** Project uses only ES2015, no polyfills needed, build speed critical
+- **Migrate to Babel if:** Project needs ES2020+ features (optional chaining, nullish coalescing)
 
 **Recommended:** Migrate to Babel for future-proofing and broader browser support.
 
@@ -478,110 +303,45 @@ export default {
 
 ## ESLint and Stylelint Upgrades
 
-ESLint 4 → 9 introduces flat config format, and Stylelint 8 → 16 requires new SCSS configuration.
+ESLint 4 → 9 introduces flat config format, Stylelint 8 → 16 requires SCSS configuration.
 
-**ESLint Migration:**
-
-**Old (.eslintrc.js - ESLint 4):**
+**ESLint 9 Flat Config:**
 
 ```javascript
-module.exports = {
-  extends: 'airbnb-base',
-  env: {
-    browser: true,
-    jquery: true,
-  },
-  rules: {
-    'no-console': 'warn',
-  },
-};
-```
-
-**New (eslint.config.cjs - ESLint 9):**
-
-```javascript
+// eslint.config.cjs
 import js from '@eslint/js';
 import globals from 'globals';
 
-export default [
-  js.configs.recommended,
-  {
-    languageOptions: {
-      ecmaVersion: 2022,
-      sourceType: 'module',
-      globals: {
-        ...globals.browser,
-        ...globals.jquery,
-        wp: 'readonly',
-      },
-    },
-    rules: {
-      'no-console': 'warn',
-      'no-unused-vars': 'warn',
-    },
+export default [js.configs.recommended, {
+  languageOptions: {
+    ecmaVersion: 2022, sourceType: 'module',
+    globals: { ...globals.browser, ...globals.jquery, wp: 'readonly' },
   },
-];
+  rules: { 'no-console': 'warn', 'no-unused-vars': 'warn' },
+}];
 ```
 
-**Stylelint Migration:**
-
-**Old (.stylelintrc - Stylelint 8):**
-
-```json
-{
-  "extends": "stylelint-config-standard",
-  "rules": {
-    "indentation": 2,
-    "string-quotes": "single"
-  }
-}
-```
-
-**New (.stylelintrc.cjs - Stylelint 16):**
+**Stylelint 16 SCSS Config:**
 
 ```javascript
+// .stylelintrc.cjs
 module.exports = {
   extends: 'stylelint-config-standard-scss',
   rules: {
-    'scss/at-rule-no-unknown': [true, {
-      ignoreAtRules: ['tailwind', 'apply'],
-    }],
+    'scss/at-rule-no-unknown': [true, { ignoreAtRules: ['tailwind'] }],
     'selector-class-pattern': '^[a-z][a-zA-Z0-9]*(__[a-z][a-zA-Z0-9]*)?(-[a-z][a-zA-Z0-9]*)?$',
   },
 };
 ```
 
-**Webpack Plugin Updates:**
+**Webpack 5 Plugin Updates:**
 
 ```javascript
-// Old (Webpack 3)
-const eslintFriendlyFormatter = require('eslint-friendly-formatter');
-
-module.exports = {
-  module: {
-    rules: [
-      {
-        enforce: 'pre',
-        test: /\.js$/,
-        loader: 'eslint-loader',
-        options: {
-          formatter: eslintFriendlyFormatter,
-        },
-      },
-    ],
-  },
-};
-
-// New (Webpack 5)
+// Old (Webpack 3): eslint-loader in module.rules
+// New (Webpack 5): ESLintPlugin
 import ESLintPlugin from 'eslint-webpack-plugin';
-
 export default {
-  plugins: [
-    new ESLintPlugin({
-      configType: 'flat',
-      failOnError: isProduction,
-    }),
-  ],
+  plugins: [new ESLintPlugin({ configType: 'flat', failOnError: isProduction })],
 };
 ```
 
@@ -589,61 +349,41 @@ export default {
 
 ## Performance Improvements
 
-Webpack 5 introduces persistent caching, improved tree shaking, and better module federation for significant performance gains.
+Webpack 5 introduces persistent caching, improved tree shaking, and module federation for significant gains.
 
 **Build Time Comparison:**
 
-| Build Type | Webpack 3 (Kelsey) | Webpack 5 (Presser) | Improvement |
-|------------|-------------------|---------------------|-------------|
+| Build Type | Webpack 3 | Webpack 5 | Improvement |
+|------------|-----------|-----------|-------------|
 | Initial build | 18.2s | 12.8s | 30% faster |
-| Rebuild (cache cold) | 16.5s | 7.3s | 56% faster |
-| Rebuild (cache warm) | 16.1s | 2.1s | 87% faster |
+| Rebuild (cold cache) | 16.5s | 7.3s | 56% faster |
+| Rebuild (warm cache) | 16.1s | 2.1s | 87% faster |
 
-**Enable Persistent Caching (Webpack 5):**
+**Enable Persistent Caching:**
 
 ```javascript
 export default {
-  cache: {
-    type: 'filesystem',
-    buildDependencies: {
-      config: [__filename],
-    },
-    cacheDirectory: path.resolve(__dirname, '../../../node_modules/.cache/webpack'),
-  },
+  cache: { type: 'filesystem', buildDependencies: { config: [__filename] } },
 };
 ```
 
-**Tree Shaking Improvements:**
-
-**Webpack 3:** Removes unused exports from imported modules
-**Webpack 5:** Removes unused exports + nested unused code within used modules
-
-**Example:**
+**Tree Shaking:** Webpack 3 removes unused exports. Webpack 5 removes unused exports + nested unused code within used modules.
 
 ```javascript
-// lodash-es/index.js
-export { compact } from './compact.js';
-export { debounce } from './debounce.js';
-export { throttle } from './throttle.js';
-// ... 300+ more exports
-
-// main.js
-import { compact } from 'lodash-es';
-const result = compact([0, 1, false, 2]);
-
-// Webpack 3 output: Includes compact + internal dependencies (~15 KB)
-// Webpack 5 output: Includes only compact + used internal code (~5 KB)
+// Example: import { compact } from 'lodash-es';
+// Webpack 3 output: compact + internal deps (~15 KB)
+// Webpack 5 output: compact + used internal code only (~5 KB)
 ```
 
 **Bundle Size Reduction:**
 
 | Asset | Webpack 3 | Webpack 5 | Reduction |
 |-------|-----------|-----------|-----------|
-| main.js | 98 KB | 72 KB | 27% smaller |
-| main.css | 76 KB | 61 KB | 20% smaller |
-| **Total** | **174 KB** | **133 KB** | **24% smaller** |
+| main.js | 98 KB | 72 KB | 27% |
+| main.css | 76 KB | 61 KB | 20% |
+| **Total** | **174 KB** | **133 KB** | **24%** |
 
-**Source Confidence:** 67% (extrapolated from webpack benchmarks + observed Presser performance)
+**Source Confidence:** 67% (extrapolated from webpack benchmarks + Presser)
 
 ## Dependency Audit and Security
 
@@ -752,52 +492,40 @@ Each phase gets separate git commit for easy rollback.
 Comprehensive testing ensures migration doesn't break production functionality.
 
 **Build Tests:**
-
-- [ ] Development build completes without errors (`yarn start`)
-- [ ] Production build completes without errors (`yarn build:production`)
-- [ ] BrowserSync starts and proxies WordPress (`http://localhost:3000`)
-- [ ] CSS hot reload works (edit SCSS, see instant changes)
-- [ ] JavaScript hot reload works (edit JS, see changes after save)
-- [ ] Linting runs and shows warnings/errors (`yarn lint`)
-- [ ] Asset manifest generated (`dist/assets-manifest.json` exists)
+- [ ] Development build (`yarn start`) - BrowserSync opens, no errors
+- [ ] Production build (`yarn build:production`) - dist/ created
+- [ ] CSS hot reload (edit SCSS, instant changes)
+- [ ] JavaScript hot reload (edit JS, changes after save)
+- [ ] Linting runs (`yarn lint`)
+- [ ] Asset manifest generated (`dist/assets-manifest.json`)
 
 **Output Tests:**
-
-- [ ] All entry points generated (`main.js`, `customizer.js`, `admin-custom.js`)
-- [ ] All stylesheets generated (`main.css`, `admin.css`)
-- [ ] Images copied to dist/ with hashes (`images/logo.abc123.svg`)
-- [ ] Fonts copied to dist/ with hashes (`fonts/font.def456.woff2`)
+- [ ] Entry points generated (main.js, customizer.js, admin-custom.js)
+- [ ] Stylesheets generated (main.css, admin.css)
+- [ ] Images/fonts copied with hashes (logo.abc123.svg)
 - [ ] Bundle sizes reasonable (main.js <100 KB, main.css <80 KB)
 
-**WordPress Integration Tests:**
-
-- [ ] Theme activates without errors in WordPress admin
-- [ ] Frontend loads correctly (no 404s for assets)
-- [ ] Styles applied correctly (check header, footer, components)
-- [ ] JavaScript executes correctly (check console for errors)
-- [ ] WordPress Customizer loads (`Appearance > Customize`)
+**WordPress Integration:**
+- [ ] Theme activates without errors
+- [ ] Frontend loads (no 404s for assets)
+- [ ] Styles applied (header, footer, components)
+- [ ] JavaScript executes (no console errors)
+- [ ] Customizer loads (`Appearance > Customize`)
 - [ ] Gutenberg editor loads with custom styles
 
-**Browser Compatibility Tests:**
+**Browser Compatibility:**
+- [ ] Chrome/Edge/Firefox/Safari (latest)
+- [ ] Mobile Safari (iOS 14+) and Chrome Mobile (Android 10+)
 
-- [ ] Chrome/Edge (latest)
-- [ ] Firefox (latest)
-- [ ] Safari (latest)
-- [ ] Mobile Safari (iOS 14+)
-- [ ] Chrome Mobile (Android 10+)
+**Performance:**
+- [ ] Lighthouse score >90
+- [ ] First Contentful Paint <1.5s, Time to Interactive <3.5s
 
-**Performance Tests:**
+**Source Confidence:** 100%
 
-- [ ] Lighthouse score >90 (Performance, Accessibility, Best Practices, SEO)
-- [ ] First Contentful Paint <1.5s
-- [ ] Time to Interactive <3.5s
-- [ ] Bundle sizes acceptable (main.js <100 KB gzipped)
+## Common Migration Errors (Part 1)
 
-**Source Confidence:** 100% (standard webpack migration testing)
-
-## Common Migration Errors
-
-Errors encountered during webpack 3 → 5 migration with solutions.
+Errors 1-3 encountered during webpack 3 → 5 migration with solutions.
 
 **Error 1: "Cannot find module 'webpack-cli/bin/config-yargs'"**
 
@@ -810,46 +538,33 @@ Error: Cannot find module 'webpack-cli/bin/config-yargs'
 **Solution:**
 ```bash
 yarn add webpack-cli@^5.1.4 --dev
-# OR update npm scripts to use webpack directly
-# "start": "webpack serve --mode development"
+# OR update npm scripts: "start": "webpack serve --mode development"
 ```
 
 **Error 2: "ValidationError: Invalid configuration object"**
-
-```bash
-ValidationError: Invalid configuration object. Webpack has been initialized
-using a configuration object that does not match the API schema.
- - configuration.module.rules[0].use[0] should be one of these:
-   non-empty string | function | object { loader?, options?, ident?, query? }
-```
 
 **Cause:** Loader configuration format changed
 
 **Solution:**
 ```javascript
-// Old:
-use: ['style-loader', 'css-loader']
-
-// New (explicitly specify loader):
-use: [
-  { loader: 'style-loader' },
-  { loader: 'css-loader' },
-]
+// Old: use: ['style-loader', 'css-loader']
+// New: use: [{ loader: 'style-loader' }, { loader: 'css-loader' }]
 ```
 
 **Error 3: "Module not found: Error: Can't resolve 'node-sass'"**
-
-```bash
-Module not found: Error: Can't resolve 'node-sass'
-```
 
 **Cause:** node-sass deprecated, use dart-sass
 
 **Solution:**
 ```bash
-yarn remove node-sass
-yarn add sass --dev
+yarn remove node-sass && yarn add sass --dev
 ```
+
+**Source Confidence:** 100% (common webpack migration errors)
+
+## Common Migration Errors (Part 2)
+
+Errors 4-5 encountered during webpack 3 → 5 migration with solutions.
 
 **Error 4: "TypeError: this.getOptions is not a function"**
 
@@ -861,7 +576,6 @@ TypeError: this.getOptions is not a function at Object.loader
 
 **Solution:**
 ```bash
-# Update all loaders to latest versions
 yarn add sass-loader@latest css-loader@latest --dev
 ```
 
@@ -870,25 +584,17 @@ yarn add sass-loader@latest css-loader@latest --dev
 ```bash
 WARNING in asset size limit: The following asset(s) exceed the recommended
 size limit (244 KiB).
-This can impact web performance.
-Assets:
-  scripts/main.js (312 KiB)
+Assets: scripts/main.js (312 KiB)
 ```
 
 **Cause:** Webpack 5 shows performance warnings by default
 
 **Solution:**
 ```javascript
-// webpack.config.js
-export default {
-  performance: {
-    maxAssetSize: 512000, // 500 KB
-    maxEntrypointSize: 512000,
-  },
-};
+export default { performance: { maxAssetSize: 512000, maxEntrypointSize: 512000 } };
 ```
 
-**Source Confidence:** 100% (common webpack migration errors from documentation)
+**Source Confidence:** 100%
 
 ## Related Patterns
 
