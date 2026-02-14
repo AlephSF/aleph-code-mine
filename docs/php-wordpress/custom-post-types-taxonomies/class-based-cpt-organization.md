@@ -18,261 +18,126 @@ WordPress custom post type registration follows object-oriented patterns using P
 
 Airbnb Press Portal implements `Airbnb\Press\PostTypes` class with namespaced PHP 5.3+ syntax, registering 5 custom post types and 5 taxonomies through separate methods. The Kelsey implements `KelseyCustomTypesTaxonomies` class using traditional PHP class syntax, consolidating all registrations into a single monolithic method. Both approaches demonstrate valid patterns with different trade-offs in maintainability, extensibility, and code organization.
 
-## Single-Responsibility Class Pattern (Airbnb)
+## Single-Responsibility Class Pattern: Structure
 
-Airbnb implements a dedicated class where each custom post type registration receives its own method, hooked individually into WordPress `init` action. This pattern separates concerns, enables selective registration, and simplifies unit testing of individual post type configurations.
+Airbnb implements dedicated class where each custom post type receives its own method, hooked individually into `init`. Pattern separates concerns, enables selective registration, simplifies testing.
 
 ```php
 <?php
-/**
- * Plugin Name: Airbnb Press Portal Custom Post Types and Taxonomies
- */
-
 namespace Airbnb\Press;
-
-defined('ABSPATH') or die('No direct access.');
 
 class PostTypes {
     public function __construct() {
-        // Hook individual registration methods
-        add_action('init', array($this, 'bnb_profile_init'));
-        add_action('init', array($this, 'bnb_leadership_init'));
-        add_action('init', array($this, 'bnb_media_init'));
-        add_action('init', array($this, 'bnb_country_content_init'));
-        add_action('init', array($this, 'bnb_city_content_init'));
-        add_action('init', array($this, 'bnb_custom_taxonomies_for_default_post_types'));
-        add_action('init', array($this, 'bnb_gallery_init'));
-        add_action('init', array($this, 'bnb_slider_init'));
-
-        // REST API customization
-        add_filter('rest_query_vars', array($this, 'custom_query_vars'));
+        add_action('init', [$this, 'bnb_profile_init']);
+        add_action('init', [$this, 'bnb_leadership_init']);
+        add_action('init', [$this, 'bnb_media_init']);
+        add_action('init', [$this, 'bnb_country_content_init']);
+        add_action('init', [$this, 'bnb_city_content_init']);
+        add_filter('rest_query_vars', [$this, 'custom_query_vars']);
     }
 
-    /**
-     * Register Profile custom post type
-     */
     function bnb_profile_init() {
-        $labels = array(
-            'name'               => esc_html__('Profile', 'airbnb-custom-post-types'),
-            'singular_name'      => esc_html__('Profile', 'airbnb-custom-post-types'),
-            'add_new'            => esc_html__('Add New', 'airbnb-custom-post-types'),
-            'add_new_item'       => esc_html__('Add New Profile', 'airbnb-custom-post-types'),
-            // ... 9 more labels
-        );
-
-        $args = array(
-            'labels'              => $labels,
-            'public'              => true,
-            'exclude_from_search' => true,
-            'publicly_queryable'  => true,
-            'show_ui'             => true,
-            'show_in_menu'        => true,
-            'query_var'           => true,
-            'rewrite'             => array('slug' => 'profile'),
-            'capability_type'     => 'post',
-            'has_archive'         => false,
-            'hierarchical'        => false,
-            'menu_icon'           => 'dashicons-groups',
-            'supports'            => array('title', 'editor', 'thumbnail', 'revisions'),
-        );
-
-        register_post_type('bnb_profile', $args);
+        register_post_type('bnb_profile', ['labels' => [/* 13 labels */], 'public' => true, 'rewrite' => ['slug' => 'profile'], 'supports' => ['title', 'editor', 'thumbnail']]);
     }
 
-    /**
-     * Register Leadership custom post type
-     */
     function bnb_leadership_init() {
-        // Similar structure, different configuration
-        $labels = array(/* ... */);
-        $args = array(
-            'labels'              => $labels,
-            'rewrite'             => array('slug' => 'about-us/leadership'),
-            // ... other args
-        );
-        register_post_type('bnb_leadership', $args);
+        register_post_type('bnb_leadership', ['rewrite' => ['slug' => 'about-us/leadership'], /* ... */]);
     }
 
-    // ... 6 more registration methods
+    // ... 5 more registration methods
 
-    /**
-     * Add meta_query support to REST API
-     */
-    function custom_query_vars($vars) {
-        $vars[] = 'meta_query';
-        return $vars;
-    }
+    function custom_query_vars($vars) { $vars[] = 'meta_query'; return $vars; }
 }
-
-// Instantiate class to trigger constructor hooks
 new PostTypes();
 ```
 
-**Pattern benefits:**
-- **Separation of concerns:** Each CPT gets dedicated method (easier to locate and modify)
-- **Selective registration:** Comment out single hook in constructor to disable CPT
-- **Unit testing:** Test individual methods in isolation
-- **Code navigation:** Jump to specific CPT method via IDE go-to-definition
-- **Documentation:** PHPDoc comments per method describe each CPT purpose
+Airbnb uses this pattern consistently, demonstrating preference for explicit separation over conciseness.
 
-**Pattern drawbacks:**
+## Single-Responsibility Class Pattern: Trade-offs
+
+**Benefits:**
+- **Separation:** Each CPT gets dedicated method (easier to locate/modify)
+- **Selective registration:** Comment out single hook to disable CPT
+- **Unit testing:** Test individual methods in isolation
+- **Code navigation:** IDE go-to-definition works per-method
+- **Documentation:** PHPDoc per method describes CPT purpose
+
+**Drawbacks:**
 - **Verbose:** 8 methods + 8 hooks for 5 CPTs + 3 taxonomy groups
 - **Repetitive:** Label arrays repeat similar structure across methods
-- **Constructor clutter:** 8+ hook registrations in constructor
+- **Constructor clutter:** 8+ hook registrations
 
-Airbnb codebase uses this pattern consistently across multiple custom plugin files analyzed, demonstrating organizational preference for explicit separation over conciseness.
+## Monolithic Registration Pattern: Structure
 
-## Monolithic Registration Pattern (The Kelsey)
-
-The Kelsey implements a single registration method containing all custom post type and taxonomy registrations, reducing code volume at the cost of method length and testability granularity.
+The Kelsey implements single method containing all custom post type and taxonomy registrations, reducing code volume at cost of method length.
 
 ```php
 <?php
-defined('ABSPATH') or die('No direct access.');
-
 class KelseyCustomTypesTaxonomies {
-    function __construct() {
-        // No hooks registered in constructor
-    }
+    function __construct() {}
+    function activation() { flush_rewrite_rules(); }
+    function deactivation() { flush_rewrite_rules(); }
 
-    /**
-     * Flush rewrite rules on plugin activation
-     */
-    function activation() {
-        flush_rewrite_rules();
-    }
-
-    /**
-     * Flush rewrite rules on plugin deactivation
-     */
-    function deactivation() {
-        flush_rewrite_rules();
-    }
-
-    /**
-     * Register all custom post types and taxonomies
-     */
     function kelsey_custom_init() {
         // Projects CPT
-        $labels = array(
-            'name'           => 'Projects',
-            'singular_name'  => 'Project',
-            // ... 11 more labels
-        );
+        register_post_type('kelsey_projects', ['labels' => [/* 13 labels */], 'public' => true, 'rewrite' => ['slug' => 'projects', 'with_front' => false], 'show_in_rest' => true, 'supports' => ['title', 'excerpt', 'editor', 'thumbnail']]);
 
-        $args = array(
-            'labels'                => $labels,
-            'public'                => true,
-            'exclude_from_search'   => false,
-            'rewrite'               => array(
-                'slug'       => 'projects',
-                'with_front' => false,
-            ),
-            'menu_position'         => 5,
-            'show_in_rest'          => true,
-            'rest_base'             => 'kelsey-projects',
-            'menu_icon'             => 'dashicons-building',
-            'supports'              => array('title', 'excerpt', 'editor', 'thumbnail', 'revisions'),
-        );
+        // Events CPT + Taxonomy
+        register_post_type('kelsey_event', [/* ... */]);
+        register_taxonomy('kelsey_event_category', ['kelsey_event'], ['hierarchical' => true, 'show_in_rest' => true, 'rewrite' => ['slug' => 'events/category']]);
 
-        register_post_type('kelsey_projects', $args);
-
-        // Events CPT
-        $labels = array(/* ... */);
-        $args = array(/* ... */);
-        register_post_type('kelsey_event', $args);
-
-        // Event Category Taxonomy
-        register_taxonomy(
-            'kelsey_event_category',
-            array('kelsey_event'),
-            array(
-                'hierarchical'      => true,
-                'label'             => esc_html__('Categories', 'kelsey-custom-post-types'),
-                'show_admin_column' => true,
-                'show_in_rest'      => true,
-                'rewrite'           => array('slug' => 'events/category'),
-            )
-        );
-
-        // Resource Category Taxonomy
-        register_taxonomy(
-            'kelsey_resource_category',
-            array('kelsey_resource'),
-            array(/* ... */)
-        );
-
-        // Learn Center CPT
-        $labels = array(/* ... */);
-        $args = array(/* ... */);
-        register_post_type('kelsey_resource', $args);
+        // Resource Category + CPT
+        register_taxonomy('kelsey_resource_category', ['kelsey_resource'], [/* ... */]);
+        register_post_type('kelsey_resource', [/* ... */]);
     }
 }
 
-// Instantiate and hook externally
 $kelsey_custom = new KelseyCustomTypesTaxonomies();
-add_action('init', array($kelsey_custom, 'kelsey_custom_init'));
+add_action('init', [$kelsey_custom, 'kelsey_custom_init']);
 ```
 
-**Pattern benefits:**
+## Monolithic Registration Pattern: Trade-offs
+
+**Benefits:**
 - **Concise:** Single method, single hook registration
-- **Atomic registration:** All CPTs/taxonomies register together (no partial states)
-- **Activation hooks:** Includes flush_rewrite_rules() on activation/deactivation (best practice)
+- **Atomic:** All CPTs/taxonomies register together (no partial states)
+- **Activation hooks:** Includes flush_rewrite_rules() (best practice)
 - **Simpler constructor:** Empty constructor reduces complexity
 
-**Pattern drawbacks:**
+**Drawbacks:**
 - **Large method:** 200+ line method harder to navigate
-- **No selective disabling:** Cannot disable individual CPT without commenting code mid-method
-- **Harder testing:** Unit tests must mock all registrations or test method as black box
+- **No selective disabling:** Cannot disable individual CPT without commenting mid-method
+- **Harder testing:** Must mock all registrations or test as black box
 - **Merge conflicts:** Multiple developers editing single method increases Git conflict risk
 
-The Kelsey pattern prioritizes compactness over granular organization, suitable for projects with stable CPT requirements and fewer registration changes over time.
+Pattern prioritizes compactness over granular organization, suitable for projects with stable CPT requirements and fewer registration changes over time.
 
 ## External Hook Registration Pattern
 
-The Kelsey codebase demonstrates external hook registration where class instantiation occurs separately from hook attachment, enabling additional configuration before WordPress init hook fires.
+The Kelsey demonstrates external hook registration where class instantiation occurs separately from hook attachment, enabling configuration before WordPress init.
 
 ```php
 <?php
-// mu-plugins/thekelsey-custom.php
-
-// Instantiate class
+// External registration (The Kelsey)
 $kelsey_custom = new KelseyCustomTypesTaxonomies();
+add_action('init', [$kelsey_custom, 'kelsey_custom_init']);
+register_activation_hook(__FILE__, [$kelsey_custom, 'activation']);
+register_deactivation_hook(__FILE__, [$kelsey_custom, 'deactivation']);
 
-// Attach hooks after instantiation
-add_action('init', array($kelsey_custom, 'kelsey_custom_init'));
-
-// Register activation/deactivation hooks
-register_activation_hook(__FILE__, array($kelsey_custom, 'activation'));
-register_deactivation_hook(__FILE__, array($kelsey_custom, 'deactivation'));
-```
-
-**Compared to Airbnb internal registration:**
-```php
-<?php
-// Hooks registered inside constructor
+// Internal registration (Airbnb)
 class PostTypes {
     public function __construct() {
-        add_action('init', array($this, 'bnb_profile_init'));
-        // ... more hooks
+        add_action('init', [$this, 'bnb_profile_init']);
     }
 }
-
-// Instantiation automatically registers hooks
 new PostTypes();
 ```
 
-**External registration benefits:**
-- Class remains hook-agnostic (reusable in different contexts)
-- Enables conditional hook registration based on environment
-- Activation/deactivation hooks accessible (not available in mu-plugins)
+**External benefits:** Hook-agnostic class (reusable), conditional registration, activation/deactivation hooks accessible.
 
-**Internal registration benefits:**
-- Simpler setup (one line instantiation)
-- Guaranteed hook registration (no forgotten add_action calls)
-- Encapsulation (hooks defined alongside methods)
+**Internal benefits:** Simpler setup (one line), guaranteed hook registration, encapsulation.
 
-Analyzed codebases show 50% external (The Kelsey) vs 50% internal (Airbnb) hook registration, indicating both patterns have valid use cases depending on plugin type (mu-plugin vs regular plugin) and team preferences.
+**Adoption:** 50% external (The Kelsey) vs 50% internal (Airbnb). Both valid depending on plugin type (mu-plugin vs regular) and team preferences.
 
 ## Namespace and Autoloading
 
@@ -316,161 +181,93 @@ Airbnb multisite codebase uses namespaces extensively across 50+ plugins, enabli
 
 ## Helper Method Organization
 
-Classes can include helper methods for label generation, capability mapping, and shared configuration to reduce repetition across post type registrations.
+Classes can include helper methods for label generation to reduce repetition.
 
 ```php
 <?php
 namespace Airbnb\Press;
 
 class PostTypes {
-    /**
-     * Generate standard label array
-     *
-     * @param string $singular Singular name
-     * @param string $plural Plural name
-     * @return array Label array for CPT registration
-     */
     private function generate_labels($singular, $plural) {
-        return array(
-            'name'               => $plural,
-            'singular_name'      => $singular,
-            'add_new'            => sprintf(__('Add New', 'airbnb-custom-post-types')),
-            'add_new_item'       => sprintf(__('Add New %s', 'airbnb-custom-post-types'), $singular),
-            'edit_item'          => sprintf(__('Edit %s', 'airbnb-custom-post-types'), $singular),
-            'new_item'           => sprintf(__('New %s', 'airbnb-custom-post-types'), $singular),
-            'all_items'          => sprintf(__('All %s', 'airbnb-custom-post-types'), $plural),
-            'view_item'          => sprintf(__('View %s', 'airbnb-custom-post-types'), $singular),
-            'search_items'       => sprintf(__('Search %s', 'airbnb-custom-post-types'), $plural),
-            'not_found'          => sprintf(__('No %s found', 'airbnb-custom-post-types'), strtolower($plural)),
-            'not_found_in_trash' => sprintf(__('No %s found in Trash', 'airbnb-custom-post-types'), strtolower($plural)),
-            'parent_item_colon'  => '',
-            'menu_name'          => $plural,
-        );
+        return [
+            'name' => $plural, 'singular_name' => $singular,
+            'add_new_item' => sprintf(__('Add New %s', 'airbnb'), $singular),
+            'edit_item' => sprintf(__('Edit %s', 'airbnb'), $singular),
+            'all_items' => sprintf(__('All %s', 'airbnb'), $plural),
+            'search_items' => sprintf(__('Search %s', 'airbnb'), $plural),
+            'not_found' => sprintf(__('No %s found', 'airbnb'), strtolower($plural)),
+            'menu_name' => $plural,
+        ];
     }
 
     function bnb_profile_init() {
-        $labels = $this->generate_labels('Profile', 'Profiles');
-        $args = array(
-            'labels' => $labels,
-            // ... other args
-        );
-        register_post_type('bnb_profile', $args);
-    }
-
-    function bnb_leadership_init() {
-        $labels = $this->generate_labels('Person', 'Leadership');
-        $args = array(
-            'labels' => $labels,
-            // ... other args
-        );
-        register_post_type('bnb_leadership', $args);
+        register_post_type('bnb_profile', ['labels' => $this->generate_labels('Profile', 'Profiles'), /* ... */]);
     }
 }
 ```
 
-**Helper method benefits:**
-- Reduces 150+ lines of repetitive label definitions to single method
-- Ensures consistent label structure across all CPTs
-- Simplifies i18n (text domain defined once)
-- Easier to update label format (e.g., add new 'item_updated' label)
+**Benefits:** Reduces 650 lines (13 labels × 5 CPTs × 10 lines) to ~100 lines. Consistent labels, simpler i18n, easier updates.
 
-Neither analyzed codebase implements label helper methods, representing an optimization opportunity. Airbnb's 5 CPTs contain approximately 650 lines of repetitive label arrays (13 labels × 5 CPTs × ~10 lines each), reducible to ~100 lines with helper methods.
+**Gap:** Neither codebase implements label helpers (optimization opportunity).
 
 ## Must-Use Plugin vs Regular Plugin Structure
 
-**Must-Use (MU) Plugin pattern** (The Kelsey):
+**MU-Plugin (The Kelsey):**
 ```php
 <?php
-// wp-content/mu-plugins/thekelsey-custom/KelseyCustomTypesTaxonomies.class.php
-
-class KelseyCustomTypesTaxonomies {
-    // Class implementation
-}
-
 // wp-content/mu-plugins/thekelsey-custom.php
 require_once __DIR__ . '/thekelsey-custom/KelseyCustomTypesTaxonomies.class.php';
 $kelsey_custom = new KelseyCustomTypesTaxonomies();
-add_action('init', array($kelsey_custom, 'kelsey_custom_init'));
+add_action('init', [$kelsey_custom, 'kelsey_custom_init']);
 ```
 
-**MU-plugin characteristics:**
-- Always active (no activation/deactivation UI)
-- Loads before regular plugins (guaranteed availability)
-- No activation hooks (`register_activation_hook()` not supported)
-- Ideal for critical site functionality
+**MU characteristics:** Always active, loads before plugins, no activation hooks, ideal for critical functionality.
 
-**Regular Plugin pattern** (Airbnb):
+**Regular Plugin (Airbnb):**
 ```php
 <?php
 /**
- * Plugin Name: Airbnb Press Portal Custom Post Types and Taxonomies
+ * Plugin Name: Airbnb Press Portal CPT
  * Version: 1.0.0
- * Author: rtCamp
  */
-
 namespace Airbnb\Press;
-
-defined('ABSPATH') or die('No direct access.');
-
-class PostTypes {
-    // Class implementation
-}
-
+class PostTypes { /* ... */ }
 new PostTypes();
 ```
 
-**Regular plugin characteristics:**
-- Requires activation via admin UI
-- Supports activation/deactivation hooks
-- Can be conditionally loaded per multisite blog
-- Enables version management and updates
+**Regular characteristics:** Requires activation, supports activation/deactivation hooks, conditional loading per multisite blog, version management.
 
-Airbnb multisite uses regular plugin structure to enable selective CPT loading per blog (Newsroom site loads `bnb_profile`, Careers site does not). The Kelsey single-site uses MU-plugin to guarantee CPT availability without accidental deactivation risk.
+**Use cases:** Airbnb multisite uses regular plugin for selective CPT loading per blog. The Kelsey single-site uses MU-plugin to guarantee availability without accidental deactivation.
 
 ## Activation and Deactivation Hooks
 
-WordPress plugins should flush rewrite rules on activation/deactivation to update .htaccess and permalink structure. The Kelsey implements this best practice; Airbnb does not (likely relying on manual flush or transient caching).
+WordPress plugins should flush rewrite rules on activation/deactivation to update .htaccess and permalink structure. The Kelsey implements this; Airbnb does not.
 
 ```php
 <?php
 class KelseyCustomTypesTaxonomies {
-    /**
-     * Run on plugin activation
-     */
     function activation() {
-        // Register post types first
-        $this->kelsey_custom_init();
-
-        // Flush rewrite rules to update permalinks
-        flush_rewrite_rules();
+        $this->kelsey_custom_init(); // Register CPTs first
+        flush_rewrite_rules(); // Update permalinks
     }
 
-    /**
-     * Run on plugin deactivation
-     */
     function deactivation() {
-        // Unregister by not calling kelsey_custom_init()
-
-        // Flush rewrite rules to remove CPT permalinks
-        flush_rewrite_rules();
+        flush_rewrite_rules(); // Remove CPT permalinks
     }
 }
 
-// Register hooks
-register_activation_hook(__FILE__, array($kelsey_custom, 'activation'));
-register_deactivation_hook(__FILE__, array($kelsey_custom, 'deactivation'));
+register_activation_hook(__FILE__, [$kelsey_custom, 'activation']);
+register_deactivation_hook(__FILE__, [$kelsey_custom, 'deactivation']);
 ```
 
-**Why flush rewrite rules:**
-WordPress generates permalink rules and stores them in wp_options table. When adding/removing post types, rewrite rules must regenerate to reflect new URL structures. Without flushing, custom post type URLs return 404 errors until user manually visits Settings > Permalinks.
+**Why flush:** WordPress stores permalink rules in wp_options. When adding/removing post types, rules must regenerate to reflect new URL structures. Without flushing, CPT URLs return 404 until user visits Settings > Permalinks.
 
-**Caveat:** `flush_rewrite_rules()` is expensive (database operations, .htaccess regeneration). Never call on every page load or inside `init` hook. Only call during activation/deactivation hooks or after CPT registration changes.
+**Caveat:** `flush_rewrite_rules()` is expensive (database ops, .htaccess regeneration). Never call on page load or inside `init` hook. Only call during activation/deactivation or after CPT registration changes.
 
 ## Testing and Dependency Injection
 
-Class-based organization enables unit testing through dependency injection and mock objects. While neither analyzed codebase includes tests (consistent with Phase 2 finding of 0% testing infrastructure), class structure supports future test implementation.
+Class-based organization enables unit testing through dependency injection and mock objects. Neither analyzed codebase includes tests (0% testing infrastructure), but class structure supports future implementation.
 
-**Testable pattern example:**
 ```php
 <?php
 namespace Airbnb\Press;
@@ -479,41 +276,30 @@ class PostTypes {
     private $hook_manager;
 
     public function __construct($hook_manager = null) {
-        // Dependency injection for testing
         $this->hook_manager = $hook_manager ?: new WP_Hook_Manager();
-
-        $this->hook_manager->add_action('init', array($this, 'bnb_profile_init'));
+        $this->hook_manager->add_action('init', [$this, 'bnb_profile_init']);
     }
 
     function bnb_profile_init() {
-        // Method testable without WordPress environment
-        $args = $this->get_profile_args();
-        register_post_type('bnb_profile', $args);
+        register_post_type('bnb_profile', $this->get_profile_args());
     }
 
     function get_profile_args() {
-        // Pure function (no side effects) - easily testable
-        return array(
-            'labels'  => $this->generate_labels('Profile', 'Profiles'),
-            'public'  => true,
-            // ... other args
-        );
+        return ['labels' => $this->generate_labels('Profile', 'Profiles'), 'public' => true, /* ... */];
     }
 }
 
-// Test example using PHPUnit
+// PHPUnit test
 class PostTypesTest extends WP_UnitTestCase {
     function test_profile_args_structure() {
         $cpt = new PostTypes($this->mock_hook_manager());
         $args = $cpt->get_profile_args();
-
         $this->assertTrue($args['public']);
-        $this->assertEquals('dashicons-groups', $args['menu_icon']);
     }
 }
 ```
 
-Separating methods per CPT (Airbnb pattern) enables granular unit tests per post type. Monolithic registration (Kelsey pattern) requires integration tests covering all registrations simultaneously.
+**Pattern comparison:** Separate methods per CPT (Airbnb) enable granular unit tests. Monolithic registration (Kelsey) requires integration tests covering all registrations simultaneously.
 
 ## File Organization and Autoloading
 
@@ -566,19 +352,13 @@ Analyzed codebases use single-file pattern suitable for smaller plugins (5 CPTs 
 **1. Procedural registration without classes:**
 ```php
 <?php
-// Bad: No organization, global scope pollution
+// Bad: Global scope pollution
 function register_profile_cpt() { /* ... */ }
-function register_leadership_cpt() { /* ... */ }
-function register_media_cpt() { /* ... */ }
 add_action('init', 'register_profile_cpt');
-add_action('init', 'register_leadership_cpt');
-add_action('init', 'register_media_cpt');
 
-// Good: Class-based organization
+// Good: Class-based
 class PostTypes {
-    public function __construct() {
-        add_action('init', array($this, 'register_all'));
-    }
+    public function __construct() { add_action('init', [$this, 'register_all']); }
     private function register_all() { /* ... */ }
 }
 new PostTypes();
@@ -587,13 +367,11 @@ new PostTypes();
 **2. Registering outside init hook:**
 ```php
 <?php
-// Bad: Register before WordPress init (fails silently)
+// Bad: Fails silently
 register_post_type('bnb_profile', $args);
 
-// Good: Wait for init hook
-add_action('init', function() {
-    register_post_type('bnb_profile', $args);
-});
+// Good: Wait for init
+add_action('init', function() { register_post_type('bnb_profile', $args); });
 ```
 
 **3. Flush rewrite rules on every page load:**
@@ -605,28 +383,22 @@ add_action('init', function() {
     flush_rewrite_rules();  // DON'T DO THIS
 });
 
-// Good: Only flush on activation
+// Good: Only on activation
 register_activation_hook(__FILE__, 'flush_rewrite_rules');
 ```
 
 **4. Static methods for hook callbacks:**
 ```php
 <?php
-// Bad: Harder to test, no instance state
+// Bad: Harder to test
 class PostTypes {
-    public static function init() {
-        add_action('init', array(__CLASS__, 'register'));
-    }
-    public static function register() { /* ... */ }
+    public static function init() { add_action('init', [__CLASS__, 'register']); }
 }
 PostTypes::init();
 
-// Good: Instance methods enable testing and state
+// Good: Instance methods enable testing
 class PostTypes {
-    public function __construct() {
-        add_action('init', array($this, 'register'));
-    }
-    public function register() { /* ... */ }
+    public function __construct() { add_action('init', [$this, 'register']); }
 }
 new PostTypes();
 ```
