@@ -235,7 +235,7 @@ export async function GET(
 
 ## Draft Mode Enable/Disable Pattern
 
-Route handlers commonly implement preview mode endpoints for CMS integration.
+Route handlers implement preview mode endpoints for CMS integration.
 
 ```typescript
 // app/api/preview/route.ts
@@ -276,7 +276,7 @@ export async function GET() {
 
 **Preview Handler Characteristics:**
 - `draftMode().enable()` sets HTTP-only secure cookie
-- Query parameter validation prevents unauthorized preview access
+- Query parameter validation prevents unauthorized access
 - Redirect to content page after enabling draft mode
 - Exit handler clears cookie and redirects to homepage
 

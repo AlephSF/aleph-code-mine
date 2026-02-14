@@ -158,30 +158,30 @@ $filename = sanitize_title( $_POST['document_title'] ) . '.pdf';
 WordPress provides specialized sanitization functions for different data types. Correct function selection prevents over-sanitization (data loss) and under-sanitization (security vulnerabilities).
 
 **Selection guide:**
-- **Text inputs:** `sanitize_text_field()` (names, addresses, short text)
-- **Multi-line text:** `sanitize_textarea_field()` (descriptions, long text)
-- **Emails:** `sanitize_email()` (email addresses only)
+- **Text inputs:** `sanitize_text_field()` (names, addresses)
+- **Multi-line text:** `sanitize_textarea_field()` (descriptions)
+- **Emails:** `sanitize_email()` (email addresses)
 - **URLs:** `esc_url_raw()` (URLs without display encoding)
 - **Filenames:** `sanitize_file_name()` (upload filenames)
 - **Keys/slugs:** `sanitize_key()` (option keys, transient keys)
 - **Titles:** `sanitize_title()` (post slugs, term slugs)
-- **HTML:** `wp_kses()` or `wp_kses_post()` (rich text editors)
+- **HTML:** `wp_kses()` or `wp_kses_post()` (rich text)
 - **Usernames:** `sanitize_user()` (login usernames)
 - **Meta keys:** `sanitize_meta()` (post meta, user meta)
 
 ```php
 // ✅ Correct function selection
-$name = sanitize_text_field( $_POST['name'] );         // Short text
-$bio = sanitize_textarea_field( $_POST['bio'] );       // Multi-line
-$email = sanitize_email( $_POST['email'] );            // Email
-$website = esc_url_raw( $_POST['website'] );           // URL
-$slug = sanitize_key( $_POST['slug'] );                // Slug/key
-$rich_content = wp_kses_post( $_POST['content'] );     // HTML
+$name = sanitize_text_field( $_POST['name'] );
+$bio = sanitize_textarea_field( $_POST['bio'] );
+$email = sanitize_email( $_POST['email'] );
+$website = esc_url_raw( $_POST['website'] );
+$slug = sanitize_key( $_POST['slug'] );
+$rich_content = wp_kses_post( $_POST['content'] );
 
 // ❌ Wrong function selection
-$email = sanitize_text_field( $_POST['email'] );       // Should use sanitize_email()
-$html = sanitize_text_field( $_POST['content'] );      // Strips all HTML (data loss)
-$url = sanitize_text_field( $_POST['website'] );       // Should use esc_url_raw()
+$email = sanitize_text_field( $_POST['email'] );     // Use sanitize_email()
+$html = sanitize_text_field( $_POST['content'] );    // Strips HTML (data loss)
+$url = sanitize_text_field( $_POST['website'] );     // Use esc_url_raw()
 ```
 
 ## $_POST/$_GET Sanitization Pattern

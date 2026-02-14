@@ -65,34 +65,19 @@ Batching collects queries within small time windows before executing them concur
 class GraphQLBatcher {
   private batch: GraphQLQuery[] = []
   private batchTimeout: NodeJS.Timeout | null = null
-  private readonly batchDelay = 10 // milliseconds
+  private readonly batchDelay = 10
 
-  async addToBatch<T>(
-    query: string,
-    variables?: GraphQLVariables,
-    previewToken?: string,
-  ): Promise<T> {
+  async addToBatch<T>(query: string, variables?: GraphQLVariables, previewToken?: string): Promise<T> {
     return new Promise((resolve, reject) => {
       const queryId = `query_${Date.now()}_${Math.random()}`
+      this.batch.push({ id: queryId, query, variables, previewToken })
 
-      // Add query to current batch
-      this.batch.push({
-        id: queryId,
-        query,
-        variables,
-        previewToken,
-      })
-
-      // Set timeout to execute batch if not already set
       if (!this.batchTimeout) {
         this.batchTimeout = setTimeout(() => {
-          this.executeBatch().catch(() => {
-            console.error('[GraphQL Batch] Batch execution encountered errors')
-          })
+          this.executeBatch().catch(() => console.error('[GraphQL] Batch failed'))
         }, this.batchDelay)
       }
 
-      // Store promise resolver for this query
       global.graphqlResolvers = global.graphqlResolvers || {}
       global.graphqlResolvers[queryId] = { resolve, reject }
     })
@@ -107,7 +92,7 @@ class GraphQLBatcher {
 - Timeout fires, executing entire batch concurrently
 - Each query result resolves its individual promise
 
-**10ms Window Rationale:** During static generation, Next.js spawns pages in rapid succession. 10ms window captures 20-50 queries per batch without adding noticeable latency to individual requests.
+**10ms Window Rationale:** Next.js spawns pages rapidly during static generation. 10ms window captures 20-50 queries per batch without latency impact.
 
 ## Batch Execution Logic
 
@@ -120,65 +105,39 @@ Batch execution runs all queries concurrently while handling individual failures
 class GraphQLBatcher {
   private async executeBatch(): Promise<void> {
     if (this.batch.length === 0) return
-
     const currentBatch = [...this.batch]
     this.batch = []
     this.batchTimeout = null
 
     try {
-      // Single query optimization: skip batching overhead
       if (currentBatch.length === 1) {
-        const query = currentBatch[0]
-        const result = await this.executeSingleQuery(query)
-        const resolver = global.graphqlResolvers?.[query.id]
-        if (resolver) {
-          resolver.resolve(result)
-          delete global.graphqlResolvers[query.id]
-        }
+        const q = currentBatch[0]
+        const result = await this.executeSingleQuery(q)
+        const r = global.graphqlResolvers?.[q.id]
+        if (r) { r.resolve(result); delete global.graphqlResolvers[q.id] }
         return
       }
 
-      // Execute batch: all queries concurrently
-      const batchResults = await Promise.allSettled(
-        currentBatch.map(query => this.executeSingleQuery(query)),
-      )
+      const results = await Promise.allSettled(currentBatch.map(q => this.executeSingleQuery(q)))
 
-      // Resolve individual promises
-      batchResults.forEach((result, index) => {
-        const queryId = currentBatch[index].id
-        const resolver = global.graphqlResolvers?.[queryId]
-
-        if (resolver) {
-          if (result.status === 'fulfilled') {
-            resolver.resolve(result.value)
-          } else {
-            const queryName = this.extractQueryName(currentBatch[index].query)
-            console.error(`[${queryName}] Batch query failed after all retries`)
-            resolver.reject(result.reason)
-          }
-          delete global.graphqlResolvers[queryId]
+      results.forEach((result, i) => {
+        const r = global.graphqlResolvers?.[currentBatch[i].id]
+        if (r) {
+          result.status === 'fulfilled' ? r.resolve(result.value) : r.reject(result.reason)
+          delete global.graphqlResolvers[currentBatch[i].id]
         }
       })
     } catch (error) {
-      // Reject all pending promises on batch failure
-      currentBatch.forEach(query => {
-        const resolver = global.graphqlResolvers?.[query.id]
-        if (resolver) {
-          resolver.reject(error)
-          delete global.graphqlResolvers[query.id]
-        }
+      currentBatch.forEach(q => {
+        const r = global.graphqlResolvers?.[q.id]
+        if (r) { r.reject(error); delete global.graphqlResolvers[q.id] }
       })
     }
   }
 }
 ```
 
-**Execution Strategy:**
-- `Promise.allSettled` executes all queries regardless of individual failures
-- Single query bypasses batching (optimization for low-concurrency scenarios)
-- Each query result (success or failure) resolves its promise independently
-- Batch failure rejects all queries in batch
-- Query-specific errors logged with query name for debugging
+**Execution Strategy:** `Promise.allSettled` executes all queries regardless of individual failures. Single query bypasses batching for low-concurrency optimization. Batch failure rejects all queries.
 
 ## Global Resolver Registry
 
@@ -220,101 +179,36 @@ if (resolver) {
 
 ## Individual Query Fetch Logic
 
-Each query in batch executes with retry logic and timeout management.
-
 ```typescript
-// lib/graphQL/fetchOptimized.ts (continued)
 class GraphQLBatcher {
-  private async executeSingleQuery(query: GraphQLQuery): Promise<unknown> {
-    const queryName = this.extractQueryName(query.query)
-    const timeout = graphqlTimeouts.default // 30s production, 10s dev
-    const retries = graphqlTimeouts.retries // 3 retries
-    const retryDelay = graphqlTimeouts.retryDelay // 1s base
-
-    const attemptFetch = async (attemptNumber: number): Promise<unknown> => {
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), timeout)
-
+  private async executeSingleQuery(q: GraphQLQuery): Promise<unknown> {
+    return (async function retry(n: number): Promise<unknown> {
+      const c = new AbortController()
+      const t = setTimeout(() => c.abort(), graphqlTimeouts.default)
       try {
-        const headers: Record<string, string> = {
-          'Content-Type': 'application/json',
-        }
-
-        if (query.previewToken) {
-          headers['X-Preview-Token'] = query.previewToken
-        }
-
-        const res = await fetch(graphqlApiUrl, {
-          method: 'POST',
-          headers,
-          cache: query.previewToken ? 'no-cache' : 'default',
-          body: JSON.stringify({
-            query: query.query,
-            variables: query.variables,
-          }),
-          signal: controller.signal,
-        })
-
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`)
-        }
-
+        const h: Record<string, string> = { 'Content-Type': 'application/json' }
+        if (q.previewToken) h['X-Preview-Token'] = q.previewToken
+        const res = await fetch(graphqlApiUrl, { method: 'POST', headers: h, cache: q.previewToken ? 'no-cache' : 'default', body: JSON.stringify({ query: q.query, variables: q.variables }), signal: c.signal })
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
         const json = await res.json()
-
-        if (json.errors) {
-          console.error(`[${queryName}] GraphQL errors:`, json.errors)
-          throw new Error(
-            `GraphQL Errors in ${queryName}: ${json.errors.map(e => e.message).join(', ')}`,
-          )
-        }
-
+        if (json.errors) throw new Error(`GraphQL: ${json.errors.map(e => e.message).join(', ')}`)
         return json.data
-      } catch (error) {
-        clearTimeout(timeoutId)
-
-        // Retry logic (timeout + network errors)
-        const isTimeout = error instanceof Error && error.name === 'AbortError'
-        const isNetworkError = error instanceof Error && (
-          error.message.includes('fetch failed') ||
-          error.message.includes('ETIMEDOUT')
-        )
-
-        const shouldRetry = attemptNumber < retries && (isTimeout || isNetworkError)
-
-        if (shouldRetry) {
-          const delay = retryDelay * Math.pow(2, attemptNumber) // Exponential backoff
-          console.warn(
-            `[${queryName}] Batch query attempt ${attemptNumber + 1}/${retries + 1} failed. ` +
-            `Retrying in ${delay}ms...`,
-          )
-          await new Promise(resolve => setTimeout(resolve, delay))
-          return attemptFetch(attemptNumber + 1)
+      } catch (err) {
+        clearTimeout(t)
+        const timeout = err instanceof Error && err.name === 'AbortError'
+        const network = err instanceof Error && (err.message.includes('fetch failed') || err.message.includes('ETIMEDOUT'))
+        if (n < graphqlTimeouts.retries && (timeout || network)) {
+          await new Promise(r => setTimeout(r, graphqlTimeouts.retryDelay * Math.pow(2, n)))
+          return retry(n + 1)
         }
-
-        throw error
-      } finally {
-        clearTimeout(timeoutId)
-      }
-    }
-
-    return attemptFetch(0)
-  }
-
-  private extractQueryName(query: string): string {
-    const match = query.match(/(?:query|mutation)\s+(\w+)/)
-    return match ? match[1] : 'UnnamedBatchQuery'
+        throw err
+      } finally { clearTimeout(t) }
+    })(0)
   }
 }
-
-const graphqlBatcher = new GraphQLBatcher()
 ```
 
-**Single Query Features:**
-- AbortController timeout (30s default)
-- Exponential backoff retry (1s, 2s, 4s delays)
-- Query name extraction for error logging
-- GraphQL error parsing
-- Network error detection and retry
+30s timeout, exponential backoff (1s→2s→4s), GraphQL/network error handling.
 
 ## Fetch Wrapper Integration
 

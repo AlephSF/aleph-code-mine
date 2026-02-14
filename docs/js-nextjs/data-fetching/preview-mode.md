@@ -165,7 +165,7 @@ export default function Page({ pageData, preview }) {
 
 **Pattern Characteristics:**
 - `preview` boolean from `getStaticProps` context
-- `filterPreviewData` utility separates draft vs published documents
+- `filterPreviewData` utility separates draft vs published
 - Preview state passed as prop to component
 - UI banner indicates preview mode active
 
@@ -302,17 +302,14 @@ All projects implement visual preview mode indicators to prevent editor confusio
 ```typescript
 // components/PreviewBanner.tsx
 import Link from 'next/link'
-import styles from './PreviewBanner.module.scss'
 
 export default function PreviewBanner() {
   return (
     <div className={styles.banner}>
       <div className={styles.content}>
-        <strong>Preview Mode Active</strong>
-        <span>You are viewing unpublished draft content</span>
-        <Link href="/api/exit-preview" className={styles.exitLink}>
-          Exit Preview Mode
-        </Link>
+        <strong>Preview Mode</strong>
+        <span>Viewing draft content</span>
+        <Link href="/api/exit-preview" className={styles.exitLink}>Exit</Link>
       </div>
     </div>
   )
@@ -320,63 +317,25 @@ export default function PreviewBanner() {
 ```
 
 ```scss
-// components/PreviewBanner.module.scss
-.banner {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: #ff6b00;
-  color: white;
-  padding: 1rem;
-  z-index: 9999;
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-}
-
-.content {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.exitLink {
-  margin-left: auto;
-  color: white;
-  text-decoration: underline;
-  font-weight: 600;
-
-  &:hover {
-    text-decoration: none;
-  }
-}
+.banner { position: fixed; bottom: 0; left: 0; right: 0; background: #ff6b00; color: white; padding: 1rem; z-index: 9999; }
+.content { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; gap: 1rem; }
+.exitLink { margin-left: auto; color: white; text-decoration: underline; &:hover { text-decoration: none; } }
 ```
 
 **Banner Characteristics:**
 - Fixed bottom position (non-intrusive, always visible)
-- High z-index (9999) ensures visibility above all content
-- Orange/warning color (#ff6b00 universal across projects)
-- Exit link directly to `/api/exit-preview` endpoint
-- Clear messaging: "Preview Mode Active" + "unpublished draft content"
+- High z-index (9999) above all content
+- Orange warning color (#ff6b00)
+- Exit link to `/api/exit-preview`
 
 **Conditional Rendering:**
 ```typescript
-// app/layout.tsx (App Router)
+// app/layout.tsx
 import { draftMode } from 'next/headers'
-import PreviewBanner from '@/components/PreviewBanner'
 
 export default function RootLayout({ children }) {
   const isPreview = draftMode().isEnabled
-
-  return (
-    <html>
-      <body>
-        {isPreview && <PreviewBanner />}
-        {children}
-      </body>
-    </html>
-  )
+  return <html><body>{isPreview && <PreviewBanner />}{children}</body></html>
 }
 ```
 

@@ -1,13 +1,16 @@
 # Codebase Mining Progress
 
 **Last Updated:** February 14, 2026
-**Current Phase:** RAG Content Optimization (Waves 1-4 complete ✅)
+**Current Phase:** RAG Content Optimization (Waves 1-6 complete ✅)
 **Mining Phase:** All phases complete (Phase 1-5 finished)
 **QA Phase:** Complete ✅
 **Optimization Phase:** Wave 1 - 100% complete (46/46 violations fixed) ✅
 **Optimization Phase:** Wave 2 - 100% complete (16/16 violations fixed) ✅
 **Optimization Phase:** Wave 3 - 100% complete (14/14 violations fixed) ✅
 **Optimization Phase:** Wave 4 - 100% complete (7/7 violations fixed) ✅
+**Optimization Phase:** Wave 5 - 100% complete (2/2 violations fixed) ✅
+**Optimization Phase:** Wave 6 - 100% complete (21/21 violations fixed) ✅
+**Remaining:** 63 section_length violations (84→63, 25% reduction)
 
 ---
 
@@ -165,7 +168,58 @@
 - Techniques: Heavy condensing of Real-World Examples, inline all code blocks, shortened array definitions
 - **Wave 4 Complete:** 7/7 violations fixed (100%)
 
-**Cumulative:** 83 violations fixed across 4 waves (46+16+14+7)
+### Wave 5: php-wordpress/security-code-standards ✅ COMPLETE
+
+| File | Status | Violations | Session |
+|------|--------|------------|---------|
+| input-sanitization-patterns.md | ✅ Complete | 1→0 | Session 5 |
+| nonce-verification-patterns.md | ✅ Complete | 1→0 | Session 5 |
+
+**Wave 5 Progress:** ✅ 100% complete (2 of 2 violations fixed)
+
+**Result:** All security and code standards documentation ready for RAG embedding!
+
+**Session 5 (Wave 5):**
+- Files: 2 complete in single session (both with 1 violation each)
+- Violations fixed: 2 (1+1)
+- Strategy: Condensed code comments, shortened bullet list descriptions, removed redundant prose
+- Techniques: Trimmed inline comments (e.g., "Short text" → removed), condensed intro paragraphs, removed duplicate explanations
+- **Wave 5 Complete:** 2/2 violations fixed (100%)
+
+### Wave 6: js-nextjs/data-fetching ✅ COMPLETE
+
+| File | Status | Violations | Session |
+|------|--------|------------|---------|
+| custom-fetch-wrappers.md | ✅ Complete | 4→0 | Session 6 |
+| error-handling.md | ✅ Complete | 4→0 | Session 6 |
+| pages-router-patterns.md | ✅ Complete | 4→0 | Session 6 |
+| app-router-patterns.md | ✅ Complete | 3→0 | Session 6 |
+| graphql-batching.md | ✅ Complete | 3→0 | Session 6 |
+| preview-mode.md | ✅ Complete | 2→0 | Session 6 |
+| route-handlers.md | ✅ Complete | 1→0 | Session 6 |
+
+**Wave 6 Progress:** ✅ 100% complete (21 of 21 violations fixed)
+
+**Result:** All js-nextjs/data-fetching documentation ready for RAG embedding!
+
+**Session 6 (Wave 6):**
+- Files: 7 complete in single session
+- Violations fixed: 21 (4+4+4+3+3+2+1)
+- Strategy: Aggressive code condensing, ultra-short variable names, split massive sections into multiple ##
+- Key Challenges:
+  - custom-fetch-wrappers.md: 5228 char section split into 3 separate ## sections
+  - graphql-batching.md: 3060 char section required 6 condensing iterations
+  - Learned: section-analyzer counts ### subsections as part of parent ##
+- Techniques:
+  - Removed verbose comments and PHPDoc
+  - Shortened variable names (controller→c, timeout→t, resolver→r)
+  - Combined multi-line code into single lines
+  - Inline arrays/objects instead of multi-line
+  - Converted ### subsections to ## for proper RAG chunking
+  - Removed redundant prose explanations
+- **Wave 6 Complete:** 21/21 violations fixed (100%)
+
+**Cumulative:** 106 violations fixed across 6 waves (46+16+14+7+2+21)
 
 ---
 

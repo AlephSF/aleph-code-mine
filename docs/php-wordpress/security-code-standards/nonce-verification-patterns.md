@@ -366,15 +366,15 @@ add_action( 'rest_api_init', function() {
 
 ## Nonce Anti-Patterns
 
-WordPress nonce security requires proper creation, transmission, and verification. Common anti-patterns bypass CSRF protection or break functionality.
+WordPress nonce security requires proper creation, transmission, and verification. Anti-patterns bypass CSRF protection or break functionality.
 
 ### Anti-Pattern: Missing Nonce Verification
 
 ```php
-// ❌ Critical: No nonce verification (CSRF vulnerability!)
+// ❌ No nonce verification (CSRF vulnerability)
 add_action( 'admin_post_delete_post', 'delete_post_handler' );
 function delete_post_handler() {
-    wp_delete_post( $_POST['post_id'] ); // No nonce check!
+    wp_delete_post( $_POST['post_id'] );
 }
 
 // ✅ Correct: Verify nonce
@@ -388,8 +388,8 @@ function delete_post_handler() {
 ### Anti-Pattern: Generic Nonce Actions
 
 ```php
-// ❌ Wrong: Generic action (collision risk)
-$nonce = wp_create_nonce( 'save' ); // Too generic!
+// ❌ Generic action (collision risk)
+$nonce = wp_create_nonce( 'save' );
 
 // ✅ Correct: Specific action
 $nonce = wp_create_nonce( 'save-settings-page' );
@@ -398,10 +398,10 @@ $nonce = wp_create_nonce( 'save-settings-page' );
 ### Anti-Pattern: Reusing Nonces
 
 ```php
-// ❌ Wrong: Reuse nonce across forms
+// ❌ Reuse nonce across forms
 $nonce = wp_create_nonce( 'form-action' );
 echo '<input name="nonce1" value="' . $nonce . '" />';
-echo '<input name="nonce2" value="' . $nonce . '" />'; // Same nonce!
+echo '<input name="nonce2" value="' . $nonce . '" />';
 
 // ✅ Correct: Unique nonce per action
 $nonce1 = wp_create_nonce( 'action-1' );
@@ -411,10 +411,9 @@ $nonce2 = wp_create_nonce( 'action-2' );
 ### Anti-Pattern: Client-Side Nonce Generation
 
 ```php
-// ❌ WRONG: Never generate nonces in JavaScript!
-// Nonces must be generated server-side
+// ❌ Never generate nonces in JavaScript
 
-// ✅ Correct: Generate nonce server-side, pass to JavaScript
+// ✅ Correct: Generate server-side, pass to JavaScript
 wp_localize_script( 'my-script', 'myData', array(
     'nonce' => wp_create_nonce( 'my-action' ),
 ) );

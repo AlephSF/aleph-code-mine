@@ -90,17 +90,10 @@ export default async function BlogPost({ params }: { params: { slug: string } })
 
 ## AbortController Pattern
 
-Production-grade fetch wrappers implement timeouts using AbortController to prevent hanging requests.
+Production fetch wrappers use AbortController to prevent hanging requests.
 
 ```typescript
-// lib/graphQL/fetch.ts
-export default async function fetchGraphQL<T>(
-  query: string,
-  {
-    timeout = 30000, // 30 seconds default
-    queryName,
-  }: FetchOptions = {},
-): Promise<T> {
+export default async function fetchGraphQL<T>(query: string, { timeout = 30000, queryName }: FetchOptions = {}): Promise<T> {
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), timeout)
   const startTime = Date.now()
@@ -110,161 +103,89 @@ export default async function fetchGraphQL<T>(
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ query }),
-      signal: controller.signal, // Links timeout to request
+      signal: controller.signal,
     })
 
-    const fetchTime = Date.now() - startTime
-
-    if (!res.ok) {
-      throw new Error(`HTTP error! status: ${res.status}`)
-    }
-
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
     const json = await res.json()
-
-    if (process.env.VERBOSE_GRAPHQL === 'true') {
-      console.log(`[${queryName}] Fetched successfully in ${fetchTime}ms`)
-    }
-
+    if (process.env.VERBOSE_GRAPHQL === 'true') console.log(`[${queryName}] ${Date.now() - startTime}ms`)
     return json.data
   } catch (error) {
-    const isTimeout = error instanceof Error && (
-      error.name === 'AbortError' ||
-      error.message.includes('aborted') ||
-      error.message.includes('timeout')
-    )
-
-    if (isTimeout) {
-      const duration = Date.now() - startTime
-      throw new Error(
-        `Timeout fetching GraphQL query "${queryName}" after ${duration}ms (limit: ${timeout}ms)`
-      )
-    }
-
+    const isTimeout = error instanceof Error && (error.name === 'AbortError' || error.message.includes('aborted') || error.message.includes('timeout'))
+    if (isTimeout) throw new Error(`Timeout "${queryName}" after ${Date.now() - startTime}ms (limit: ${timeout}ms)`)
     throw error
   } finally {
-    clearTimeout(timeoutId) // Always clear timeout to prevent memory leaks
+    clearTimeout(timeoutId)
   }
 }
 ```
 
-**Timeout Pattern Elements:**
-- `AbortController` creates abort signal for fetch
-- `setTimeout` aborts request after timeout duration
-- Error detection checks for `AbortError` name and message patterns
-- `finally` block ensures timeout cleared regardless of outcome
-- Error message includes duration and limit for debugging
+**Features:** AbortController signal, setTimeout abort, error detection (AbortError/patterns), finally cleanup, duration/limit.
 
-**Timeout Values by Environment:**
-- **Production builds:** 30,000ms (30 seconds) for static generation
-- **Development:** 10,000ms (10 seconds) for faster feedback
-- **Configurable:** Passed as parameter for query-specific tuning
+**Timeouts:** Production 30s, dev 10s, configurable per-query.
 
-**Source Evidence:** policy-node implements timeout management across 70 fetch calls with zero timeout-related build failures in CI/CD. helix and kariusdx lack timeout implementation (rely on SDK defaults).
+**Evidence:** policy-node uses across 70 fetches with zero timeout failures. helix/kariusdx lack timeouts.
 
 ## Retry Logic with Exponential Backoff
 
 ## Network Error Retry Pattern
 
-Transient network errors benefit from automatic retries with increasing delays between attempts.
+Transient network errors use automatic retries with exponential backoff.
 
 ```typescript
-// lib/graphQL/fetch.ts (retry implementation)
-export default async function fetchGraphQL<T>(
-  query: string,
-  {
-    retries = 3,
-    retryDelay = 1000, // 1 second base delay
-    queryName,
-  }: FetchOptions = {},
-): Promise<T> {
+export default async function fetchGraphQL<T>(query: string, { retries = 3, retryDelay = 1000, queryName }: FetchOptions = {}): Promise<T> {
   const attemptFetch = async (attemptNumber: number): Promise<T> => {
     try {
-      // Fetch logic here...
+      // Fetch logic...
       return json.data
     } catch (error) {
       const isNetworkError = error instanceof Error && (
-        error.message.includes('fetch failed') ||
-        error.message.includes('ETIMEDOUT') ||
-        error.message.includes('ECONNREFUSED') ||
-        error.message.includes('ENOTFOUND') ||
-        error.message.includes('ConnectTimeoutError')
+        error.message.includes('fetch failed') || error.message.includes('ETIMEDOUT') ||
+        error.message.includes('ECONNREFUSED') || error.message.includes('ENOTFOUND')
       )
-
       const isTimeout = error instanceof Error && error.name === 'AbortError'
-      const shouldRetry = attemptNumber < retries && (isTimeout || isNetworkError)
 
-      if (shouldRetry) {
-        const delay = retryDelay * Math.pow(2, attemptNumber) // Exponential: 1s, 2s, 4s
-        console.warn(
-          `[${queryName}] Attempt ${attemptNumber + 1}/${retries + 1} failed. ` +
-          `Retrying in ${delay}ms... Error: ${error.message}`,
-        )
+      if (attemptNumber < retries && (isTimeout || isNetworkError)) {
+        const delay = retryDelay * Math.pow(2, attemptNumber)
+        console.warn(`[${queryName}] Attempt ${attemptNumber + 1}/${retries + 1} failed. Retry in ${delay}ms`)
         await new Promise(resolve => setTimeout(resolve, delay))
         return attemptFetch(attemptNumber + 1)
       }
-
-      // No more retries, throw final error
       throw error
     }
   }
-
   return attemptFetch(0)
 }
 ```
 
-**Retry Strategy Elements:**
-- **Exponential Backoff:** Delay doubles each attempt (1s → 2s → 4s)
-- **Network Error Detection:** Identifies transient vs permanent errors
-- **Attempt Limit:** Default 3 retries (4 total attempts including first)
-- **Retry Warning:** Logs each retry with attempt number and delay
-- **Recursive Pattern:** `attemptFetch` calls itself for next attempt
+**Strategy:** Exponential backoff (1s→2s→4s), error detection (transient vs permanent), 3 retries (4 total), recursive pattern.
 
-**Error Classification:**
-- **Retriable:** ETIMEDOUT, ECONNREFUSED, ENOTFOUND, fetch failed, AbortError
-- **Non-Retriable:** HTTP 404/401/403, GraphQL errors, JSON parse errors
+**Retriable:** ETIMEDOUT, ECONNREFUSED, ENOTFOUND, fetch failed, AbortError.
+**Non-Retriable:** HTTP 404/401/403, GraphQL, JSON parse.
 
-**Source Evidence:** policy-node retry logic reduced build failures from 8% to <0.1% for large static generation (800+ pages). Handles transient WordPress API instability.
+**Evidence:** policy-node retry reduced failures 8%→<0.1% for 800+ pages.
 
 ## GraphQL Error Handling
 
 ## Error Response Structure
 
-GraphQL APIs return errors in structured format alongside data, requiring specific parsing.
+GraphQL APIs return errors in structured format alongside data.
 
 ```typescript
-// lib/graphQL/fetch.ts
-interface GraphQLError {
-  message: string
-  locations?: { line: number; column: number }[]
-  path?: string[]
-  extensions?: Record<string, unknown>
-}
-
-interface GraphQLResponse<T> {
-  data?: T
-  errors?: GraphQLError[]
-}
+interface GraphQLError { message: string; locations?: { line: number; column: number }[]; path?: string[]; extensions?: Record<string, unknown> }
+interface GraphQLResponse<T> { data?: T; errors?: GraphQLError[] }
 
 export default async function fetchGraphQL<T>(query: string): Promise<T> {
   try {
-    const res = await fetch(graphqlApiUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query }),
-    })
-
-    if (!res.ok) {
-      throw new Error(`HTTP error! status: ${res.status}`)
-    }
+    const res = await fetch(graphqlApiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query }) })
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
 
     const json: GraphQLResponse<T> = await res.json()
-
     if (json.errors) {
       const errorMessages = json.errors.map(e => e.message).join(', ')
       console.error(`GraphQL errors in ${queryName}:`, json.errors)
       throw new Error(`GraphQL Errors in ${queryName}: ${errorMessages}`)
     }
-
     return json.data as T
   } catch (error) {
     // Error handling...
@@ -272,18 +193,9 @@ export default async function fetchGraphQL<T>(query: string): Promise<T> {
 }
 ```
 
-**GraphQL-Specific Handling:**
-- Check `res.ok` for HTTP-level errors (network, server crashes)
-- Parse JSON even if HTTP 200 (GraphQL errors return 200 status)
-- Check `json.errors` array for GraphQL query errors
-- Combine multiple error messages into single error
-- Log structured errors before throwing (preserves error details)
+**Handling:** Check `res.ok` for HTTP errors, parse JSON even if 200 (GraphQL errors return 200), check `json.errors` array, combine multiple messages, log before throwing.
 
-**Common GraphQL Errors:**
-- **Syntax errors:** Invalid query structure (line/column in locations)
-- **Validation errors:** Unknown fields or types (path array shows location)
-- **Execution errors:** Null field violations, resolver failures (extensions has debug info)
-- **Authorization errors:** Insufficient permissions for field access
+**Error Types:** Syntax (invalid query, line/column), validation (unknown fields, path array), execution (null violations, extensions debug), authorization (permissions).
 
 ## Partial Data Handling
 
@@ -308,58 +220,32 @@ const firstPage = result.pages[0].title // Safe access
 
 ## Production-Grade Logger Integration
 
-Sophisticated error handling includes structured logging for observability.
+Production error handling uses structured logging for observability.
 
 ```typescript
-// lib/buildCache/logger.ts
-interface LogContext {
-  queryName: string
-  timeout?: number
-  duration?: number
-  attempt?: number
-  endpoint?: string
-  errorType?: string
-  [key: string]: unknown
-}
+interface LogContext { queryName: string; timeout?: number; duration?: number; attempt?: number; endpoint?: string; errorType?: string; [key: string]: unknown }
 
 export const logger = {
   error: (message: string, context: LogContext = {}) => {
-    const logEntry = {
-      level: 'error',
-      message,
-      timestamp: new Date().toISOString(),
-      ...context,
-    }
-
-    // In production: send to observability platform (Datadog, Sentry, etc.)
+    const logEntry = { level: 'error', message, timestamp: new Date().toISOString(), ...context }
     if (process.env.NODE_ENV === 'production') {
       // sendToSentry(logEntry)
     }
-
-    // Always log to console with formatting
     console.error(JSON.stringify(logEntry, null, 2))
   },
 }
 
-// Usage in fetch wrapper
-logger.error(`Failed to fetch GraphQL query "${queryName}"`, {
-  queryName,
-  timeout: actualTimeout,
-  duration: Date.now() - startTime,
-  attempt: attemptNumber + 1,
-  endpoint: graphqlApiUrl,
+// Usage
+logger.error(`Failed GraphQL "${queryName}"`, {
+  queryName, timeout: actualTimeout, duration: Date.now() - startTime,
+  attempt: attemptNumber + 1, endpoint: graphqlApiUrl,
   errorType: error instanceof Error ? error.constructor.name : 'Unknown',
 })
 ```
 
-**Structured Log Benefits:**
-- Searchable by queryName, endpoint, errorType
-- Includes performance metrics (duration, timeout)
-- Correlates with retry attempts
-- Integrates with observability platforms
-- Consistent JSON format for log aggregation
+**Benefits:** Searchable (queryName/endpoint/errorType), performance metrics (duration/timeout), retry correlation, observability integration, JSON format for aggregation.
 
-**Source Evidence:** policy-node logger captures error context across 70 fetch functions. Structured logs enable debugging of intermittent build failures by filtering on `duration > 28000` (near-timeout queries).
+**Evidence:** policy-node logger captures 70 fetch contexts. Enables debugging intermittent failures via `duration > 28000` filter (near-timeout).
 
 ## Error.tsx Boundary Pattern
 

@@ -24,38 +24,17 @@ All analyzed codebases implement Pages Router patterns with 100% adoption across
 
 ## Static Generation with Data
 
-`getStaticProps` runs at build time to fetch data and pass it as props to page components.
+`getStaticProps` runs at build time to fetch data and pass props to page components.
 
 ```typescript
-// pages/blog/[slug].tsx
 import type { GetStaticProps } from 'next'
-import { fetchPost } from '@/lib/api'
-import BlogPostLayout from '@/components/BlogPostLayout'
 
-interface BlogPostProps {
-  post: {
-    title: string
-    content: string
-    publishedAt: string
-  }
-}
+interface BlogPostProps { post: { title: string; content: string; publishedAt: string } }
 
 export const getStaticProps: GetStaticProps<BlogPostProps> = async ({ params }) => {
-  const slug = params?.slug as string
-  const post = await fetchPost(slug)
-
-  if (!post) {
-    return {
-      notFound: true, // Renders 404 page
-    }
-  }
-
-  return {
-    props: {
-      post,
-    },
-    revalidate: 10, // ISR: regenerate every 10 seconds
-  }
+  const post = await fetchPost(params?.slug as string)
+  if (!post) return { notFound: true }
+  return { props: { post }, revalidate: 10 }
 }
 
 export default function BlogPost({ post }: BlogPostProps) {
@@ -63,20 +42,11 @@ export default function BlogPost({ post }: BlogPostProps) {
 }
 ```
 
-**getStaticProps Characteristics:**
-- Executes only at build time (and during ISR regeneration)
-- Never runs in browser or on server requests
-- Must export from page in `pages/` directory
-- TypeScript generic `GetStaticProps<T>` ensures type-safe props
-- Context parameter provides `params`, `preview`, `previewData`
+**Characteristics:** Executes at build time (and ISR), never in browser/server requests, must export from `pages/`, TypeScript generic ensures type-safe props, context provides `params`/`preview`/`previewData`.
 
-**Return Options:**
-- `{ props: {...} }` — Pass data to component
-- `{ notFound: true }` — Render 404 page
-- `{ redirect: { destination, permanent } }` — Redirect to another page
-- `{ revalidate: number }` — Enable ISR with time interval
+**Returns:** `{ props }` (data), `{ notFound: true }` (404), `{ redirect }` (redirect), `{ revalidate }` (ISR).
 
-**Source Evidence:** kariusdx-next implements getStaticProps in 14 pages with 100% ISR adoption (all include `revalidate: 10`). Zero pure static pages without revalidation observed.
+**Evidence:** kariusdx implements getStaticProps in 14 pages with 100% ISR (`revalidate: 10`). Zero static pages without revalidation.
 
 ## Incremental Static Regeneration
 
@@ -152,133 +122,75 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
 
 ## Fallback Options
 
-**`fallback: false`** (strict pre-rendering)
-- Only paths in `paths` array are valid
-- Non-listed paths return 404
-- Best for: Small, known set of pages
+**`fallback: false`** — Only `paths` array valid, non-listed return 404. Best for small, known page sets.
 
 ```typescript
-export const getStaticPaths: GetStaticPaths = async () => {
-  return {
-    paths: [
-      { params: { slug: 'about' } },
-      { params: { slug: 'contact' } },
-    ],
-    fallback: false, // Only /about and /contact exist, rest 404
-  }
-}
+export const getStaticPaths: GetStaticPaths = async () => ({
+  paths: [{ params: { slug: 'about' } }, { params: { slug: 'contact' } }],
+  fallback: false,
+})
 ```
 
-**`fallback: true`** (on-demand generation with fallback UI)
-- Non-listed paths render on-demand
-- Component renders with `router.isFallback === true` first
-- Then renders with real props after getStaticProps completes
-- Best for: Large datasets, acceptable to show loading state
+**`fallback: true`** — On-demand generation with loading UI. Component renders with `router.isFallback === true`, then with real props. Best for large datasets.
 
 ```typescript
-import { useRouter } from 'next/router'
-
 export default function Post({ post }) {
   const router = useRouter()
-
-  if (router.isFallback) {
-    return <div>Loading...</div>
-  }
-
+  if (router.isFallback) return <div>Loading...</div>
   return <article>{post.content}</article>
 }
 
-export const getStaticPaths: GetStaticPaths = async () => {
-  const popularSlugs = await fetchPopularSlugs() // Pre-render only popular
-  return {
-    paths: popularSlugs.map(slug => ({ params: { slug } })),
-    fallback: true, // Others render on-demand with loading state
-  }
-}
+export const getStaticPaths: GetStaticPaths = async () => ({
+  paths: (await fetchPopularSlugs()).map(slug => ({ params: { slug } })),
+  fallback: true,
+})
 ```
 
-**`fallback: 'blocking'`** (on-demand generation without fallback UI) — Most common pattern
-- Non-listed paths render on-demand
-- User waits for getStaticProps to complete (SSR-like)
-- No isFallback state needed in component
-- Best for: SEO-critical pages, want to avoid loading state
+**`fallback: 'blocking'`** (Most common) — On-demand generation without fallback UI. User waits for getStaticProps (SSR-like). No isFallback needed. Best for SEO.
 
 ```typescript
-export const getStaticPaths: GetStaticPaths = async () => {
-  const recentSlugs = await fetchRecentSlugs()
-  return {
-    paths: recentSlugs.map(slug => ({ params: { slug } })),
-    fallback: 'blocking', // Others render on-demand, user waits
-  }
-}
+export const getStaticPaths: GetStaticPaths = async () => ({
+  paths: (await fetchRecentSlugs()).map(slug => ({ params: { slug } })),
+  fallback: 'blocking',
+})
 ```
 
-**Source Evidence:** 100% of analyzed getStaticPaths implementations use `fallback: 'blocking'`. Zero instances of `fallback: true` or `fallback: false` observed. Preferred for SEO and simple component logic.
+**Evidence:** 100% use `fallback: 'blocking'`. Zero `true`/`false` observed. Preferred for SEO and simple logic.
 
 ## getServerSideProps Pattern
 
 ## Server-Side Rendering on Every Request
 
-`getServerSideProps` runs on every request to provide fresh props via SSR.
+`getServerSideProps` runs on every request for fresh props via SSR.
 
 ```typescript
-// pages/dashboard.tsx
 import type { GetServerSideProps } from 'next'
-import { getSession } from '@/lib/auth'
-import { fetchUserDashboard } from '@/lib/api'
 
-interface DashboardProps {
-  user: { id: string; name: string }
-  stats: { views: number; clicks: number }
-}
+interface DashboardProps { user: { id: string; name: string }; stats: { views: number; clicks: number } }
 
 export const getServerSideProps: GetServerSideProps<DashboardProps> = async ({ req }) => {
   const session = await getSession(req)
-
-  if (!session) {
-    return {
-      redirect: {
-        destination: '/login',
-        permanent: false,
-      },
-    }
-  }
+  if (!session) return { redirect: { destination: '/login', permanent: false } }
 
   const stats = await fetchUserDashboard(session.userId)
-
-  return {
-    props: {
-      user: session.user,
-      stats,
-    },
-  }
+  return { props: { user: session.user, stats } }
 }
 
 export default function Dashboard({ user, stats }: DashboardProps) {
   return (
     <div>
       <h1>Welcome, {user.name}</h1>
-      <p>Views: {stats.views}</p>
-      <p>Clicks: {stats.clicks}</p>
+      <p>Views: {stats.views}, Clicks: {stats.clicks}</p>
     </div>
   )
 }
 ```
 
-**getServerSideProps Characteristics:**
-- Runs on **every request** (not at build time)
-- No caching unless explicitly configured (CDN, Cache-Control headers)
-- Access to request/response objects (`req`, `res`)
-- Blocks render until data fetched (slower TTFB than ISR)
-- Cannot export alongside `getStaticProps` or `getStaticPaths`
+**Characteristics:** Runs every request (not build time), no caching (unless CDN/Cache-Control), access to `req`/`res`, blocks render (slower TTFB than ISR), can't coexist with `getStaticProps`/`getStaticPaths`.
 
-**Use Cases:**
-- User-specific data (dashboards, profiles)
-- Authentication-required pages
-- Real-time data that can't tolerate staleness
-- Request-dependent logic (user-agent, geolocation)
+**Use Cases:** User-specific data (dashboards/profiles), auth-required pages, real-time data, request-dependent logic (user-agent/geolocation).
 
-**Source Evidence:** policy-node uses getServerSideProps in 22 pages for preview mode and WordPress draft content. helix uses it in 17 cases for Sanity preview. kariusdx uses it in 12 pages for authenticated routes.
+**Evidence:** policy-node uses in 22 pages (preview/drafts), helix in 17 (Sanity preview), kariusdx in 12 (auth routes).
 
 ## Preview Mode with getServerSideProps
 
@@ -401,29 +313,13 @@ Projects extract shared getStaticProps logic into reusable functions.
 ```typescript
 // utils/getStaticPropsWithPreview.tsx
 import type { GetStaticProps } from 'next'
-import { sanityClient } from 'lib/sanity.server'
-import pageQuery from 'lib/groq/pageQuery'
-import filterPreviewData from 'utils/filterPreviewData'
 
 const getStaticPropsWithPreview: GetStaticProps = async ({ params, preview = false }) => {
-  const slug = params?.slug || ['home']
-  const query = pageQuery(slug as string[])
-
-  const data = await sanityClient.fetch(query)
-
-  if (!data.pageData || data.pageData.length === 0) {
-    return { notFound: true }
-  }
-
-  const pageData = filterPreviewData(data.pageData, preview)
+  const data = await sanityClient.fetch(pageQuery(params?.slug || ['home']))
+  if (!data.pageData || !data.pageData.length) return { notFound: true }
 
   return {
-    props: {
-      preview,
-      globalData: data.globalData,
-      pageData,
-      query,
-    },
+    props: { preview, globalData: data.globalData, pageData: filterPreviewData(data.pageData, preview) },
     revalidate: 10,
   }
 }
@@ -433,24 +329,16 @@ export default getStaticPropsWithPreview
 
 **Usage:**
 ```typescript
-// pages/[...slug].tsx
 import getStaticPropsWithPreview from 'utils/getStaticPropsWithPreview'
-
 export const getStaticProps = getStaticPropsWithPreview
-
 export default function Page({ pageData, globalData, preview }) {
   return <PageComponent data={pageData} global={globalData} preview={preview} />
 }
 ```
 
-**Wrapper Benefits:**
-- Consistent preview mode handling across all pages
-- Standardized error handling (notFound, redirect)
-- Uniform revalidation interval
-- Shared data fetching (global nav, footer)
-- Single source of truth for data fetching logic
+**Benefits:** Consistent preview handling, standardized error handling (notFound/redirect), uniform revalidation, shared data fetching (nav/footer), single source of truth.
 
-**Source Evidence:** kariusdx-next uses wrapper pattern for 14 pages with zero inline getStaticProps implementations. 100% consistency in preview mode, revalidation, and error handling.
+**Evidence:** kariusdx uses wrapper for 14 pages with zero inline getStaticProps. 100% consistency in preview/revalidation/errors.
 
 ## Context Object Properties
 

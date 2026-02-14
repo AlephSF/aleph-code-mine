@@ -130,42 +130,27 @@ Dynamic segments with `[...slug]` syntax support multi-level paths.
 import { getPageByUri, getPageSlugs } from '@/lib/graphQL/queries/pages'
 
 export async function generateStaticParams() {
-  const fetchAllPosts = async (cursor?: string, allPosts = []) => {
+  const fetchAll = async (cursor?: string, all = []) => {
     const { posts, pageInfo } = await getPageSlugs({ after: cursor, limit: 100 })
-    const updatedPosts = [...allPosts, ...posts]
-
-    if (pageInfo.hasNextPage && pageInfo.endCursor) {
-      return fetchAllPosts(pageInfo.endCursor, updatedPosts)
-    }
-
-    return updatedPosts
+    const updated = [...all, ...posts]
+    if (pageInfo.hasNextPage && pageInfo.endCursor) return fetchAll(pageInfo.endCursor, updated)
+    return updated
   }
 
-  const allPosts = await fetchAllPosts()
+  const allPosts = await fetchAll()
 
-  return allPosts.map(post => {
-    const langCode = post.language.slug
-    const slugArray = post.uri.split('/').filter(segment => segment !== '')
-
-    return {
-      lang: langCode,
-      slug: slugArray, // Array for catch-all: ['about', 'team']
-    }
-  })
+  return allPosts.map(p => ({
+    lang: p.language.slug,
+    slug: p.uri.split('/').filter(s => s !== ''),
+  }))
 }
 
 export const revalidate = 60
 
-export default async function Page({
-  params,
-}: {
-  params: { lang: string; slug: string[] }
-}) {
+export default async function Page({ params }: { params: { lang: string; slug: string[] } }) {
   const uri = params.slug.join('/')
   const pageData = await getPageByUri(uri, params.lang)
-
   if (!pageData) notFound()
-
   return <PageComponent data={pageData} lang={params.lang} />
 }
 ```
@@ -176,7 +161,7 @@ export default async function Page({
 - Language prefix handling for multilingual sites
 - `pageInfo.hasNextPage` cursor-based pagination for GraphQL
 
-**Source Evidence:** policy-node generates 800+ multilingual pages using recursive `generateStaticParams`. Build completes in ~12 minutes with GraphQL batching optimization.
+**Source Evidence:** policy-node generates 800+ multilingual pages with ~12 minute build time using GraphQL batching.
 
 ## generateMetadata Pattern
 
@@ -294,47 +279,28 @@ Server Components enable parallel data fetching without waterfalls.
 // app/(frontend)/resources/page.tsx
 import { sanityFetch } from '../lib/sanity/sanityFetch'
 import pageByPathQuery, { PageByPath } from '../lib/sanity/queries/pageByPathQuery'
-import { fetchLatestContentSections } from '../lib/sanity/queries/latestContentQuery'
 
 export const revalidate = 10
 
+// Dependent data (sequential required)
 export default async function ResourcePage() {
-  // Sequential pattern (waterfall - SLOW)
-  // const pageData = await sanityFetch<PageByPath>({ query: pageByPathQuery })
-  // const latestContent = await fetchLatestContentSections(pageData.contentBlocks)
-
-  // Parallel pattern (concurrent - FAST)
-  const pageData = await sanityFetch<PageByPath>({
-    query: pageByPathQuery,
-    params: { pagePath: 'resources' },
-  })
-
-  const latestContentBlocks = pageData.pageBuilder?.filter(
-    block => block._type === 'resourceLatestContent',
-  )
-
-  const latestContentData = latestContentBlocks
-    ? await fetchLatestContentSections(latestContentBlocks)
-    : null
-
-  return <ResourcesContent pageData={pageData} latestContentData={latestContentData} />
+  const pageData = await sanityFetch<PageByPath>({ query: pageByPathQuery, params: { pagePath: 'resources' } })
+  const blocks = pageData.pageBuilder?.filter(b => b._type === 'resourceLatestContent')
+  const latestData = blocks ? await fetchLatestContentSections(blocks) : null
+  return <ResourcesContent pageData={pageData} latestContentData={latestData} />
 }
-```
 
-**Parallel Optimization Opportunity:**
-```typescript
-// Better: True parallel fetching when data independent
+// Independent data (parallel with Promise.all)
 export default async function ResourcePage() {
   const [pageData, globalData] = await Promise.all([
     sanityFetch<PageByPath>({ query: pageByPathQuery, params: { pagePath: 'resources' } }),
     sanityFetch<GlobalData>({ query: globalDataQuery }),
   ])
-
   return <ResourcesContent pageData={pageData} globalData={globalData} />
 }
 ```
 
-**Performance Impact:** policy-node `Promise.all` pattern reduced page generation time from 2.5s to 0.8s per page (67% improvement) by parallelizing WordPress GraphQL queries for page content, navigation, and footer data.
+**Performance Impact:** policy-node `Promise.all` reduced page generation from 2.5s to 0.8s per page (67% improvement) by parallelizing GraphQL queries for content, navigation, and footer data.
 
 ## Streaming with Suspense
 
@@ -345,26 +311,17 @@ App Router supports streaming Server Components with Suspense boundaries.
 ```typescript
 // app/dashboard/page.tsx
 import { Suspense } from 'react'
-import { UserProfile } from './UserProfile'
-import { Analytics } from './Analytics'
-import { RecentActivity } from './RecentActivity'
 
 export default function Dashboard() {
   return (
     <main>
       <h1>Dashboard</h1>
-
-      {/* Renders immediately */}
       <Suspense fallback={<UserProfileSkeleton />}>
         <UserProfile />
       </Suspense>
-
-      {/* Streams when ready */}
       <Suspense fallback={<AnalyticsSkeleton />}>
         <Analytics />
       </Suspense>
-
-      {/* Independent streaming */}
       <Suspense fallback={<ActivitySkeleton />}>
         <RecentActivity />
       </Suspense>
@@ -372,15 +329,13 @@ export default function Dashboard() {
   )
 }
 
-// UserProfile.tsx (Server Component)
 async function UserProfile() {
   const user = await fetchUser()
   return <div>{user.name}</div>
 }
 
-// Analytics.tsx (Server Component)
 async function Analytics() {
-  const stats = await fetchAnalytics() // Slow query
+  const stats = await fetchAnalytics()
   return <div>{stats.pageViews}</div>
 }
 ```
@@ -391,7 +346,7 @@ async function Analytics() {
 - Slow queries don't block fast content
 - Perceived performance improvement without code splitting
 
-**Adoption Note:** Zero streaming patterns observed in analyzed codebases. All pages wait for complete data before render (traditional SSR/SSG). Streaming opportunity for slow third-party API integrations.
+**Adoption Note:** Zero streaming patterns observed in analyzed codebases. All pages wait for complete data (traditional SSR/SSG). Streaming opportunity for slow third-party API integrations.
 
 ## Loading States
 
