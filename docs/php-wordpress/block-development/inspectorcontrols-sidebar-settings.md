@@ -191,81 +191,38 @@ WordPress PanelBody components group related controls into collapsible sections.
 </InspectorControls>
 ```
 
-**initialOpen prop:**
-- `true`: Panel expanded by default (for primary settings)
-- `false`: Panel collapsed by default (for secondary/advanced settings)
+**initialOpen prop:** `true` = expanded (primary settings), `false` = collapsed (secondary/advanced settings).
 
-**Best practice:** 70+ PanelBody instances in analyzed codebase average 2-3 panels per block. First panel contains primary settings (initialOpen: true), subsequent panels contain styling/advanced options (initialOpen: false).
+**Best practice:** 70+ instances average 2-3 panels per block. First panel primary settings (initialOpen: true), subsequent panels styling/advanced (initialOpen: false).
 
 ## Complete Pattern Example
 
 ## Section Block with Sidebar Controls
 
-WordPress section block demonstrates comprehensive InspectorControls pattern with multiple panels, control types, and conditional rendering based on attribute values.
+WordPress section block with comprehensive InspectorControls: multiple panels, control types, conditional rendering.
 
 ```javascript
-import { __ } from '@wordpress/i18n';
-import { InnerBlocks, InspectorControls, useBlockProps } from '@wordpress/block-editor';
-import { PanelBody, SelectControl, TextControl, ToggleControl } from '@wordpress/components';
-
 export default function Edit({ attributes, setAttributes }) {
   const { jumpLinkText, size, hideHr, removeMargins } = attributes;
+  const classes = [`section-${size}`, hideHr && 'no-hr', removeMargins && 'no-margins'].filter(Boolean).join(' ');
 
-  const blockClasses = [
-    `section-${size}`,
-    hideHr ? 'no-hr' : '',
-    removeMargins ? 'no-margins' : '',
-  ].filter(Boolean).join(' ');
-
-  return (
-    <>
-      <InspectorControls>
-        <PanelBody title={ __( 'Page Navigation', 'airbnb-policy-blocks' ) }>
-          <TextControl
-            label={ __( 'Jump Link Text', 'airbnb-policy-blocks' ) }
-            value={ jumpLinkText || '' }
-            onChange={ ( value ) => setAttributes({ jumpLinkText: value }) }
-            help={ __( 'Text shown in page navigation menu', 'airbnb-policy-blocks' ) }
-          />
-        </PanelBody>
-
-        <PanelBody title={ __( 'Styles', 'airbnb-policy-blocks' ) } initialOpen={ false }>
-          <SelectControl
-            label={ __( 'Size', 'airbnb-policy-blocks' ) }
-            value={ size }
-            options={ [
-              { label: __( 'Default', 'airbnb-policy-blocks' ), value: 'default' },
-              { label: __( 'Small', 'airbnb-policy-blocks' ), value: 'small' },
-            ] }
-            onChange={ ( value ) => setAttributes({ size: value }) }
-          />
-          <ToggleControl
-            label={ __( 'Hide Horizontal Rule', 'airbnb-policy-blocks' ) }
-            checked={ hideHr }
-            onChange={ ( value ) => setAttributes({ hideHr: value }) }
-          />
-          <ToggleControl
-            label={ __( 'Remove Margins', 'airbnb-policy-blocks' ) }
-            checked={ removeMargins }
-            onChange={ ( value ) => setAttributes({ removeMargins: value }) }
-          />
-        </PanelBody>
-      </InspectorControls>
-
-      <div { ...useBlockProps({ className: blockClasses }) }>
-        <InnerBlocks />
-      </div>
-    </>
-  );
+  return (<>
+    <InspectorControls>
+      <PanelBody title="Page Navigation">
+        <TextControl label="Jump Link Text" value={jumpLinkText||''} onChange={(v) => setAttributes({jumpLinkText:v})} help="Page navigation menu text" />
+      </PanelBody>
+      <PanelBody title="Styles" initialOpen={false}>
+        <SelectControl label="Size" value={size} options={[{label:'Default',value:'default'},{label:'Small',value:'small'}]} onChange={(v) => setAttributes({size:v})} />
+        <ToggleControl label="Hide Horizontal Rule" checked={hideHr} onChange={(v) => setAttributes({hideHr:v})} />
+        <ToggleControl label="Remove Margins" checked={removeMargins} onChange={(v) => setAttributes({removeMargins:v})} />
+      </PanelBody>
+    </InspectorControls>
+    <div {...useBlockProps({className:classes})}><InnerBlocks /></div>
+  </>);
 }
 ```
 
-**Pattern features:**
-- Internationalization with `__()` wrapper
-- Multiple PanelBody sections for organization
-- Mix of TextControl, SelectControl, ToggleControl
-- Conditional CSS classes based on toggle states
-- Block content separated from inspector settings
+**Features:** i18n (`__()`), multiple panels, mixed controls, conditional classes.
 
 ## Advanced Patterns
 
@@ -324,61 +281,29 @@ import { Button } from '@wordpress/components';
 
 ## Global InspectorControls Injection
 
-WordPress addFilter enables adding InspectorControls to every block (core + custom) without modifying block registration. This pattern adds global settings like spacing or visibility controls.
+WordPress addFilter adds InspectorControls to all blocks (core + custom) without modifying registration, enabling global settings.
 
 ```javascript
-import { createHigherOrderComponent } from '@wordpress/compose';
-import { addFilter } from '@wordpress/hooks';
-import { InspectorControls } from '@wordpress/block-editor';
-import { PanelBody, SelectControl } from '@wordpress/components';
-import { Fragment } from '@wordpress/element';
-
 // Add attribute to ALL blocks
-const addSpacingAttribute = (settings) => {
-  settings.attributes = {
-    ...settings.attributes,
-    spacingLevel: {
-      type: 'string',
-      default: 'default',
-    },
-  };
-  return settings;
-};
-addFilter('blocks.registerBlockType', 'rkv/spacing-attribute', addSpacingAttribute);
+addFilter('blocks.registerBlockType', 'rkv/spacing-attribute', (s) => ({
+  ...s, attributes: {...s.attributes, spacingLevel: {type:'string', default:'default'}},
+}));
 
-// Add InspectorControls to ALL blocks
-const addSpacingInspectorControls = createHigherOrderComponent((BlockEdit) => {
-  return (props) => {
-    return (
-      <Fragment>
-        <BlockEdit { ...props } />
-        <InspectorControls>
-          <PanelBody title="Spacing">
-            <SelectControl
-              label="Bottom Margin"
-              value={ props.attributes.spacingLevel }
-              options={ [
-                { label: 'Default', value: 'default' },
-                { label: 'None', value: 'none' },
-                { label: 'Half', value: 'half' },
-                { label: 'Double', value: 'double' },
-              ] }
-              onChange={ (val) => props.setAttributes({ spacingLevel: val }) }
-            />
-          </PanelBody>
-        </InspectorControls>
-      </Fragment>
-    );
-  };
-}, 'withSpacingControl');
-addFilter('editor.BlockEdit', 'rkv/spacing-controls', addSpacingInspectorControls);
+// Add controls to ALL blocks
+const addSpacing = createHigherOrderComponent((BlockEdit) => (props) => (<>
+  <BlockEdit {...props} />
+  <InspectorControls>
+    <PanelBody title="Spacing">
+      <SelectControl label="Bottom Margin" value={props.attributes.spacingLevel} options={[{label:'Default',value:'default'},{label:'None',value:'none'},{label:'Half',value:'half'},{label:'Double',value:'double'}]} onChange={(v) => props.setAttributes({spacingLevel:v})} />
+    </PanelBody>
+  </InspectorControls>
+</>), 'withSpacingControl');
+addFilter('editor.BlockEdit', 'rkv/spacing-controls', addSpacing);
 ```
 
-**Use case:** Design systems requiring consistent spacing, visibility controls, or animation settings across all blocks (core blocks + custom blocks).
+**Use case:** Design systems requiring consistent spacing, visibility, or animation across all blocks.
 
-**Real-world example:** rkv-block-editor plugin adds spacing controls to every block, enabling content editors to adjust bottom margins universally.
-
-**Confidence:** 17% adoption (1/6 plugins analyzed use this advanced pattern).
+**Example:** rkv-block-editor adds spacing controls to every block for universal bottom margin adjustment. **Adoption:** 17% (1/6 plugins).
 
 ## Common Pitfalls
 
