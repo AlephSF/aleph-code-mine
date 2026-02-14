@@ -85,28 +85,11 @@ class App extends Controller
         return get_the_title();
     }
 
-    /**
-     * Calculate reading time from post content
-     */
     public static function timeToRead()
     {
-        $content = get_post_field('post_content');
-        $content = strip_shortcodes($content);
-        $content = wp_strip_all_tags($content);
+        $content = wp_strip_all_tags(get_post_field('post_content'));
         $word_count = count(preg_split('/\s+/', $content));
-
-        // Calculate additional time for images (12s first image, 11s second, down to 3s after 10th)
-        $image_count = substr_count(strtolower($content), '<img ');
-        $additional_time = 0;
-
-        for ($i = 1; $i <= $image_count; $i++) {
-            $additional_time += $i >= 10 ? 3 : (13 - $i);
-        }
-
-        $wpm = 250;  // Average words per minute
-        $minutes = ceil(($word_count + $additional_time * $wpm / 60) / $wpm);
-
-        return $minutes . ' min read';
+        return ceil($word_count / 250) . ' min read';
     }
 }
 ```
