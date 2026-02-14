@@ -339,79 +339,29 @@ Example: Page builder
 
 ## Real-World Examples
 
-### Example 1: News Article Details (airbnb)
-
+**News Article Details (airbnb):**
 ```json
-{
-  "name": "news_article_details",
-  "type": "group",
-  "sub_fields": [
-    {
-      "name": "headline",
-      "type": "text"
-    },
-    {
-      "name": "link",
-      "type": "url"
-    },
-    {
-      "name": "publication_name",
-      "type": "text"
-    },
-    {
-      "name": "publication_date",
-      "type": "date_picker"
-    }
-  ]
-}
+{"name":"news_article_details","type":"group","sub_fields":[{"name":"headline","type":"text"},{"name":"link","type":"url"},{"name":"publication_name","type":"text"},{"name":"publication_date","type":"date_picker"}]}
 ```
 
-**Template Usage:**
 ```php
-<?php
-$article = get_field('news_article_details');
-?>
+<?php $article = get_field('news_article_details'); ?>
 <article class="external-news">
   <h3><a href="<?php echo $article['link']; ?>"><?php echo $article['headline']; ?></a></h3>
-  <p class="meta">
-    <?php echo $article['publication_name']; ?> -
-    <?php echo date('F j, Y', strtotime($article['publication_date'])); ?>
-  </p>
+  <p class="meta"><?php echo $article['publication_name'] . ' - ' . date('F j, Y', strtotime($article['publication_date'])); ?></p>
 </article>
 ```
 
-### Example 2: Social Media Links (thekelsey)
-
+**Social Media Links (thekelsey):**
 ```json
-{
-  "name": "social_media",
-  "type": "group",
-  "location": [{"param": "options_page"}],
-  "sub_fields": [
-    {"name": "facebook_url", "type": "url"},
-    {"name": "twitter_url", "type": "url"},
-    {"name": "instagram_url", "type": "url"},
-    {"name": "linkedin_url", "type": "url"},
-    {"name": "vimeo_url", "type": "url"}
-  ]
-}
+{"name":"social_media","type":"group","location":[{"param":"options_page"}],"sub_fields":[{"name":"facebook_url","type":"url"},{"name":"twitter_url","type":"url"},{"name":"instagram_url","type":"url"}]}
 ```
 
-**Template Usage (Global Footer):**
 ```php
-<?php
-$social = get_field('social_media', 'option');
-?>
+<?php $social = get_field('social_media', 'option'); ?>
 <div class="social-links">
-  <?php if($social['facebook_url']): ?>
-    <a href="<?php echo $social['facebook_url']; ?>">Facebook</a>
-  <?php endif; ?>
-  <?php if($social['twitter_url']): ?>
-    <a href="<?php echo $social['twitter_url']; ?>">Twitter</a>
-  <?php endif; ?>
-  <?php if($social['instagram_url']): ?>
-    <a href="<?php echo $social['instagram_url']; ?>">Instagram</a>
-  <?php endif; ?>
+  <?php if($social['facebook_url']): ?><a href="<?php echo $social['facebook_url']; ?>">Facebook</a><?php endif; ?>
+  <?php if($social['twitter_url']): ?><a href="<?php echo $social['twitter_url']; ?>">Twitter</a><?php endif; ?>
 </div>
 ```
 
