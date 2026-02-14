@@ -375,9 +375,7 @@ Break templates into reusable partials via `@include` directive. Partials receiv
 
   <div class="post-info">
     <h3 class="post-title">
-      <a href="{{ get_permalink($post) }}">
-        {{ get_the_title($post) }}
-      </a>
+      <a href="{{ get_permalink($post) }}">{{ get_the_title($post) }}</a>
     </h3>
 
     @if($showMeta)
@@ -388,14 +386,10 @@ Break templates into reusable partials via `@include` directive. Partials receiv
     @endif
 
     @if($showExcerpt)
-      <div class="excerpt">
-        {{ wp_trim_words(get_the_excerpt($post), $excerptLength ?? 25) }}
-      </div>
+      <div class="excerpt">{{ wp_trim_words(get_the_excerpt($post), $excerptLength ?? 25) }}</div>
     @endif
 
-    <a href="{{ get_permalink($post) }}" class="read-more">
-      {{ $readMoreText ?? 'Read More' }} &rarr;
-    </a>
+    <a href="{{ get_permalink($post) }}" class="read-more">{{ $readMoreText ?? 'Read More' }} &rarr;</a>
   </div>
 </article>
 ```
@@ -406,20 +400,14 @@ Break templates into reusable partials via `@include` directive. Partials receiv
   @include('partials.post-card', [
     'post' => $post,
     'showThumbnail' => true,
-    'showMeta' => true,
-    'showExcerpt' => true,
     'thumbnailSize' => 'large',
     'excerptLength' => 30,
-    'cardClass' => 'featured',
-    'readMoreText' => 'Continue Reading'
+    'cardClass' => 'featured'
   ])
 @endforeach
 ```
 
-**Variable Scoping:**
-- Partials inherit all parent variables automatically
-- Pass additional data via second parameter (array)
-- Use `{{ $var ?? 'default' }}` for optional variables
+**Variable Scoping:** Partials inherit all parent variables. Pass additional data via second parameter (array). Use `{{ $var ?? 'default' }}` for optional variables.
 
 ## WordPress Integration
 
@@ -556,27 +544,20 @@ add_action('acf/init', function () {
 ```blade
 <div class="slideshow-block {{ $block['className'] ?? '' }}" id="{{ $block['id'] }}">
   @if($is_preview)
-    <div class="block-preview">
-      <p>Slideshow Block Preview</p>
-    </div>
+    <div class="block-preview"><p>Slideshow Block Preview</p></div>
   @else
-    @php
-      $slides = get_field('slides');
-    @endphp
+    @php($slides = get_field('slides'))
 
     @if($slides)
       <div class="slideshow-container" data-autoplay="{{ get_field('autoplay') ? 'true' : 'false' }}">
         @foreach($slides as $index => $slide)
           <div class="slide {{ $loop->first ? 'active' : '' }}">
             @if($slide['image'])
-              <img src="{{ $slide['image']['url'] }}"
-                   alt="{{ $slide['image']['alt'] ?? '' }}">
+              <img src="{{ $slide['image']['url'] }}" alt="{{ $slide['image']['alt'] ?? '' }}">
             @endif
 
             @if($slide['caption'])
-              <div class="slide-caption">
-                {!! $slide['caption'] !!}
-              </div>
+              <div class="slide-caption">{!! $slide['caption'] !!}</div>
             @endif
           </div>
         @endforeach
@@ -587,10 +568,7 @@ add_action('acf/init', function () {
 
           <div class="dots">
             @foreach($slides as $index => $slide)
-              <button class="dot {{ $loop->first ? 'active' : '' }}"
-                      data-index="{{ $index }}"
-                      aria-label="Go to slide {{ $index + 1 }}">
-              </button>
+              <button class="dot {{ $loop->first ? 'active' : '' }}" data-index="{{ $index }}" aria-label="Go to slide {{ $index + 1 }}"></button>
             @endforeach
           </div>
         @endif
