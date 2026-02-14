@@ -12,8 +12,6 @@ source_confidence: "100%"
 last_updated: "2026-02-12"
 ---
 
-# Cross-Site Queries with get_sites()
-
 ## Overview
 
 WordPress multisite uses `get_sites()` to retrieve a list of all sites in the network for iteration, bulk operations, and network-wide administration. This function replaces the deprecated `wp_get_sites()` and `get_blog_list()` as of WordPress 4.6+.
@@ -36,7 +34,11 @@ WordPress multisite implementations use `get_sites()` when:
 
 ## Pattern Implementation
 
-### Basic All-Sites Iteration
+WordPress multisite network operations iterate all sites using get_sites with filter criteria then switch_to_blog for per-site operations.
+
+## Basic All-Sites Iteration
+
+WP-CLI commands use get_sites to fetch all active sites then iterate with switch_to_blog for cleanup operations:
 
 ```php
 /**
@@ -72,7 +74,9 @@ WP_CLI::success("Cleanup complete for " . count($sites) . " sites");
 
 **Source:** `airbnb/plugins/wordpress-seo/src/commands/cleanup-command.php`
 
-### Network-Wide SAML Configuration
+## Network-Wide SAML Configuration
+
+Network admin UI uses get_sites to display configuration checkboxes for selective SAML enablement per site:
 
 ```php
 /**
@@ -106,7 +110,11 @@ echo '</tbody></table>';
 
 ## Advanced Patterns
 
-### Pagination for Large Networks
+Large networks require pagination, domain filtering, and per-site feature flag patterns for scalable get_sites operations.
+
+## Pagination for Large Networks
+
+Enterprise multisite networks with 1000+ sites use pagination to prevent memory exhaustion during iteration:
 
 ```php
 /**
@@ -142,7 +150,9 @@ WP_CLI::success("All sites processed");
 **Performance:** Prevents loading 10,000 site objects into memory simultaneously
 **Use Case:** Enterprise networks (universities, government, large corporations)
 
-### Filtering by Domain Pattern
+## Filtering by Domain Pattern
+
+Multisite networks with staging and production sites use domain filtering to target specific subdomain patterns:
 
 ```php
 /**
@@ -167,7 +177,9 @@ WP_CLI::log("Processed " . count($staging_sites) . " staging sites");
 **Pattern:** Fetch all → Filter by domain → Process subset
 **Use Case:** Separate staging and production sites in same network
 
-### Auto-Enroll Users on Multiple Sites
+## Auto-Enroll Users on Multiple Sites
+
+SAML SSO implementations use get_sites to provision authenticated users across multiple sites based on per-site feature flags:
 
 ```php
 /**
@@ -203,7 +215,9 @@ function enroll_user_on_sites($user_id, $roles) {
 
 **Source:** `airbnb/plugins/onelogin-saml-sso/php/functions.php`
 
-### Exclude Main Site from Operations
+## Exclude Main Site from Operations
+
+Testing changes on subsites before applying to production main site requires explicit blog ID 1 exclusion:
 
 ```php
 /**

@@ -12,8 +12,6 @@ source_confidence: "100%"
 last_updated: "2026-02-12"
 ---
 
-# Conditional Blog-Specific Plugin Loading
-
 ## Overview
 
 WordPress VIP multisite installations use `get_current_blog_id()` conditionals in `client-mu-plugins/plugin-loader.php` to load plugins only for specific sites. This pattern reduces memory consumption and improves performance by preventing unnecessary plugin initialization on sites that don't require specific functionality.
@@ -36,7 +34,11 @@ WordPress multisite networks implement blog-specific plugin loading when:
 
 ## Pattern Implementation
 
-### Basic Conditional Plugin Loading
+WordPress VIP plugin-loader.php files use get_current_blog_id conditionals to load plugins selectively per site.
+
+## Basic Conditional Plugin Loading
+
+WordPress VIP Go multisite loads plugins conditionally using get_current_blog_id checks in client-mu-plugins/plugin-loader.php:
 
 ```php
 // client-mu-plugins/plugin-loader.php
@@ -67,7 +69,9 @@ if (get_current_blog_id() === 15) {
 
 **Source:** `airbnb/client-mu-plugins/plugin-loader.php` (3 plugins loaded for Blog 20)
 
-### Early-Return Pattern for Entire MU-Plugins
+## Early-Return Pattern for Entire MU-Plugins
+
+MU-plugin files use early-return conditional checks to prevent code execution for non-matching blogs:
 
 ```php
 // client-mu-plugins/decoupled-bundle-loader.php
@@ -199,7 +203,11 @@ if (get_current_blog_id() === 20) {
 
 ## Common Pitfalls
 
-### Antipattern 1: Loading in functions.php
+Conditional plugin loading requires careful implementation to avoid load order issues and security gaps.
+
+## Antipattern: Loading in functions.php
+
+WordPress theme functions.php loads too late in execution order for plugin loading:
 
 ```php
 // ❌ WRONG: Theme functions.php (too late in load order)
@@ -215,7 +223,9 @@ add_action('after_setup_theme', function() {
 
 **✅ Correct:** Load in MU-plugins phase (shown in examples above)
 
-### Antipattern 2: Hardcoded Blog IDs Without Documentation
+## Antipattern: Hardcoded Blog IDs Without Documentation
+
+Magic number blog IDs create maintenance confusion without explanatory comments:
 
 ```php
 // ❌ WRONG: Magic numbers without context
@@ -235,7 +245,9 @@ if (get_current_blog_id() === BLOG_ID_POLICY) {
 }
 ```
 
-### Antipattern 3: Loading Security Plugins Conditionally
+## Antipattern: Loading Security Plugins Conditionally
+
+Security plugins require network-wide activation to protect all sites from threats:
 
 ```php
 // ❌ WRONG: Security plugins should run network-wide
