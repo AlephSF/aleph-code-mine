@@ -27,44 +27,36 @@ Sage themes produce **348 total Blade templates** across analyzed codebases (the
 
 ## Directory Structure
 
-Sage reorganizes WordPress theme architecture into Laravel-style separation of concerns. Source code lives in `app/`, views in `resources/views/`, configuration in `config/`, and compiled assets in `dist/`.
+Sage reorganizes WordPress theme architecture into Laravel-style separation of concerns. Source in `app/`, views in `resources/views/`, config in `config/`, compiled in `dist/`.
 
 ```
 kelsey/
 ├── app/                          # Application logic (PSR-4: App\)
-│   ├── Controllers/              # MVC controllers (9 files)
-│   │   ├── App.php              # Base controller
-│   │   ├── FrontPage.php        # Homepage logic
-│   │   └── SinglePost.php       # Single post logic
-│   ├── setup.php                 # Theme setup hooks
-│   ├── filters.php               # WordPress filter hooks
-│   ├── helpers.php               # Helper functions
-│   └── admin.php                 # Admin customizations
+│   ├── Controllers/              # MVC controllers
+│   ├── setup.php                 # Theme setup
+│   ├── filters.php               # WordPress filters
+│   └── helpers.php               # Helper functions
 ├── resources/                    # Source assets & views
-│   ├── assets/                   # Uncompiled SCSS/JS
-│   │   ├── scripts/             # JavaScript source
-│   │   ├── styles/              # SCSS source
+│   ├── assets/
+│   │   ├── scripts/             # JavaScript
+│   │   ├── styles/              # SCSS
 │   │   └── build/               # webpack config
 │   ├── views/                    # Blade templates
 │   │   ├── layouts/             # Base layouts
 │   │   ├── partials/            # Components
 │   │   └── *.blade.php          # Page templates
-│   ├── functions.php             # Bootstrap file
+│   ├── functions.php             # Bootstrap
 │   └── style.css                 # Theme header
-├── config/                       # Configuration files
+├── config/                       # Configuration
 │   ├── assets.php                # Asset manifest
 │   ├── theme.php                 # Theme config
 │   └── view.php                  # Blade config
-├── dist/                         # Compiled assets
-│   ├── scripts/                  # main_abc123.js
-│   ├── styles/                   # main_xyz789.css
-│   └── assets.json               # Manifest
+├── dist/                         # Compiled (main_abc123.js)
 ├── vendor/                       # Composer dependencies
-├── composer.json                 # PHP dependencies
-└── package.json                  # Node dependencies
+└── composer.json / package.json  # Dependencies
 ```
 
-**Key Difference from Traditional:** WordPress expects themes in root with `header.php`, `footer.php`, `functions.php`. Sage places views in `resources/views/` and manipulates template directory via filters.
+**Key Difference:** WordPress expects `header.php`, `footer.php` in root. Sage places views in `resources/views/` via filters.
 
 ## PSR-4 Autoloading with Composer
 
@@ -121,7 +113,7 @@ class FrontPage extends Controller
 
 ## Bootstrap Process (resources/functions.php)
 
-Sage's `resources/functions.php` bootstraps the application by loading Composer autoloader, requiring core files, manipulating template directory for Blade views, and binding configuration to Dependency Injection Container.
+Sage's `resources/functions.php` bootstraps the application by loading Composer autoloader, requiring core files, manipulating template directory, and binding configuration to DI Container.
 
 ```php
 <?php
@@ -129,9 +121,7 @@ Sage's `resources/functions.php` bootstraps the application by loading Composer 
 use Roots\Sage\Container;
 use Roots\Sage\Config;
 
-/**
- * Ensure Composer dependencies loaded
- */
+// Ensure Composer dependencies loaded
 if (!class_exists('Roots\\Sage\\Container')) {
     if (!file_exists($composer = __DIR__.'/../vendor/autoload.php')) {
         wp_die('You must run <code>composer install</code> from Sage directory.');
@@ -139,9 +129,7 @@ if (!class_exists('Roots\\Sage\\Container')) {
     require_once $composer;
 }
 
-/**
- * Load app files (setup, filters, helpers, admin)
- */
+// Load app files
 array_map(function ($file) {
     $file = "../app/{$file}.php";
     if (!locate_template($file, true, true)) {
@@ -149,19 +137,10 @@ array_map(function ($file) {
     }
 }, ['helpers', 'setup', 'filters', 'admin']);
 
-/**
- * Manipulate template directory for Blade views
- * WordPress looks in resources/views/ but functions.php stays in resources/
- */
-array_map(
-    'add_filter',
-    ['theme_file_path', 'theme_file_uri', 'parent_theme_file_path'],
-    array_fill(0, 3, 'dirname')
-);
+// Manipulate template directory
+array_map('add_filter', ['theme_file_path', 'theme_file_uri', 'parent_theme_file_path'], array_fill(0, 3, 'dirname'));
 
-/**
- * Bind configuration to Container
- */
+// Bind configuration
 Container::getInstance()->bindIf('config', function () {
     return new Config([
         'assets' => require dirname(__DIR__).'/config/assets.php',
@@ -171,11 +150,7 @@ Container::getInstance()->bindIf('config', function () {
 }, true);
 ```
 
-**Template Directory Manipulation:**
-1. WordPress detects theme in `themes/sage/resources/`
-2. Sage tells WordPress views are in `themes/sage/resources/views/`
-3. `get_template_directory()` returns `themes/sage/resources`
-4. Blade looks in `resources/views/` for templates
+**Template Directory:** WordPress detects theme in `themes/sage/resources/`, Sage filters tell WordPress views are in `resources/views/`.
 
 ## Version Requirements and Error Handling
 
@@ -393,71 +368,45 @@ class FrontPage extends Controller
 
 ## Theme Setup (app/setup.php)
 
-Setup file registers theme features, enqueues assets, registers menus, and configures ACF. All hooks use Laravel-style closures and config() helper for accessing config files.
+Setup file registers theme features, enqueues assets, and registers menus. All hooks use Laravel-style closures and `asset_path()` for cache-busting.
 
 ```php
 <?php
 
 namespace App;
 
-use Roots\Sage\Container;
-use Roots\Sage\Assets\JsonManifest;
-use Roots\Sage\Template\Blade;
-
-/**
- * Enqueue theme assets
- */
+// Enqueue assets
 add_action('wp_enqueue_scripts', function () {
     wp_enqueue_style('sage/main.css', asset_path('styles/main.css'), false, null);
     wp_enqueue_script('sage/main.js', asset_path('scripts/main.js'), ['jquery'], null, true);
 
-    // Localize AJAX globals
     wp_localize_script('sage/main.js', 'ajaxGlobals', [
         'restUrl' => get_rest_url(),
         'nonce' => wp_create_nonce('wp_rest'),
     ]);
 
-    // Comment reply script
     if (is_single() && comments_open() && get_option('thread_comments')) {
         wp_enqueue_script('comment-reply');
     }
 }, 100);
 
-/**
- * Theme setup
- */
+// Theme features
 add_action('after_setup_theme', function () {
-    // Enable Roots Soil plugin features
     add_theme_support('soil-clean-up');
-    add_theme_support('soil-nav-walker');
-    add_theme_support('soil-relative-urls');
-
-    // WordPress features
     add_theme_support('title-tag');
     add_theme_support('post-thumbnails');
-    add_theme_support('html5', [
-        'caption', 'comment-form', 'comment-list', 'gallery', 'search-form'
-    ]);
-    add_theme_support('customize-selective-refresh-widgets');
+    add_theme_support('html5', ['caption', 'comment-form', 'comment-list', 'gallery', 'search-form']);
 
-    // Navigation menus
     register_nav_menus([
         'primary_navigation' => __('Primary Header Navigation', 'sage'),
-        'secondary_navigation' => __('Secondary Header Navigation', 'sage'),
         'footer_navigation_1' => __('Footer Navigation 1', 'sage'),
-        'footer_navigation_2' => __('Footer Navigation 2', 'sage'),
     ]);
 
-    // Editor styles
     add_editor_style(asset_path('styles/main.css'));
 });
 ```
 
-**Key Patterns:**
-- `asset_path()` helper resolves webpack manifest for cache-busting
-- `wp_localize_script()` passes PHP data to JavaScript
-- Multiple navigation menus for complex sites
-- Soil plugin integration for WordPress cleanup features
+**Key Patterns:** `asset_path()` resolves webpack manifest for cache-busting, `wp_localize_script()` passes PHP to JavaScript, Soil plugin for WordPress cleanup.
 
 ## Helper Functions (app/helpers.php)
 
@@ -470,48 +419,24 @@ namespace App;
 
 use Roots\Sage\Container;
 
-/**
- * Get asset path from manifest
- *
- * @param string $filename
- * @return string
- */
+// Get asset path from manifest
 function asset_path($filename)
 {
     $manifest = Container::getInstance()->make('manifest');
-
-    if (array_key_exists($filename, $manifest)) {
-        return $manifest[$filename];
-    }
-
-    return $filename;  // Fallback to original if not in manifest
+    return array_key_exists($filename, $manifest) ? $manifest[$filename] : $filename;
 }
 
-/**
- * Determine whether to display sidebar
- *
- * @return bool
- */
+// Determine whether to display sidebar
 function display_sidebar()
 {
     static $display;
-
     if (!isset($display)) {
-        $display = !in_array(true, [
-            is_404(),
-            is_front_page(),
-            is_page_template('template-custom.blade.php'),
-        ]);
+        $display = !in_array(true, [is_404(), is_front_page(), is_page_template('template-custom.blade.php')]);
     }
-
     return $display;
 }
 
-/**
- * Get page title for Blade templates
- *
- * @return string
- */
+// Get page title for Blade templates
 function title()
 {
     if (is_home()) {
@@ -520,31 +445,19 @@ function title()
         }
         return __('Latest Posts', 'sage');
     }
-
-    if (is_archive()) {
-        return get_the_archive_title();
-    }
-
-    if (is_search()) {
-        return sprintf(__('Search Results for %s', 'sage'), get_search_query());
-    }
-
-    if (is_404()) {
-        return __('Not Found', 'sage');
-    }
-
+    if (is_archive()) return get_the_archive_title();
+    if (is_search()) return sprintf(__('Search Results for %s', 'sage'), get_search_query());
+    if (is_404()) return __('Not Found', 'sage');
     return get_the_title();
 }
 ```
 
 **Usage in Blade:**
 ```blade
-<h1 class="page-title">{{ App\title() }}</h1>
+<h1>{{ App\title() }}</h1>
 
 @if (App\display_sidebar())
-  <aside class="sidebar">
-    @include('partials.sidebar')
-  </aside>
+  <aside class="sidebar">@include('partials.sidebar')</aside>
 @endif
 ```
 
@@ -557,43 +470,25 @@ Sage uses webpack for asset compilation with scripts for development (watch mode
   "scripts": {
     "build": "webpack --progress --config resources/assets/build/webpack.config.js",
     "build:production": "webpack --env.production --progress --config resources/assets/build/webpack.config.js",
-    "build:profile": "webpack --progress --profile --json",
     "start": "webpack --hide-modules --watch --config resources/assets/build/webpack.config.js",
-    "rmdist": "rimraf dist",
     "lint": "npm run -s lint:scripts && npm run -s lint:styles",
-    "lint:scripts": "eslint resources/assets/scripts resources/assets/build",
-    "lint:styles": "stylelint \"resources/assets/styles/**/*.{css,sass,scss,sss,less}\"",
     "test": "npm run -s lint"
   },
-  "engines": {
-    "node": ">= 8.0.0"
-  },
+  "engines": { "node": ">= 8.0.0" },
   "devDependencies": {
+    "webpack": "~4.6.0",
+    "sass-loader": "^7.0.1",
     "autoprefixer": "~8.2.0",
     "browser-sync": "~2.24.7",
-    "browsersync-webpack-plugin": "^0.6.0",
-    "webpack": "~4.6.0",
-    "webpack-cli": "^3.1.2",
-    "sass-loader": "^7.0.1",
     "eslint": "^5.0.0",
     "stylelint": "^9.2.0"
   }
 }
 ```
 
-**Key Scripts:**
-- `yarn start`: Development mode with watch + BrowserSync
-- `yarn build`: Development build without minification
-- `yarn build:production`: Production build with minification, tree-shaking
-- `yarn lint`: Run ESLint + Stylelint
-- `yarn test`: Runs linting (no unit tests configured)
+**Key Scripts:** `yarn start` (development with watch + BrowserSync), `yarn build:production` (production with minification, tree-shaking), `yarn lint` (ESLint + Stylelint), `yarn test` (linting only, no unit tests).
 
-**webpack Features:**
-- Cache-busting hashes in filenames (`main_abc123.js`)
-- Asset manifest generation (`dist/assets.json`)
-- SCSS compilation with autoprefixer
-- Code splitting (vendor bundles)
-- BrowserSync live reload in development
+**webpack Features:** Cache-busting hashes (`main_abc123.js`), asset manifest generation (`dist/assets.json`), SCSS compilation with autoprefixer, code splitting, BrowserSync live reload.
 
 ## Code Quality Tools
 
