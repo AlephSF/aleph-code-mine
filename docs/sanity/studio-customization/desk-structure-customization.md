@@ -20,7 +20,9 @@ Sanity Studio desk structure customization organizes content types into logical 
 
 Sanity v3+ uses `StructureResolver` type with `structureTool()` plugin. Structure resolvers replace the legacy v2 "parts" system and provide TypeScript type safety.
 
-**Basic Structure:**
+### Structure Resolver Definition
+
+StructureResolver export defines desk navigation structure with type safety:
 
 ```typescript
 // structure/index.ts
@@ -34,7 +36,9 @@ export const structure: StructureResolver = (S) =>
     ])
 ```
 
-**Configuration:**
+### Structure Tool Configuration
+
+Sanity config passes structure resolver to structureTool plugin:
 
 ```typescript
 // sanity.config.ts
@@ -56,7 +60,9 @@ Ripplecom uses this pattern (v4.x). Helix does not provide custom structure, rel
 
 Custom structures control which document types appear in the desk and in what order. Two patterns emerge: **inclusion filtering** (kariusdx v2) and **exclusion filtering** (ripplecom v4).
 
-**Exclusion Filter (Recommended):**
+### Exclusion Filter Pattern (Recommended)
+
+Structure resolver filters hide specific singleton and system types while auto-showing new document types:
 
 ```typescript
 export const structure: StructureResolver = (S) =>
@@ -96,7 +102,9 @@ Kariusdx uses inclusion filters (requires manual updates for new types). Avoid i
 
 Singleton documents should be grouped under a collapsible menu item to reduce desk clutter. 67% of projects use singleton grouping.
 
-**Pattern:**
+### Global Options Group Pattern
+
+Structure Builder nests singletons under dedicated group with direct document links:
 
 ```typescript
 import { CogIcon, HomeIcon } from '@sanity/icons'
@@ -131,9 +139,11 @@ Ripplecom groups 6 singletons under "Global Options". Use `@sanity/icons` for of
 
 ## Legacy Content Grouping
 
-Projects migrating from other CMSs or maintaining backward compatibility can group legacy content types under a dedicated section. Ripplecom demonstrates this pattern during Contentful migration.
+Projects migrating from other CMSs can group legacy content types under a dedicated section. Ripplecom demonstrates this during Contentful migration.
 
-**Pattern:**
+### Legacy Content Section Pattern
+
+Structure Builder isolates deprecated content types in dedicated group during CMS migrations:
 
 ```typescript
 import { ComponentIcon, PlayIcon, CommentIcon } from '@sanity/icons'
@@ -174,13 +184,15 @@ S.listItem()
   ),
 ```
 
-Ripplecom maintains 4 legacy content types (section, legacyVideo, legacyQuote, legacyCtaCard) while building modern replacements. Grouping prevents legacy content from cluttering the main desk interface.
+Ripplecom maintains 4 legacy content types (section, legacyVideo, legacyQuote, legacyCtaCard) while building replacements. Grouping prevents desk clutter.
 
 ## Visual Dividers
 
 Dividers separate logical sections in the desk structure. Ripplecom uses dividers to separate regular documents from legacy content and global options.
 
-**Pattern:**
+### Divider Placement Pattern
+
+S.divider() inserts horizontal separators between content category groups:
 
 ```typescript
 export const structure: StructureResolver = (S) =>
@@ -201,7 +213,9 @@ Dividers improve visual scanning when the desk contains 15+ items split across m
 
 Kariusdx (v2) customizes document views to add Preview and SEO Analysis panes alongside the default Form view. This pattern uses `getDefaultDocumentNode` (v2 API, deprecated in v3+).
 
-**Legacy v2 Pattern:**
+### Custom Document View Configuration (v2 API - Deprecated)
+
+Sanity v2 getDefaultDocumentNode adds custom panes for preview and analysis:
 
 ```javascript
 import Iframe from 'sanity-plugin-iframe-pane'

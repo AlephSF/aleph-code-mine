@@ -20,7 +20,9 @@ Sanity Presentation Tool (v4+) provides visual editing with real-time preview of
 
 Presentation Tool requires three components: plugin configuration, preview URL resolver, and CORS origin whitelist.
 
-**Plugin Setup:**
+### Presentation Tool Plugin Setup
+
+Sanity v4 presentationTool plugin accepts preview URL configuration and allowed origin whitelist:
 
 ```typescript
 // sanity.config.ts
@@ -50,7 +52,9 @@ Ripplecom configures Presentation Tool with dynamic preview URLs based on deploy
 
 Preview URLs must adapt to environment: local development uses `localhost:3000`, Vercel preview branches use `*.vercel.app` domains, production uses final domain.
 
-**Environment-Aware URL Resolver:**
+### Environment-Aware URL Resolver Implementation
+
+Presentation Tool preview URL resolves dynamically based on Vercel environment variables:
 
 ```typescript
 // src/utils/getPreviewUrl.ts
@@ -78,7 +82,9 @@ Ripplecom uses `VERCEL_RELATED_PROJECTS` to find preview branch URL. Critical fo
 
 Presentation Tool requires CORS configuration to allow iframe embedding from frontend domains.
 
-**Allow Origins Configuration:**
+### Dynamic CORS Origin Configuration
+
+Allowed origins adapt to deployment environment with wildcard support for preview branches:
 
 ```typescript
 // src/utils/getAllowOrigins.ts
@@ -113,7 +119,9 @@ Ripplecom allows `localhost:*` (all ports) for development, production domain fo
 
 Main documents define which document types support visual editing and map them to frontend routes.
 
-**defineDocuments Pattern:**
+### Route-to-Document Mappings
+
+defineDocuments array maps Next.js routes to Sanity document types via GROQ filters:
 
 ```typescript
 import { defineDocuments } from 'sanity/presentation'
@@ -153,7 +161,9 @@ URL `https://ripple.com/insights/bitcoin-surge` with route `/insights/:slug` ext
 
 Preview locations provide multiple URLs per document for conditional rendering (thank you pages, multi-language).
 
-**defineLocations Pattern:**
+### Multi-URL Location Resolution
+
+defineLocations configures multiple preview URLs per document with conditional logic:
 
 ```typescript
 import { defineLocations } from 'sanity/presentation'
@@ -193,11 +203,13 @@ Content editors see a dropdown in Presentation Tool to switch between locations.
 3. Each location needs `title` and `href`
 4. Return `undefined` if document has no preview (e.g., missing slug)
 
-## Draft Mode Integration (Next.js)
+## Draft Mode API Route
 
-Presentation Tool requires Next.js draft mode API route to bypass static generation.
+Presentation Tool requires Next.js draft mode API route for dynamic content preview.
 
-**API Route:**
+### API Route Implementation
+
+Next.js App Router validates preview secrets before enabling draft mode:
 
 ```typescript
 // app/api/draft-mode/presentation-tool/route.ts
@@ -220,9 +232,15 @@ export async function GET(request: Request) {
 }
 ```
 
-Route validates preview URL secret, enables draft mode, and redirects.
+Route validates secret, enables draft mode, and redirects.
 
-**Draft Mode Content Fetching:**
+## Draft Mode Content Fetching
+
+Sanity client switches perspectives based on draft mode state for dynamic content preview.
+
+### Perspective Switching Implementation
+
+Sanity fetch wrapper toggles between published and draft content:
 
 ```typescript
 // lib/sanity.ts
@@ -247,7 +265,7 @@ export async function sanityFetch({ query, params = {} }) {
 }
 ```
 
-Draft mode uses `perspective: 'previewDrafts'` to fetch unpublished drafts, disables CDN caching, and requires read token for authenticated queries.
+Draft mode uses `perspective: 'previewDrafts'` to fetch unpublished drafts, disables CDN, and requires read token.
 
 ## Monorepo Deployment Pattern
 
@@ -290,7 +308,9 @@ Kariusdx (v2) uses legacy `@sanity/production-preview` plugin with iframe previe
 
 Kariusdx uses v2 preview panes via `getDefaultDocumentNode`. Migrating to Presentation Tool (v4) requires removing custom document views and configuring Presentation Tool plugin.
 
-**v2 Preview Panes (Deprecated):**
+### Legacy v2 Preview Pane Pattern
+
+Sanity v2 Structure Builder adds iframe preview panes as custom document views:
 
 ```javascript
 import Iframe from 'sanity-plugin-iframe-pane'
@@ -307,7 +327,9 @@ export const getDefaultDocumentNode = ({ schemaType }) => {
 }
 ```
 
-**v4 Presentation Tool (Modern):**
+### Modern v4 Presentation Tool Pattern
+
+Presentation Tool replaces iframe panes with visual editing capabilities:
 
 ```typescript
 presentationTool({
@@ -332,7 +354,9 @@ Presentation Tool provides superior UX: click-to-edit overlays, real-time update
 
 ## Anti-Patterns
 
-**Anti-Pattern 1: Hardcoded preview URLs**
+### Hardcoded Preview URLs
+
+Static preview URLs fail in preview and development environments:
 
 ```typescript
 // ❌ BAD: Breaks in preview environments

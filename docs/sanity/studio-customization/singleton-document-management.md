@@ -20,7 +20,9 @@ Singleton documents in Sanity Studio represent global settings, site configurati
 
 Sanity v3+ removes singleton document types from the "Create" menu by filtering the schema templates array. This prevents accidental creation of duplicate singleton documents.
 
-**Pattern:**
+### Template Filter Implementation
+
+Sanity config templates filter hides singleton types from the global "+ Create" menu:
 
 ```typescript
 // sanity.config.ts
@@ -67,7 +69,9 @@ Ripplecom has the most singletons (6), focusing on global configuration and navi
 
 Singleton documents use identical schema definitions as regular documents. The "singleton" behavior comes from template filtering and desk structure configuration, not schema fields.
 
-**Example Schema:**
+### Homepage Singleton Schema Example
+
+Sanity singleton schemas define standard document structure without special singleton indicators:
 
 ```typescript
 // schemaTypes/globals/homepage.ts
@@ -111,7 +115,9 @@ Ripplecom defines homepage as a regular document type. Schema does not indicate 
 
 Singletons appear in a dedicated "Global Options" section. Use `.documentId()` to link directly to singleton documents.
 
-**Pattern:**
+### Global Options Grouping
+
+Structure Builder groups singletons with direct document links via hardcoded IDs:
 
 ```typescript
 // structure/index.ts
@@ -193,9 +199,9 @@ schema: {
 )
 ```
 
-**3. Custom Document Actions (Optional):**
+### Custom Document Actions (Optional)
 
-Kariusdx uses custom document actions to prevent unpublishing singletons. This pattern is advanced and optional for most projects.
+Kariusdx v2 custom actions prevent unpublishing singletons via action filtering:
 
 ```javascript
 // schemas/documentActions.js (v2 API)
@@ -210,11 +216,15 @@ export default function resolveDocumentActions(props) {
 }
 ```
 
+This pattern is advanced and optional for most projects.
+
 ## Querying Singletons from Frontend
 
 Singleton documents use `[0]` array accessor to select the first (only) document of that type.
 
-**GROQ Query:**
+### Homepage Singleton GROQ Query
+
+defineQuery with [0] accessor returns single object instead of array:
 
 ```typescript
 // queries/homepage.ts
@@ -239,7 +249,9 @@ export const homepageQuery = defineQuery(`
 `)
 ```
 
-**Next.js Usage:**
+### Next.js Server Component Integration
+
+Next.js async server components fetch singleton data with null checks:
 
 ```typescript
 // app/page.tsx
@@ -264,11 +276,13 @@ export default async function HomePage() {
 
 Always check for `null` result. Singleton may not exist if content editor hasn't saved it yet.
 
-## Multi-Singleton Pattern
+## Multi-Singleton Desk Structure
 
 Some singleton types allow multiple instances with different purposes. Ripplecom uses this for `navigation` (multiple menus: header, footer, mobile).
 
-**Pattern:**
+### List View Pattern
+
+Multi-singleton desk structure shows filtered document list instead of single document:
 
 ```typescript
 // Desk structure shows a filtered list, not a single document
@@ -282,7 +296,13 @@ S.listItem()
   ),
 ```
 
-**Schema:**
+## Multi-Singleton Schema Definition
+
+Multi-singleton schemas include internal title field for differentiating instances.
+
+### Navigation Schema Pattern
+
+Navigation schema uses required title field as internal identifier:
 
 ```typescript
 export default defineType({
@@ -307,7 +327,13 @@ export default defineType({
 })
 ```
 
-**Frontend Query:**
+## Multi-Singleton Query Pattern
+
+Frontend queries specific navigation menus by internal title parameter.
+
+### Title-Based Navigation Query
+
+defineQuery filters navigation documents by title string parameter:
 
 ```typescript
 // Query specific navigation by title

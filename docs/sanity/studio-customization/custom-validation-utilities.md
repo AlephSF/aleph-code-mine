@@ -20,7 +20,9 @@ Custom validation utilities in Sanity Studio extend built-in validation rules wi
 
 Sanity built-in slug fields validate format but not uniqueness. Custom async validator ensures slugs are unique across all document types.
 
-**Validation Utility:**
+### Async GROQ Uniqueness Check
+
+Custom validation utility queries Sanity for existing slug usage:
 
 ```javascript
 // lib/isUniqueAcrossAllDocuments.js
@@ -38,7 +40,9 @@ const isUniqueAcrossAllDocuments = async (slug, context) => {
 export default isUniqueAcrossAllDocuments
 ```
 
-**Schema Integration:**
+### Slug Field Validation Integration
+
+Schema validation rule calls async uniqueness checker:
 
 ```typescript
 import isUniqueAcrossAllDocuments from '../../lib/isUniqueAcrossAllDocuments'

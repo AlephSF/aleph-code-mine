@@ -20,7 +20,9 @@ Sanity Studio plugin ecosystem extends functionality with official and community
 
 Vision Tool provides in-Studio GROQ query testing interface. Essential development tool for testing queries before moving to frontend.
 
-**Configuration (v3+):**
+### Basic Vision Tool Setup (v3+)
+
+Sanity v3+ projects configure Vision Tool through the visionTool() plugin import:
 
 ```typescript
 import { defineConfig } from 'sanity'
@@ -117,7 +119,7 @@ Ripplecom and kariusdx use media plugin for improved asset management UX. Helix 
 
 ## Color Input Plugin (33% Adoption)
 
-Color Input plugin adds visual color picker for color fields. Stores hex values with opacity support.
+Color Input plugin adds visual color picker for color fields with opacity support.
 
 **Installation:**
 
@@ -137,7 +139,9 @@ export default defineConfig({
 })
 ```
 
-**Schema Usage:**
+### Schema Field Definition
+
+Color Input plugin adds a `color` field type to Sanity schemas with alpha transparency controls:
 
 ```typescript
 export default defineType({
@@ -157,7 +161,9 @@ export default defineType({
 
 Ripplecom uses color input for theme customization fields (background colors, accent colors, gradient stops). Helix and kariusdx use string fields with manual hex entry.
 
-**Stored Value:**
+### Data Storage Format
+
+Color Input plugin stores comprehensive color data with multiple format representations for frontend flexibility:
 
 ```json
 {
@@ -211,7 +217,9 @@ export default defineConfig({
 })
 ```
 
-**Schema Usage:**
+### Table Block Configuration
+
+Table plugin integrates with Portable Text as a custom block type alongside text blocks:
 
 ```typescript
 export default defineType({
@@ -237,7 +245,9 @@ export default defineType({
 
 Ripplecom uses table plugin for comparison tables, pricing tables, and data tables in blog posts. Helix and kariusdx have no table support—users must paste HTML tables.
 
-**Frontend Rendering:**
+### Frontend Table Rendering
+
+Next.js projects render table blocks with custom components passed to PortableText:
 
 ```tsx
 // components/PortableText.tsx
@@ -277,7 +287,9 @@ npm install sanity-plugin-seo-tools
 }
 ```
 
-**Custom Document View:**
+### SEO Analysis Document View Configuration
+
+Sanity v2 Structure Builder integrates SEO Tools as a custom document view tab:
 
 ```javascript
 import { SeoToolsPane } from 'sanity-plugin-seo-tools'
@@ -316,7 +328,9 @@ Presentation Tool (v4+) enables visual editing with real-time preview. Official 
 
 Presentation Tool ships with Sanity v4—no separate installation needed.
 
-**Configuration:**
+### Presentation Tool Configuration
+
+Sanity v4 Presentation Tool requires preview URL resolution and CORS origin whitelist configuration:
 
 ```typescript
 import { presentationTool } from 'sanity/presentation'
@@ -388,7 +402,9 @@ Helix uses minimal plugins (2 total: structureTool, visionTool). Ripplecom uses 
 
 ## Plugin Configuration Best Practices
 
-**1. Environment-specific plugins:**
+### Environment-Specific Plugin Loading
+
+Node environment checks restrict development-only tools from production Studio deployments:
 
 ```typescript
 export default defineConfig({
@@ -401,7 +417,9 @@ export default defineConfig({
 
 Hide development tools (Vision Tool) from production Studio.
 
-**2. Conditional plugin loading:**
+### Feature-Flagged Plugin Activation
+
+Environment variables enable gradual plugin rollout without code changes:
 
 ```typescript
 const plugins = [
@@ -420,7 +438,9 @@ export default defineConfig({
 
 Feature-flag expensive plugins for gradual rollout.
 
-**3. Plugin option validation:**
+### Plugin Constraint Configuration
+
+Media plugin options enforce file type and size restrictions before upload:
 
 ```typescript
 import { media } from 'sanity-plugin-media'
@@ -441,7 +461,9 @@ Configure plugin constraints to prevent misuse.
 
 ## Anti-Patterns
 
-**Anti-Pattern 1: Plugin for simple features**
+### Unnecessary Plugin Dependencies
+
+Built-in validation often replaces need for plugins with limited features:
 
 ```typescript
 // ❌ BAD: Plugin for basic color picker
@@ -463,7 +485,9 @@ plugins: [colorInput()]
 
 Only add plugins when built-in field types cannot solve the need.
 
-**Anti-Pattern 2: Outdated plugins**
+### Version Incompatibility
+
+Sanity v2 plugins rarely work in v3+ due to breaking API changes:
 
 ```bash
 # ❌ BAD: v2 plugin in v3 project
@@ -473,7 +497,9 @@ npm install sanity-plugin-seo-tools
 
 Check plugin version compatibility before installation.
 
-**Anti-Pattern 3: No plugin configuration**
+### Unconfigured Plugin Defaults
+
+Default plugin options rarely match project-specific security and UX requirements:
 
 ```typescript
 // ❌ BAD: Default options may not fit project needs
