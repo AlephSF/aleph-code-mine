@@ -53,87 +53,41 @@ Sage themes use webpack for asset compilation with hash-based cache busting, SCS
 
 ## Complete Webpack Configuration
 
-Webpack configuration includes entry points, loaders for JavaScript/SCSS/images, plugins for optimization, and code splitting for vendor bundles:
+Webpack configuration with entry points, loaders, optimization plugins, and vendor code splitting:
 
 ```javascript
 const path = require('path');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const ManifestPlugin = require('webpack-manifest-plugin');
-const BrowserSyncPlugin = require('browser-sync-webpack-plugin');
 
 const isProduction = process.env.NODE_ENV === 'production';
 
 module.exports = {
   mode: isProduction ? 'production' : 'development',
-  entry: {
-    main: './resources/assets/scripts/main.js',
-  },
+  entry: { main: './resources/assets/scripts/main.js' },
   output: {
     path: path.resolve(__dirname, '../../dist'),
-    filename: isProduction
-      ? 'scripts/[name]_[contenthash:8].js'
-      : 'scripts/[name].js',
-    publicPath: '/app/themes/sage/dist/',
+    filename: isProduction ? 'scripts/[name]_[contenthash:8].js' : 'scripts/[name].js',
   },
   module: {
     rules: [
-      {
-        test: /\.js$/,
-        exclude: /node_modules/,
-        use: {
-          loader: 'babel-loader',
-          options: {
-            presets: ['@babel/preset-env'],
-          },
-        },
-      },
-      {
-        test: /\.scss$/,
-        use: [
-          MiniCssExtractPlugin.loader,
-          'css-loader',
-          'postcss-loader',
-          'sass-loader',
-        ],
-      },
-      {
-        test: /\.(png|jpg|gif|svg)$/,
-        use: {
-          loader: 'file-loader',
-          options: {
-            name: 'images/[name].[ext]',
-          },
-        },
-      },
+      { test: /\.js$/, exclude: /node_modules/, use: 'babel-loader' },
+      { test: /\.scss$/, use: [MiniCssExtractPlugin.loader, 'css-loader', 'sass-loader'] },
+      { test: /\.(png|jpg|svg)$/, use: 'file-loader' },
     ],
   },
   plugins: [
     new CleanWebpackPlugin(),
     new MiniCssExtractPlugin({
-      filename: isProduction
-        ? 'styles/[name]_[contenthash:8].css'
-        : 'styles/[name].css',
+      filename: isProduction ? 'styles/[name]_[contenthash:8].css' : 'styles/[name].css',
     }),
-    new ManifestPlugin({
-      fileName: 'assets.json',
-      writeToFileEmit: true,
-    }),
-    new BrowserSyncPlugin({
-      proxy: 'http://localhost:8080',
-      files: ['dist/**/*', 'resources/views/**/*.blade.php'],
-    }),
+    new ManifestPlugin({ fileName: 'assets.json' }),
   ],
   optimization: {
     minimize: isProduction,
     splitChunks: {
-      cacheGroups: {
-        vendor: {
-          test: /node_modules/,
-          chunks: 'all',
-          name: 'vendor',
-        },
-      },
+      cacheGroups: { vendor: { test: /node_modules/, chunks: 'all', name: 'vendor' } },
     },
   },
 };
