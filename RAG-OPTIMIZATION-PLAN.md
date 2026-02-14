@@ -190,6 +190,12 @@ Start with: "Continue RAG content optimization. Resume at Wave [N]."
 - Reduced section_length violations from 12 to 7
 - Commit: e65e1f7
 
+**Wave 10: sanity/studio-customization** ✅ (Completed 2026-02-13)
+- 5 of 9 files optimized for section_length
+- Fixed 32 code_block_subsection warnings
+- Reduced section_length violations from 12 to 7
+- Commit: e65e1f7
+
 **Wave 11: php-wordpress/multisite-patterns** ✅ (Completed 2026-02-13)
 - 4 of 4 files with section_length violations fixed
 - Reduced section_length violations from 11 to 0 (100% complete)
@@ -198,9 +204,25 @@ Start with: "Continue RAG content optimization. Resume at Wave [N]."
   - cross-site-queries-get-sites.md: 2057+3193 → all <1500 chars (18 sections)
 - Commit: e95affe
 
-**Current Status:**
-- Overall section_length: 347 → reduced (tracking in progress)
-- Overall code_block_subsection: 996 → reduced (tracking in progress)
-- Overall bare_code_block: 686 → reduced (tracking in progress)
+**Wave 1: php-wordpress/theme-structure** ⏳ IN PROGRESS (Started 2026-02-13)
+- 2 of 9 files completed (10 violations fixed)
+- 2 files partially fixed (2 violations fixed)
+- 5 files remaining (34 violations)
+- Completion: 26% (12/46 violations fixed)
+- Key files:
+  - ✅ theme-vs-mu-plugins-separation.md: 9→0 (complete) - Commit: f40e22d
+  - ✅ asset-management-strategies.md: 1→0 (complete) - Commit: a03a2aa
+  - ⏳ traditional-theme-organization.md: 9→7 (partial) - Commit: 8c0154d
+  - ⏳ mvc-controllers-pattern.md: 2→2 (minimal) - Commit: 519c007
+  - ❌ blade-templating-pattern.md: 2 violations
+  - ❌ sage-framework-structure.md: 5 violations
+  - ❌ template-directory-customization.md: 5 violations
+  - ❌ sage-roots-framework-setup.md: 6 violations
+  - ❌ theme-build-modernization.md: 7 violations
 
-**Next Wave:** Wave 1 (php-wordpress/theme-structure) or Wave 12 (js-nextjs/testing)
+**Current Status:**
+- Overall section_length: 347 → ~335 (12 fixed)
+- Wave 1 progress: 26% complete
+- Estimated remaining time: 4-6 hours
+
+**Next Session:** Continue Wave 1, starting with blade-templating-pattern.md (2 violations, easiest)
