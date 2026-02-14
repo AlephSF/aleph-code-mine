@@ -42,25 +42,16 @@ use Sober\Controller\Controller;
 
 class App extends Controller
 {
-    /**
-     * Return site name for all templates
-     */
     public function siteName()
     {
         return get_bloginfo('name');
     }
 
-    /**
-     * Return site description
-     */
     public function siteDescription()
     {
         return get_bloginfo('description');
     }
 
-    /**
-     * Return context-aware page title
-     */
     public static function title()
     {
         if (is_home()) {
@@ -69,19 +60,9 @@ class App extends Controller
             }
             return __('Latest Posts', 'sage');
         }
-
-        if (is_archive()) {
-            return get_the_archive_title();
-        }
-
-        if (is_search()) {
-            return sprintf(__('Search Results for %s', 'sage'), get_search_query());
-        }
-
-        if (is_404()) {
-            return __('Not Found', 'sage');
-        }
-
+        if (is_archive()) return get_the_archive_title();
+        if (is_search()) return sprintf(__('Search Results for %s', 'sage'), get_search_query());
+        if (is_404()) return __('Not Found', 'sage');
         return get_the_title();
     }
 
@@ -94,11 +75,7 @@ class App extends Controller
 }
 ```
 
-**Base Controller Features:**
-- Loaded for **all** templates automatically
-- Provides global data (`siteName`, `siteDescription`)
-- Static methods accessible without controller instance
-- All child controllers inherit methods
+**Base Controller Features:** Loaded for all templates automatically, provides global data (`siteName`, `siteDescription`), static methods accessible without instance, all child controllers inherit methods.
 
 ## Template-Specific Controller (app/Controllers/FrontPage.php)
 
@@ -111,9 +88,6 @@ use Sober\Controller\Controller;
 
 class FrontPage extends Controller
 {
-    /**
-     * Get featured posts for homepage
-     */
     public function featuredPosts()
     {
         return get_posts([
@@ -121,14 +95,9 @@ class FrontPage extends Controller
             'post_type' => 'post',
             'meta_key' => 'featured',
             'meta_value' => '1',
-            'orderby' => 'date',
-            'order' => 'DESC',
         ]);
     }
 
-    /**
-     * Get recent blog posts
-     */
     public function recentPosts()
     {
         return get_posts([
@@ -139,22 +108,6 @@ class FrontPage extends Controller
         ]);
     }
 
-    /**
-     * Get testimonials
-     */
-    public function testimonials()
-    {
-        return get_posts([
-            'post_type' => 'testimonial',
-            'posts_per_page' => -1,
-            'orderby' => 'menu_order',
-            'order' => 'ASC',
-        ]);
-    }
-
-    /**
-     * Get call-to-action data from ACF
-     */
     public function ctaSection()
     {
         return [
@@ -167,11 +120,7 @@ class FrontPage extends Controller
 }
 ```
 
-**Controller Binding:**
-- Filename `FrontPage.php` binds to `front-page.blade.php` template
-- Public methods become Blade variables: `$featuredPosts`, `$recentPosts`, `$testimonials`, `$ctaSection`
-- Methods execute once per request, results cached
-- Inherits `siteName()`, `siteDescription()`, `title()` from `App` controller
+**Controller Binding:** Filename `FrontPage.php` binds to `front-page.blade.php` template. Public methods become Blade variables (`$featuredPosts`, `$recentPosts`, `$ctaSection`). Methods execute once per request, results cached. Inherits methods from `App` controller.
 
 ## Archive Controller (app/Controllers/Archive.php)
 
