@@ -86,11 +86,7 @@ endif;
 ?>
 ```
 
-**Function Roles:**
-- `have_rows('logos')`: Check if repeater has data, setup iterator
-- `while( have_rows('logos') )`: Loop through rows
-- `the_row()`: Advance to next row, setup sub-field context
-- `get_sub_field('logo')`: Get sub-field value for current row
+**Functions:** `have_rows('logos')` checks data/setup iterator, `while(have_rows('logos'))` loops rows, `the_row()` advances row, `get_sub_field('logo')` gets value.
 
 ### Complete Template Example
 
