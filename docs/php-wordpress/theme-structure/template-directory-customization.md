@@ -95,26 +95,19 @@ Sage redirects template loading to `resources/views/` via filter hooks.
 
 Sage uses WordPress filter hooks to redirect template paths from `resources/` to `resources/views/`.
 
-**Complete Implementation (resources/functions.php):**
+**Implementation (resources/functions.php):**
 
 ```php
 <?php
 
-/**
- * Redirect template file paths
- *
- * WordPress expects templates in theme root (resources/).
- * Sage stores Blade templates in resources/views/.
- *
- * These filters redirect all template loading to views/ subdirectory.
- */
+// Redirect template file paths to views/ subdirectory
 array_map(
     'add_filter',
     [
-        'theme_file_path',        // get_theme_file_path() - file paths
-        'theme_file_uri',         // get_theme_file_uri() - file URLs
-        'parent_theme_file_path', // get_parent_theme_file_path() - parent theme paths
-        'parent_theme_file_uri',  // get_parent_theme_file_uri() - parent theme URLs
+        'theme_file_path',        // File paths
+        'theme_file_uri',         // File URLs
+        'parent_theme_file_path', // Parent theme paths
+        'parent_theme_file_uri',  // Parent theme URLs
     ],
     array_fill(0, 4, 'dirname')   // Apply dirname() to all 4 filters
 );
@@ -122,20 +115,18 @@ array_map(
 
 **Filter Breakdown:**
 
-| Filter | Purpose | Example Input | Example Output |
-|--------|---------|---------------|----------------|
-| `theme_file_path` | Modify file paths | `single.php` | `views/single.php` |
-| `theme_file_uri` | Modify file URLs | `style.css` | `views/style.css` |
-| `parent_theme_file_path` | Child theme parent paths | `single.php` | `views/single.php` |
-| `parent_theme_file_uri` | Child theme parent URLs | `style.css` | `views/style.css` |
+| Filter | Purpose | Input | Output |
+|--------|---------|-------|--------|
+| `theme_file_path` | File paths | `single.php` | `views/single.php` |
+| `theme_file_uri` | File URLs | `style.css` | `views/style.css` |
+| `parent_theme_file_path` | Parent paths | `single.php` | `views/single.php` |
+| `parent_theme_file_uri` | Parent URLs | `style.css` | `views/style.css` |
 
 **dirname() Function:**
 
 ```php
-// WordPress provides full path: /themes/sage/resources/single.blade.php
-// dirname() removes filename, prepends "views/":
-dirname('/themes/sage/resources/single.blade.php')
-// Returns: /themes/sage/resources/views/single.blade.php
+// WordPress: /themes/sage/resources/single.blade.php
+// dirname() returns: /themes/sage/resources/views/single.blade.php
 ```
 
 **Pattern:** Apply `dirname()` callback to all 4 template path filters using `array_map()`.
@@ -146,8 +137,6 @@ dirname('/themes/sage/resources/single.blade.php')
 
 WordPress core functions call filters, Sage intercepts and modifies paths to point to `views/` subdirectory.
 
-**Template Loading Sequence:**
-
 **1. WordPress Searches for Template:**
 
 ```php
@@ -157,7 +146,7 @@ function get_single_template() {
 }
 
 function get_query_template($type) {
-    $templates = ["{$type}.php"];  // ['single.php']
+    $templates = ["{$type}.php"];
     return locate_template($templates);
 }
 ```
@@ -167,17 +156,15 @@ function get_query_template($type) {
 ```php
 // WordPress core applies theme_file_path filter
 $template = apply_filters('theme_file_path', $template, $file);
-// Before filter: /themes/sage/resources/single.php
-// After filter:  /themes/sage/resources/views/single.php
+// Before: /themes/sage/resources/single.php
+// After:  /themes/sage/resources/views/single.php
 ```
 
 **3. Sage's dirname() Callback:**
 
 ```php
-// Sage's filter callback
 add_filter('theme_file_path', 'dirname');
 
-// WordPress calls:
 dirname('/themes/sage/resources/single.php');
 // Returns: /themes/sage/resources/views/single.php
 ```
@@ -185,7 +172,6 @@ dirname('/themes/sage/resources/single.php');
 **4. WordPress Loads Modified Path:**
 
 ```php
-// WordPress attempts to load:
 // /themes/sage/resources/views/single.php (exists!)
 include($template);
 ```
@@ -193,7 +179,6 @@ include($template);
 **5. Blade Compiler Processes Template:**
 
 ```php
-// Sage's Blade integration compiles .blade.php to .php
 // Compiled cache: /wp-content/uploads/cache/compiled/single.php
 ```
 
@@ -208,36 +193,35 @@ Template directory customization affects multiple WordPress functions that refer
 **Functions Affected:**
 
 ```php
-// 1. get_template_directory()
+// get_template_directory()
 // Before: /wp-content/themes/sage/resources
 // After:  /wp-content/themes/sage/resources/views
 get_template_directory();
 
-// 2. get_template_directory_uri()
+// get_template_directory_uri()
 // Before: https://example.com/wp-content/themes/sage/resources
 // After:  https://example.com/wp-content/themes/sage/resources/views
 get_template_directory_uri();
 
-// 3. locate_template()
-// Before: Looks in /themes/sage/resources/single.php
-// After:  Looks in /themes/sage/resources/views/single.php
+// locate_template()
+// Before: /themes/sage/resources/single.php
+// After:  /themes/sage/resources/views/single.php
 locate_template('single.php');
 
-// 4. get_theme_file_path()
+// get_theme_file_path()
 // Before: /wp-content/themes/sage/resources/single.php
 // After:  /wp-content/themes/sage/resources/views/single.php
 get_theme_file_path('single.php');
 
-// 5. get_theme_file_uri()
+// get_theme_file_uri()
 // Before: https://example.com/wp-content/themes/sage/resources/single.php
 // After:  https://example.com/wp-content/themes/sage/resources/views/single.php
 get_theme_file_uri('single.php');
 ```
 
-**Functions NOT Affected (return original paths):**
+**Functions NOT Affected:**
 
 ```php
-// These functions bypass filters, return actual theme root:
 get_stylesheet_directory();       // /themes/sage/resources (unchanged)
 get_stylesheet_directory_uri();   // https://example.com/wp-content/themes/sage/resources
 ```
@@ -410,11 +394,7 @@ add_filter('parent_theme_file_uri', 'dirname');
 
 **Source Confidence:** 67% (WordPress child theme behavior + Sage filter pattern)
 
-## Troubleshooting Template Loading
-
-Common issues when customizing template directory and their resolutions.
-
-**Issue 1: "Template not found" (blank page)**
+## Troubleshooting: Template Not Found
 
 **Symptom:** WordPress loads blank page or shows error
 
@@ -439,49 +419,44 @@ tail -f /wp-content/debug.log
 
 **Fix:** Create missing template file in `views/` directory
 
-**Issue 2: "views/views/single.blade.php not found"**
+**Source Confidence:** 100% (common Sage issue)
 
-**Symptom:** Double "views" directory in error message
+## Troubleshooting: Double Views Directory
+
+**Symptom:** Error shows `views/views/single.blade.php`
 
 **Cause:** Filter applied twice (conflicting plugins/theme)
 
 **Fix:**
 
 ```php
-// Remove duplicate filter
 remove_filter('theme_file_path', 'dirname', 10);
 ```
 
-**Issue 3: "theme.json not found" (WordPress 6.9+)**
+**Source Confidence:** 100% (filter conflict)
 
-**Symptom:** WordPress can't find theme.json, Gutenberg features missing
-
-**Cause:** Sage's dirname() filter strips filename from theme.json path
-
-**Fix:** Add priority 11 filter (see WordPress 6.9+ Compatibility Fix section)
-
-**Issue 4: "Custom template doesn't appear in dropdown"**
+## Troubleshooting: Custom Template Not Showing
 
 **Symptom:** Custom page template not selectable in admin
 
-**Cause:** Template header syntax incorrect or file not scanned
+**Cause:** Template header syntax incorrect
 
 **Fix:**
 
 ```blade
-{{-- Correct syntax (Blade comment with Template Name header): --}}
+{{-- Correct (Blade comment): --}}
 {{--
   Template Name: My Custom Template
   Template Post Type: page
 --}}
 
-{{-- Wrong syntax (PHP comment - WordPress won't detect): --}}
-<?php
-/* Template Name: My Custom Template */
-?>
+{{-- Wrong (PHP comment - WordPress won't detect): --}}
+<?php /* Template Name: My Custom Template */ ?>
 ```
 
-**Issue 5: "Assets 404 error after filter"**
+**Source Confidence:** 100% (WordPress template detection)
+
+## Troubleshooting: Assets 404 Error
 
 **Symptom:** CSS/JS files return 404 errors
 
@@ -490,17 +465,15 @@ remove_filter('theme_file_path', 'dirname', 10);
 **Fix:**
 
 ```php
-// Exclude asset paths from filter
 add_filter('theme_file_path', function($path, $file) {
-    // Don't modify asset paths (dist/, fonts/, images/)
     if (preg_match('#^(dist|fonts|images)/#', $file)) {
         return get_stylesheet_directory() . '/' . $file;
     }
-    return dirname($path);  // Apply dirname to templates only
+    return dirname($path);
 }, 10, 2);
 ```
 
-**Source Confidence:** 100% (common Sage theme issues from documentation)
+**Source Confidence:** 100% (common Sage issue)
 
 ## Performance Implications
 
@@ -601,22 +574,14 @@ resources/
 
 **Source Confidence:** 67% (alternative pattern, not observed in analyzed themes)
 
-## Testing Template Customization
+## Testing: Filter Registration
 
-Verify custom template directory works correctly across all template types.
-
-**Test 1: Verify Filter Registration**
+Verify filters are registered correctly.
 
 ```php
 // Add to functions.php temporarily
 add_action('init', function() {
-    $filters = [
-        'theme_file_path',
-        'theme_file_uri',
-        'parent_theme_file_path',
-        'parent_theme_file_uri',
-    ];
-
+    $filters = ['theme_file_path', 'theme_file_uri', 'parent_theme_file_path', 'parent_theme_file_uri'];
     foreach ($filters as $filter) {
         $has_filter = has_filter($filter, 'dirname');
         error_log("Filter {$filter}: " . ($has_filter ? 'registered' : 'MISSING'));
@@ -624,7 +589,7 @@ add_action('init', function() {
 });
 ```
 
-**Expected Output:**
+**Expected:**
 
 ```
 Filter theme_file_path: registered
@@ -633,17 +598,14 @@ Filter parent_theme_file_path: registered
 Filter parent_theme_file_uri: registered
 ```
 
-**Test 2: Verify Template Resolution**
+**Source Confidence:** 100%
+
+## Testing: Template Resolution
+
+Verify template paths resolve to `views/` subdirectory.
 
 ```php
-// Test template paths
-$tests = [
-    'single.php',
-    'page.php',
-    'index.php',
-    'theme.json',
-];
-
+$tests = ['single.php', 'page.php', 'index.php', 'theme.json'];
 foreach ($tests as $file) {
     $path = get_theme_file_path($file);
     error_log("File {$file} resolves to: {$path}");
@@ -659,20 +621,28 @@ File index.php resolves to: /themes/sage/resources/views/index.php
 File theme.json resolves to: /themes/sage/resources/theme.json (NOT views/)
 ```
 
-**Test 3: Test All Template Hierarchy Levels**
+**Source Confidence:** 100%
+
+## Testing: Template Hierarchy
+
+Test all template hierarchy levels load correctly.
 
 ```bash
-# Create test posts/pages
+# Create test content
 wp post create --post_type=post --post_title="Test Post" --post_status=publish
 wp post create --post_type=page --post_title="Test Page" --post_status=publish
 
-# Visit each URL, verify correct template loads
-open https://example.com/test-post/       # Should load: single.blade.php
-open https://example.com/test-page/       # Should load: page.blade.php
-open https://example.com/                 # Should load: front-page.blade.php or home.blade.php
+# Verify templates load
+open https://example.com/test-post/  # single.blade.php
+open https://example.com/test-page/  # page.blade.php
+open https://example.com/            # front-page.blade.php or home.blade.php
 ```
 
-**Test 4: Test Custom Page Template**
+**Source Confidence:** 100%
+
+## Testing: Custom Page Templates
+
+Verify custom page templates appear in admin dropdown.
 
 ```bash
 # Create custom template
@@ -686,16 +656,16 @@ cat > resources/views/template-custom.blade.php <<'EOF'
 @endsection
 EOF
 
-# Create page using custom template
+# Create page with custom template
 wp post create --post_type=page --post_title="Custom Page" \
   --meta_input='{"_wp_page_template":"views/template-custom.blade.php"}' \
   --post_status=publish
 
-# Verify custom template loads
+# Verify
 open https://example.com/custom-page/
 ```
 
-**Source Confidence:** 100% (standard WordPress + Sage testing)
+**Source Confidence:** 100%
 
 ## Related Patterns
 
