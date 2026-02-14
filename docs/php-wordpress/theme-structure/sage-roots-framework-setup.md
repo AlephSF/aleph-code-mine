@@ -18,39 +18,37 @@ Sage transforms WordPress theme development by introducing modern PHP practices,
 
 ## Directory Structure Overview
 
-Sage themes follow a non-standard WordPress directory structure that separates source code (`app/`), configuration (`config/`), pre-compiled assets (`resources/assets/`), and compiled output (`dist/`).
+Sage follows a non-standard WordPress structure that separates source (`app/`), config (`config/`), pre-compiled assets (`resources/assets/`), and compiled output (`dist/`).
 
-**Standard Sage 9 Structure:**
+**Sage 9 Structure:**
 
 ```
 theme-root/
 ├── app/                    # PSR-4 autoloaded PHP (App\)
-│   ├── Controllers/        # Blade view controllers
-│   ├── setup.php          # Theme hooks & enqueue
+│   ├── Controllers/        # View controllers
+│   ├── setup.php          # Theme hooks
 │   ├── filters.php        # WordPress filters
-│   ├── helpers.php        # Utility functions
-│   └── admin.php          # Admin customizations
-├── config/                # Configuration arrays
-│   ├── assets.php         # Asset manifest config
-│   ├── theme.php          # Theme support features
-│   └── view.php           # Blade view paths
+│   └── helpers.php        # Utility functions
+├── config/                # Configuration
+│   ├── assets.php         # Asset manifest
+│   ├── theme.php          # Theme support
+│   └── view.php           # Blade paths
 ├── resources/             # WordPress entry point
-│   ├── assets/            # Source (pre-compiled)
+│   ├── assets/
 │   │   ├── scripts/       # JavaScript (ES6+)
-│   │   └── styles/        # SCSS files
-│   ├── views/             # Blade templates (.blade.php)
-│   ├── functions.php      # Theme bootstrap
-│   ├── index.php          # Required WP file
+│   │   └── styles/        # SCSS
+│   ├── views/             # Blade templates
+│   ├── functions.php      # Bootstrap
 │   └── style.css          # Theme header
-├── dist/                  # Compiled assets (webpack)
+├── dist/                  # Compiled (webpack)
 ├── vendor/                # Composer dependencies
 ├── composer.json          # PHP dependencies
 └── package.json           # Node dependencies
 ```
 
-**Key Difference:** WordPress sees `resources/` as the theme root, but Sage redirects template loading to `resources/views/` via filters.
+**Key Difference:** WordPress sees `resources/` as theme root, Sage redirects template loading to `resources/views/` via filters.
 
-**Source Confidence:** 100% (Presser and Kelsey both use this exact structure)
+**Source Confidence:** 100% (Presser and Kelsey use this structure)
 
 ## Composer Dependencies Configuration
 
@@ -169,52 +167,33 @@ class FrontPage extends Controller
 
 Sage's entry point checks dependencies, autoloads classes, and loads theme files.
 
-**Complete Bootstrap Pattern (resources/functions.php):**
-
 ```php
 <?php
 
 use Roots\Sage\Container;
 use Roots\Sage\Config;
 
-// Error handler for missing dependencies
-$sage_error = function ($message, $subtitle = '', $title = '') {
-    $title = $title ?: __('Sage &rsaquo; Error', 'sage');
-    wp_die($message, $title);
-};
+$sage_error = function ($msg) { wp_die($msg, __('Sage Error', 'sage')); };
 
 // Ensure PHP 7.1+
-if (version_compare('7.1', phpversion(), '>=')) {
-    $sage_error(__('You must be using PHP 7.1 or greater.', 'sage'));
-}
+if (version_compare('7.1', phpversion(), '>=')) $sage_error(__('PHP 7.1+ required', 'sage'));
 
-// Ensure WordPress 4.7.0+
-if (version_compare('4.7.0', get_bloginfo('version'), '>=')) {
-    $sage_error(__('You must be using WordPress 4.7.0 or greater.', 'sage'));
-}
+// Ensure WordPress 4.7+
+if (version_compare('4.7.0', get_bloginfo('version'), '>=')) $sage_error(__('WordPress 4.7+ required', 'sage'));
 
-// Load Composer autoloader
-if (!file_exists($composer = __DIR__.'/../vendor/autoload.php')) {
-    $sage_error(__('Run <code>composer install</code> from theme directory.', 'sage'));
-}
+// Load Composer
+if (!file_exists($composer = __DIR__.'/../vendor/autoload.php')) $sage_error(__('Run composer install', 'sage'));
 require_once $composer;
 
-// Load theme files (PSR-4 autoloaded)
+// Load theme files
 array_map(function ($file) use ($sage_error) {
-    $file = "../app/{$file}.php";
-    if (!locate_template($file, true, true)) {
-        $sage_error(sprintf(__('Error locating <code>%s</code>.', 'sage'), $file));
-    }
+    if (!locate_template("../app/{$file}.php", true, true)) $sage_error("Error: {$file}.php");
 }, ['helpers', 'setup', 'filters', 'admin']);
 
-// Redirect template loading to resources/views/
-array_map(
-    'add_filter',
-    ['theme_file_path', 'theme_file_uri'],
-    array_fill(0, 2, 'dirname')
-);
+// Redirect templates
+array_map('add_filter', ['theme_file_path', 'theme_file_uri'], array_fill(0, 2, 'dirname'));
 
-// Initialize Sage container with configs
+// Initialize container
 Container::getInstance()->bindIf('config', function () {
     return new Config([
         'assets' => require dirname(__DIR__).'/config/assets.php',
@@ -224,9 +203,9 @@ Container::getInstance()->bindIf('config', function () {
 }, true);
 ```
 
-**Critical Pattern:** The `dirname` filter redirects WordPress template hierarchy from `resources/` to `resources/views/` for Blade files.
+**Pattern:** `dirname` filter redirects template hierarchy from `resources/` to `resources/views/`.
 
-**Source Confidence:** 100% (identical pattern across both Sage themes)
+**Source Confidence:** 100%
 
 ## Configuration Files Structure
 
@@ -287,7 +266,7 @@ return [
 
 ## Build Tooling Requirements
 
-Sage themes require Node.js and a build system (webpack, Vite, or Laravel Mix) to compile modern JavaScript and SCSS into browser-ready assets.
+Sage requires Node.js and a build system (webpack, Vite, or Laravel Mix) to compile modern JavaScript and SCSS into browser-ready assets.
 
 **Minimum package.json (Presser - Webpack 5):**
 
@@ -435,37 +414,31 @@ Sage is optimal for complex, content-driven sites with modern development workfl
 
 ## Migration from Traditional to Sage
 
-Converting a traditional WordPress theme to Sage requires restructuring files, adding dependencies, and converting PHP templates to Blade syntax.
-
-**Migration Checklist:**
+Converting a traditional WordPress theme to Sage requires restructuring files, adding dependencies, and converting PHP templates to Blade.
 
 **1. Create Sage Directory Structure:**
 ```bash
 mkdir -p app/{Controllers,} config resources/{assets/{scripts,styles},views}
 ```
 
-**2. Move PHP Logic to app/:**
+**2. Move PHP Logic:**
 ```bash
-# Old: functions.php (500+ lines)
-# New: app/setup.php, app/filters.php, app/helpers.php
+# Old: functions.php (500+ lines) → New: app/setup.php, app/filters.php, app/helpers.php
 ```
 
 **3. Convert Templates to Blade:**
 ```bash
-# Old: header.php, footer.php, single.php
-# New: resources/views/partials/header.blade.php
-#      resources/views/layouts/app.blade.php
-#      resources/views/single.blade.php
+# Old: header.php, single.php → New: resources/views/partials/header.blade.php, single.blade.php
 ```
 
-**4. Setup Composer Dependencies:**
+**4. Setup Composer:**
 ```bash
 composer require roots/sage-lib soberwp/controller illuminate/support
 ```
 
-**5. Convert PHP Syntax to Blade:**
+**5. Convert PHP to Blade:**
 
-**Before (PHP):**
+**Before:**
 ```php
 <?php get_header(); ?>
 <article>
@@ -474,115 +447,93 @@ composer require roots/sage-lib soberwp/controller illuminate/support
     <?php the_content(); ?>
   <?php endwhile; endif; ?>
 </article>
-<?php get_footer(); ?>
 ```
 
-**After (Blade):**
+**After:**
 ```blade
 @extends('layouts.app')
-
 @section('content')
   <article>
     <h1>{{ get_the_title() }}</h1>
-    @if(have_posts())
-      @while(have_posts())
-        @php(the_post())
-        {!! the_content() !!}
-      @endwhile
-    @endif
+    @while(have_posts())
+      @php(the_post())
+      {!! the_content() !!}
+    @endwhile
   </article>
 @endsection
 ```
 
-**6. Configure Build System:**
+**6. Configure Build:**
 ```bash
-# Copy webpack.config.js from Sage starter
 yarn add webpack webpack-cli sass sass-loader
 ```
 
-**Estimated Migration Time:**
-- Small theme (<20 templates): 2-3 days
-- Medium theme (20-50 templates): 1-2 weeks
-- Large theme (50+ templates): 2-4 weeks
+**Migration Time:** Small (<20 templates): 2-3 days, Medium (20-50): 1-2 weeks, Large (50+): 2-4 weeks
 
-**Source Confidence:** 67% (based on Presser/Kelsey patterns, not direct migration observation)
+**Source Confidence:** 67% (based on Presser/Kelsey patterns)
 
 ## Common Pitfalls and Solutions
 
-Sage introduces complexity that can cause errors if not configured correctly. Common issues and resolutions from production themes.
-
-**Issue 1: Blank White Screen After Activation**
+**Issue 1: Blank White Screen**
 
 **Cause:** Composer dependencies not installed
 
 **Solution:**
 ```bash
-cd /path/to/theme
 composer install --no-dev --optimize-autoloader
 ```
 
-**Issue 2: "Class 'Illuminate\Support\Collection' not found"**
+**Issue 2: Class Not Found Error**
 
-**Cause:** Autoloader not loaded or outdated
+**Cause:** Autoloader outdated
 
 **Solution:**
 ```bash
 composer dump-autoload -o
 ```
 
-**Issue 3: Blade Templates Not Rendering**
+**Issue 3: Templates Not Rendering**
 
-**Cause:** Template file path doesn't match controller class name
+**Cause:** Template path doesn't match controller name
 
 **Example:**
 ```php
-// resources/views/front-page.blade.php
-// Requires: app/Controllers/FrontPage.php (not App\Controllers\front-page.php)
+// front-page.blade.php → app/Controllers/FrontPage.php (kebab-case → PascalCase)
 ```
 
-**Pattern:** Blade filenames use kebab-case, controllers use PascalCase (WordPress convention).
+**Issue 4: Asset 404 Errors**
 
-**Issue 4: Asset 404 Errors (main.css, main.js)**
-
-**Cause:** Assets not compiled or manifest missing
+**Cause:** Assets not compiled
 
 **Solution:**
 ```bash
 yarn build:production
-# Verify dist/assets-manifest.json exists
 ```
 
-**Issue 5: Controller Methods Not Available in Blade**
+**Issue 5: Controller Methods Unavailable**
 
 **Cause:** Controller doesn't extend `Sober\Controller\Controller`
 
 **Fix:**
 ```php
 namespace App\Controllers;
+use Sober\Controller\Controller;
 
-use Sober\Controller\Controller; // Must import
-
-class Post extends Controller // Must extend
-{
-    public function customField() {
-        return get_field('custom');
-    }
+class Post extends Controller {
+    public function customField() { return get_field('custom'); }
 }
 ```
 
-**Issue 6: Slow Admin Panel After Sage Activation**
+**Issue 6: Slow Admin**
 
-**Cause:** BrowserSync webpack plugin running in production
+**Cause:** BrowserSync in production
 
 **Solution:**
 ```javascript
-// webpack.config.js - only enable in development
-if (!isProduction) {
-  plugins.push(new BrowserSyncPlugin({ /* ... */ }));
-}
+if (!isProduction) plugins.push(new BrowserSyncPlugin());
 ```
 
-**Source Confidence:** 100% (documented in Presser troubleshooting comments and dependency notes)
+**Source Confidence:** 100% (Presser troubleshooting notes)
 
 ## Security Considerations
 
@@ -656,40 +607,29 @@ wp_enqueue_style('sage/main.css', asset_path('styles/main.css'), false, null);
 
 **Pattern:** Manifest hash changes only when assets change, enabling far-future expires headers.
 
-**Webpack Production Optimizations (Presser):**
+**Webpack Production Optimizations:**
 
 ```javascript
 // webpack.config.js
 optimization: {
   minimizer: [
-    new TerserPlugin({
-      terserOptions: {
-        compress: { drop_console: true },
-      },
-    }),
+    new TerserPlugin({ terserOptions: { compress: { drop_console: true } } }),
     new CssMinimizerPlugin(),
   ],
   splitChunks: {
     cacheGroups: {
-      vendor: {
-        test: /[\\/]node_modules[\\/]/,
-        name: 'vendors',
-        chunks: 'all',
-      },
+      vendor: { test: /[\\/]node_modules[\\/]/, name: 'vendors', chunks: 'all' },
     },
   },
 },
 ```
 
-**Benefits:**
-- Console logs stripped in production
-- Vendor code separated into `vendors.js` (better caching)
-- CSS minified with cssnano
+**Benefits:** Console logs stripped, vendor code split to `vendors.js`, CSS minified.
 
-**Measured Performance (Presser Production):**
+**Measured Performance (Presser):**
 - Blade compilation: ~3ms per template (cached)
-- Asset manifest read: <1ms (PHP array cache)
-- Total overhead vs traditional theme: ~5ms per request
+- Asset manifest: <1ms (PHP array cache)
+- Total overhead: ~5ms per request
 
 **Source Confidence:** 100% (Presser webpack config and performance characteristics)
 
