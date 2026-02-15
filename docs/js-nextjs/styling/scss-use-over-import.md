@@ -63,61 +63,41 @@ The @use directive replaces @import with explicit namespace control and one-time
 
 ## Namespace Control with 'as' Keyword
 
-The `as` keyword controls how imported members are accessed. Three patterns exist: global namespace (`as *`), custom namespace (`as name`), and default namespace (module basename).
+The `as` keyword controls how imported members are accessed. Three patterns: global (`as *`), custom (`as name`), and default (basename).
 
-### Global Namespace: as *
-
-Import all variables and mixins into global namespace without prefix. Use when no name collisions exist and brevity is preferred.
+**Global namespace (`as *`):** Import all into global namespace without prefix. Use when no name collisions exist.
 
 ```scss
 @use "../../styles/colors" as *;
 @use "../../styles/typography" as *;
 @use "../../styles/mixins" as *;
-
-.title {
-  @include h1;                    // Direct access to mixin
-  color: $charcoal-300;           // Direct access to variable
-}
+.title{@include h1;color:$charcoal-300;}
 ```
 
-**When to use:** Design token files with unique variable names (colors, typography, mixins). Reduces verbosity when collision risk is low.
+**When to use:** Design token files with unique names (colors, typography, mixins). Reduces verbosity.
 
-**Adoption:** 91% of helix and policy-node files use `as *` for colors, typography, and mixins.
+**Adoption:** 91% of helix and policy-node use `as *` for colors, typography, and mixins.
 
-### Custom Namespace: as [name]
-
-Import members behind custom namespace prefix. Use when variable names might collide or when grouping related tokens improves clarity.
+**Custom namespace (`as [name]`):** Import behind custom prefix. Use when variable names might collide.
 
 ```scss
 @use "../../styles/spacing" as s;
-
-.container {
-  padding: s.$spacing-large;           // Access via namespace
-  margin-bottom: s.$grid-column-gap;   // Access via namespace
-}
+.container{padding:s.$spacing-large;margin-bottom:s.$grid-column-gap;}
 ```
 
-**When to use:** Files with generic variable names (spacing, variables) or when importing multiple files with overlapping names.
+**When to use:** Files with generic names (spacing, variables) or overlapping names.
 
-**Adoption:** 75% of helix and policy-node files use `as s` for spacing to avoid collision with other token names.
+**Adoption:** 75% use `as s` for spacing to avoid collision.
 
-### Default Namespace (Module Basename)
-
-Omit `as` keyword to use file's basename as namespace. Use when namespace should match file name.
+**Default namespace (basename):** Omit `as` to use file's basename as namespace. Rarely used.
 
 ```scss
-@use "../../styles/colors";      // Namespace: colors
-@use "../../styles/spacing";     // Namespace: spacing
-
-.container {
-  background: colors.$darkblue-100;
-  padding: spacing.$spacing-large;
-}
+@use "../../styles/colors";
+@use "../../styles/spacing";
+.container{background:colors.$darkblue-100;padding:spacing.$spacing-large;}
 ```
 
-**When to use:** Rarely used in practice. Most codebases prefer explicit `as *` or `as s` for brevity.
-
-**Adoption:** < 5% adoption. Most files explicitly declare namespace with `as`.
+**Adoption:** < 5%. Most files use explicit `as *` or `as s`.
 
 ## Import Path Resolution
 

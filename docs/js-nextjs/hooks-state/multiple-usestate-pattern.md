@@ -50,7 +50,7 @@ React 18's automatic batching optimizes multiple setState calls within the same 
 
 ## Implementation Pattern
 
-Declare each piece of state with its own useState call at the component's top level. Group related state declarations together for readability, but maintain separate setters for each value.
+Declare each piece of state with its own useState call at component top level. Group related declarations for readability, maintain separate setters for each value.
 
 ```typescript
 export default function JobPostings({ headline, content }: JobPostingsProps) {

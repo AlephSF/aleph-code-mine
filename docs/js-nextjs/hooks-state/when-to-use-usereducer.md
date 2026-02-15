@@ -59,65 +59,33 @@ The absence of useReducer suggests either (1) team unfamiliarity with the patter
 
 ## When useReducer Is Better Than Multiple useState
 
-Use `useReducer` when multiple state variables update together in coordinated ways, forming logical state transitions. Reducers excel at:
+Use `useReducer` when multiple state variables update together in coordinated ways. Reducers excel at:
 
 **Complex state transitions:**
 ```typescript
-// Multiple related updates that should happen atomically
-function handleSearchSubmit(term: string) {
-  setSearchTerm(term)
-  setIsLoading(true)
-  setError(null)
-  setResults([])
-  setActivePage(1)
+function handleSearchSubmit(term:string){
+  setSearchTerm(term);setIsLoading(true);setError(null);setResults([]);setActivePage(1)
 }
-
-// Better with reducer - atomic state transition
-dispatch({ type: 'SEARCH_START', payload: term })
+// Better with reducer
+dispatch({type:'SEARCH_START',payload:term})
 ```
 
 **State machines with defined transitions:**
 ```typescript
-// Form wizard with step transitions
-type WizardState = {
-  step: 1 | 2 | 3 | 4
-  formData: FormData
-  errors: ValidationErrors
-  canProceed: boolean
-}
-
-// Reducer ensures valid state transitions
-function reducer(state: WizardState, action: WizardAction): WizardState {
-  switch (action.type) {
-    case 'NEXT_STEP':
-      // Only advance if current step is valid
-      return state.canProceed
-        ? { ...state, step: (state.step + 1) as WizardState['step'] }
-        : state
+type WizardState={step:1|2|3|4;formData:FormData;errors:ValidationErrors;canProceed:boolean}
+function reducer(s:WizardState,a:WizardAction):WizardState{
+  switch(a.type){
+    case 'NEXT_STEP':return s.canProceed?{...s,step:(s.step+1)as WizardState['step']}:s
   }
 }
 ```
 
 **Interdependent state updates:**
 ```typescript
-// State where one update affects multiple values
-type FilterState = {
-  category: string | null
-  subcategory: string | null
-  items: Item[]
-  filteredItems: Item[]
-}
-
-// Changing category resets subcategory and updates both item lists
-function reducer(state: FilterState, action: FilterAction): FilterState {
-  switch (action.type) {
-    case 'SET_CATEGORY':
-      return {
-        ...state,
-        category: action.payload,
-        subcategory: null, // Reset dependent state
-        filteredItems: filterByCategory(state.items, action.payload)
-      }
+type FilterState={category:string|null;subcategory:string|null;items:Item[];filteredItems:Item[]}
+function reducer(s:FilterState,a:FilterAction):FilterState{
+  switch(a.type){
+    case 'SET_CATEGORY':return{...s,category:a.payload,subcategory:null,filteredItems:filterByCategory(s.items,a.payload)}
   }
 }
 ```
@@ -140,46 +108,24 @@ function reducer(state: FilterState, action: FilterAction): FilterState {
 
 ## Real-World Example: Refactoring ClinicalData
 
-The ClinicalData component manages 11 state variables for search, filtering, and UI state. This is a prime candidate for useReducer:
+ClinicalData component manages 11 state variables for search, filtering, and UI state. Prime candidate for useReducer:
 
 ```typescript
-// Current pattern (kariusdx-next)
-const [showKeyPubs, setShowKeyPubs] = useState<boolean>(true)
-const [searchTerm, setSearchTerm] = useState<string>('')
-const [results, setResults] = useState<ClinicalEvidenceDocs | undefined>(undefined)
-const [activeStudyFilters, setActiveStudyFilters] = useState<TActiveStudyFilters>([])
-const [openFilterGroups, setOpenFilterGroups] = useState<TOpenFilterGroups>([])
-const [activeType, setActiveType] = useState<TActiveType>(null)
-const [mobileSomeFiltersHidden, setMobileSomeFiltersHidden] = useState<boolean>(true)
-const [mobileFilterMenuIsOpen, setMobileFilterMenuIsOpen] = useState<boolean>(false)
-const [resultsContext, setResultsContext] = useState<string>('')
+// Current (kariusdx)
+const [showKeyPubs,setShowKeyPubs]=useState<boolean>(true)
+const [searchTerm,setSearchTerm]=useState<string>('')
+const [results,setResults]=useState<ClinicalEvidenceDocs|undefined>(undefined)
+const [activeStudyFilters,setActiveStudyFilters]=useState<TActiveStudyFilters>([])
+const [openFilterGroups,setOpenFilterGroups]=useState<TOpenFilterGroups>([])
+const [activeType,setActiveType]=useState<TActiveType>(null)
+const [mobileSomeFiltersHidden,setMobileSomeFiltersHidden]=useState<boolean>(true)
+const [mobileFilterMenuIsOpen,setMobileFilterMenuIsOpen]=useState<boolean>(false)
+const [resultsContext,setResultsContext]=useState<string>('')
 
-// Recommended pattern with useReducer
-type State = {
-  view: 'keyPubs' | 'allPubs'
-  search: {
-    term: string
-    results: ClinicalEvidenceDocs | undefined
-    context: string
-  }
-  filters: {
-    active: TActiveStudyFilters
-    openGroups: TOpenFilterGroups
-    activeType: TActiveType
-  }
-  mobile: {
-    someFiltersHidden: boolean
-    filterMenuOpen: boolean
-  }
-}
-
-type Action =
-  | { type: 'TOGGLE_VIEW' }
-  | { type: 'SEARCH'; payload: string }
-  | { type: 'ADD_FILTER'; payload: Filter }
-  | { type: 'TOGGLE_MOBILE_MENU' }
-
-const [state, dispatch] = useReducer(clinicalDataReducer, initialState)
+// Recommended with useReducer
+type State={view:'keyPubs'|'allPubs';search:{term:string;results:ClinicalEvidenceDocs|undefined;context:string};filters:{active:TActiveStudyFilters;openGroups:TOpenFilterGroups;activeType:TActiveType};mobile:{someFiltersHidden:boolean;filterMenuOpen:boolean}}
+type Action={type:'TOGGLE_VIEW'}|{type:'SEARCH';payload:string}|{type:'ADD_FILTER';payload:Filter}|{type:'TOGGLE_MOBILE_MENU'}
+const [state,dispatch]=useReducer(clinicalDataReducer,initialState)
 ```
 
 Benefits: Centralized state logic, predictable transitions, easier testing, atomic updates.

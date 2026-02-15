@@ -234,30 +234,16 @@ WordPress VIP allows calling `wpcom_vip_load_plugin()` from theme `functions.php
 
 ## Conditional Loading Anti-Patterns
 
-WordPress VIP recommends avoiding excessive conditional complexity, environment-specific hardcoded paths, and security checks based on `$_SERVER['HTTP_HOST']`. Simple conditional logic improves maintainability.
+Avoid excessive conditional complexity, environment-specific hardcoded paths, and security checks based on `$_SERVER['HTTP_HOST']`. Simple conditional logic improves maintainability.
 
 ### Anti-Pattern: Deeply Nested Conditions
 
 ```php
-// ❌ Avoid nested conditionals
-if (get_current_blog_id() === 20) {
-    if (get_option('stylesheet') === 'pressbnb') {
-        if ($_SERVER['HTTP_HOST'] === 'news.airbnb.com') {
-            wpcom_vip_load_plugin( 'some-plugin' );
-        }
-    }
-}
-
-// ✅ Use explicit conditions
-$is_news_headless = (
-    get_current_blog_id() === 20 &&
-    get_option('stylesheet') === 'pressbnb' &&
-    $_SERVER['HTTP_HOST'] === 'news.airbnb.com'
-);
-
-if ($is_news_headless) {
-    wpcom_vip_load_plugin( 'some-plugin' );
-}
+// ❌ Avoid nested
+if(get_current_blog_id()===20){if(get_option('stylesheet')==='pressbnb'){if($_SERVER['HTTP_HOST']==='news.airbnb.com'){wpcom_vip_load_plugin('some-plugin');}}}
+// ✅ Use explicit
+$is_news_headless=(get_current_blog_id()===20&&get_option('stylesheet')==='pressbnb'&&$_SERVER['HTTP_HOST']==='news.airbnb.com');
+if($is_news_headless){wpcom_vip_load_plugin('some-plugin');}
 ```
 
 ### Anti-Pattern: Environment-Specific Paths

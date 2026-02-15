@@ -38,64 +38,18 @@ if ($http_host === 'news.airbnb.com') {
 
 ## Domain-Based Redirects in vip-config.php
 
-WordPress VIP multisite deployments use vip-config.php for early-stage domain redirects before WordPress routing initializes. The pattern uses consolidated redirect arrays processed in a single loop, supporting status codes, multiple domains, and security headers. The `/cache-healthcheck?` endpoint always bypasses redirects for VIP monitoring.
+WordPress VIP uses vip-config.php for early domain redirects before WordPress routing. Consolidated arrays support status codes, multiple domains, security headers. `/cache-healthcheck?` bypasses redirects.
 
 ```php
-$http_host   = $_SERVER['HTTP_HOST'];
-$request_uri = $_SERVER['REQUEST_URI'];
-
-$redirects = [
-    [
-        'domains' => ['press.atairbnb.com', 'press.airbnb.com'],
-        'target'  => 'https://news.airbnb.com',
-        'status'  => 302,
-    ],
-    [
-        'domains' => ['realestate.withairbnb.com'],
-        'target'  => 'https://www.airbnb.com/airbnb-friendly',
-        'status'  => 302,
-        'headers' => [
-            'Strict-Transport-Security: max-age=31536000',
-            'X-Frame-Options: SAMEORIGIN',
-        ],
-    ],
-];
-
-foreach ($redirects as $redirect) {
-    if (
-        '/cache-healthcheck?' !== $request_uri &&
-        in_array($http_host, $redirect['domains'], true)
-    ) {
-        if (!empty($redirect['headers'])) {
-            foreach ($redirect['headers'] as $header) {
-                header($header);
-            }
-        }
-        header('Location: ' . $redirect['target'] . $request_uri, true, $redirect['status']);
-        exit;
-    }
-}
+$http_host=$_SERVER['HTTP_HOST'];$request_uri=$_SERVER['REQUEST_URI'];
+$redirects=[['domains'=>['press.atairbnb.com','press.airbnb.com'],'target'=>'https://news.airbnb.com','status'=>302],['domains'=>['realestate.withairbnb.com'],'target'=>'https://www.airbnb.com/airbnb-friendly','status'=>302,'headers'=>['Strict-Transport-Security: max-age=31536000','X-Frame-Options: SAMEORIGIN']]];
+foreach($redirects as $r){if('/cache-healthcheck?'!==$request_uri&&in_array($http_host,$r['domains'],true)){if(!empty($r['headers'])){foreach($r['headers'] as $h){header($h);}}header('Location: '.$r['target'].$request_uri,true,$r['status']);exit;}}
 ```
 
-### Security Headers on Redirects
-
-WordPress VIP supports injecting security headers during redirects for domains that need CSP, HSTS, X-Frame-Options, or other protective headers before reaching WordPress.
+**Security headers:** Inject CSP, HSTS, X-Frame-Options before WordPress.
 
 ```php
-[
-    'domains' => ['realestate.withairbnb.com'],
-    'target'  => 'https://www.airbnb.com/airbnb-friendly',
-    'status'  => 302,
-    'headers' => [
-        'Strict-Transport-Security: max-age=31536000; includeSubDomains; preload',
-        "Content-Security-Policy: default-src 'self'",
-        'X-Content-Type-Options: nosniff',
-        'X-Frame-Options: SAMEORIGIN',
-        'X-XSS-Protection: 1; mode=block',
-        'Referrer-Policy: strict-origin-when-cross-origin',
-        'Permissions-Policy: geolocation=(), camera=(), microphone=()',
-    ],
-],
+['domains'=>['realestate.withairbnb.com'],'target'=>'https://www.airbnb.com/airbnb-friendly','status'=>302,'headers'=>['Strict-Transport-Security: max-age=31536000; includeSubDomains; preload',"Content-Security-Policy: default-src 'self'",'X-Content-Type-Options: nosniff','X-Frame-Options: SAMEORIGIN','X-XSS-Protection: 1; mode=block','Referrer-Policy: strict-origin-when-cross-origin','Permissions-Policy: geolocation=(), camera=(), microphone=()']]
 ```
 
 ## VIP Proxy IP Verification

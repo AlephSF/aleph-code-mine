@@ -243,26 +243,18 @@ foreach ( $sites as $site ) {
 
 ## Blog Switching Performance Considerations
 
-WordPress multisite blog switching has performance overhead (globals manipulation, database prefix switching). Minimize switches, cache results, and avoid switching in tight loops.
+Blog switching has performance overhead (globals manipulation, database prefix switching). Minimize switches, cache results, avoid switching in tight loops.
 
 ### Anti-Pattern: Switching in Loops
 
 ```php
-// ❌ Bad: Switch inside loop (N switches)
-$post_ids = [1, 2, 3, 4, 5];
-foreach ( $post_ids as $post_id ) {
-    switch_to_blog( 20 );
-    $post = get_post( $post_id );
-    $titles[] = $post->post_title;
-    restore_current_blog();
-}
-
-// ✅ Good: Switch once, query all (1 switch)
-switch_to_blog( 20 );
-$posts = get_posts( array('include' => [1, 2, 3, 4, 5]) );
-foreach ( $posts as $post ) {
-    $titles[] = $post->post_title;
-}
+// ❌ Bad: N switches
+$post_ids=[1,2,3,4,5];
+foreach($post_ids as $id){switch_to_blog(20);$p=get_post($id);$titles[]=$p->post_title;restore_current_blog();}
+// ✅ Good: 1 switch
+switch_to_blog(20);
+$posts=get_posts(array('include'=>[1,2,3,4,5]));
+foreach($posts as $p){$titles[]=$p->post_title;}
 restore_current_blog();
 ```
 

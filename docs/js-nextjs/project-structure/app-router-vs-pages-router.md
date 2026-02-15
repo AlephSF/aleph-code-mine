@@ -61,124 +61,103 @@ pages/
 
 **Comparison:** Pages Router simpler mental model (file = route). App Router more explicit semantics (page.tsx = route, layout.tsx = shared UI).
 
-## Routing File Naming
+## App Router File Naming
 
-### App Router: Special File Names
-
-App Router reserves specific file names for routing behavior. All other file names are treated as non-routable components/utilities.
+App Router reserves specific file names for routing behavior. All other files are non-routable.
 
 | File Name | Purpose | Example |
 |-----------|---------|---------|
-| `page.tsx` | Route page (makes folder a route) | `app/about/page.tsx` → `/about` |
-| `layout.tsx` | Shared UI that wraps child routes | Root layout, nested layouts |
-| `not-found.tsx` | 404 page for segment | Custom 404 UI |
-| `error.tsx` | Error boundary for segment | Error handling |
-| `loading.tsx` | Loading UI with Suspense | Streaming fallback |
-| `route.ts` | API route handler | API endpoints |
+| `page.tsx` | Route page | `app/about/page.tsx` → `/about` |
+| `layout.tsx` | Shared UI wrapper | Root/nested layouts |
+| `not-found.tsx` | 404 page | Custom 404 |
+| `error.tsx` | Error boundary | Error handling |
+| `loading.tsx` | Loading UI | Streaming fallback |
+| `route.ts` | API handler | API endpoints |
 
-**Rule:** Only files named `page.tsx` create routes. Folder structure defines URL paths.
+**Rule:** Only `page.tsx` creates routes. Folder structure defines URL paths.
 
 **Example:**
 
 ```
-app/
-└── blog/
-    ├── page.tsx        ← Route: /blog
-    ├── BlogList.tsx    ← Component (not a route)
-    └── [slug]/
-        └── page.tsx    ← Route: /blog/[slug]
+app/blog/
+├── page.tsx        ← /blog
+├── BlogList.tsx    ← Component (not route)
+└── [slug]/page.tsx ← /blog/[slug]
 ```
 
-**Benefit:** Clear separation between routes and components. No accidental routes from misnamed files.
+**Benefit:** Clear separation. No accidental routes.
 
-### Pages Router: Arbitrary File Names
+## Pages Router File Naming
 
-Pages Router treats every `.tsx` file in `pages/` directory as a route (except files starting with `_`).
+Pages Router treats every `.tsx` file in `pages/` as a route (except `_` prefix).
 
 | File Name | Route | Notes |
 |-----------|-------|-------|
 | `index.tsx` | `/` | Homepage |
-| `about.tsx` | `/about` | Direct file-to-route mapping |
+| `about.tsx` | `/about` | Direct mapping |
 | `[slug].tsx` | `/[slug]` | Dynamic route |
-| `_app.tsx` | N/A | Special file (global wrapper) |
-| `_document.tsx` | N/A | Special file (HTML customization) |
+| `_app.tsx` | N/A | Global wrapper |
+| `_document.tsx` | N/A | HTML customization |
 
 **Rule:** All non-underscore files become routes. File name = URL path.
 
-**Limitation:** Components and utilities cannot live in `pages/` directory without becoming routes. Must use separate `components/` directory.
+**Limitation:** Components cannot live in `pages/` without becoming routes. Must use separate `components/` directory.
 
-## Data Fetching Patterns
+## App Router Data Fetching
 
-### App Router: Async Server Components
-
-App Router uses async React Server Components for data fetching. No special export functions required.
+App Router uses async React Server Components. No special export functions required.
 
 ```tsx
-// app/blog/page.tsx (helix pattern)
-import { sanityFetch } from '@/lib/sanity'
-
-export default async function BlogPage() {
-  const posts = await sanityFetch({  // Direct async/await
-    query: postsQuery,
-  })
-
-  return <BlogList posts={posts} />
+// app/blog/page.tsx
+import {sanityFetch} from '@/lib/sanity'
+export default async function BlogPage(){
+  const posts=await sanityFetch({query:postsQuery})
+  return <BlogList posts={posts}/>
 }
 ```
 
-**Pattern:** Pages are async functions. Data fetched directly in component body. No `getStaticProps` or `getServerSideProps`.
+**Pattern:** Pages are async functions. Data fetched in component body.
 
-**Static Generation with generateStaticParams:**
+**Static generation with generateStaticParams:**
 
 ```tsx
-// app/blog/[slug]/page.tsx (helix pattern)
-export async function generateStaticParams() {
-  const slugs = await client.fetch(allSlugsQuery)
-  return slugs.map(({ slug }) => ({ slug }))
+// app/blog/[slug]/page.tsx
+export async function generateStaticParams(){
+  const s=await client.fetch(allSlugsQuery)
+  return s.map(({slug})=>({slug}))
 }
-
-export default async function Post({ params }) {
-  const post = await sanityFetch({
-    query: postBySlugQuery,
-    params: { slug: params.slug },
-  })
-
-  if (!post) notFound()  // Trigger 404
-  return <PostContent post={post} />
+export default async function Post({params}){
+  const p=await sanityFetch({query:postBySlugQuery,params:{slug:params.slug}})
+  if(!p)notFound()
+  return <PostContent post={p}/>
 }
 ```
 
-**Benefit:** Collocates data fetching with component logic. No prop drilling from special export functions.
+**Benefit:** Collocates data fetching with component logic.
 
-**Adoption:** 20 async page components across helix (9) and policy-node (11). 6 generateStaticParams implementations.
+**Adoption:** 20 async page components (helix: 9, policy-node: 11). 6 generateStaticParams implementations.
 
-### Pages Router: getStaticProps/getServerSideProps
+## Pages Router Data Fetching
 
-Pages Router requires special export functions for data fetching. Data passed as props to page component.
+Pages Router requires special export functions for data fetching. Data passed as props.
 
 ```tsx
-// pages/index.tsx (kariusdx pattern)
-import { GetStaticProps } from 'next'
-
-export default function HomePage({ pageData }) {
-  return <PageContent data={pageData} />
+// pages/index.tsx
+import {GetStaticProps} from 'next'
+export default function HomePage({pageData}){
+  return <PageContent data={pageData}/>
 }
-
-export const getStaticProps: GetStaticProps = async () => {
-  const pageData = await fetchPageData()
-
-  return {
-    props: { pageData },
-    revalidate: 60,  // ISR revalidation
-  }
+export const getStaticProps:GetStaticProps=async()=>{
+  const pageData=await fetchPageData()
+  return {props:{pageData},revalidate:60}
 }
 ```
 
-**Pattern:** Separate data fetching function exports props. Component receives props at runtime.
+**Pattern:** Separate data fetching function exports props. Component receives at runtime.
 
 **Adoption:** 8 instances of getStaticProps/getServerSideProps in kariusdx.
 
-**Comparison:**
+## Data Fetching Comparison
 
 | Feature | App Router | Pages Router |
 |---------|-----------|--------------|
@@ -187,55 +166,51 @@ export const getStaticProps: GetStaticProps = async () => {
 | **Type safety** | Automatic | Manual prop types |
 | **Streaming** | Supported (Suspense) | Not supported |
 
-## Layout Patterns
-
-### App Router: Nested Layouts
+## App Router Nested Layouts
 
 App Router supports nested layouts that wrap child routes automatically. Layouts persist across route changes (no re-render).
 
 ```tsx
-// app/layout.tsx (helix root layout)
-export default function RootLayout({ children }) {
-  return (
+// app/layout.tsx
+export default function RootLayout({children}){
+  return(
     <html lang="en">
       <body>
-        <SiteHeader />
-        {children}  ← Nested layouts + pages render here
-        <SiteFooter />
+        <SiteHeader/>
+        {children}
+        <SiteFooter/>
       </body>
     </html>
   )
 }
-
-// app/resources/[slug]/layout.tsx (nested layout)
-export default function ResourceLayout({ children }) {
-  return (
+// app/resources/[slug]/layout.tsx
+export default function ResourceLayout({children}){
+  return(
     <div className="resource-wrapper">
-      <ResourceSidebar />
-      {children}  ← Page content renders here
+      <ResourceSidebar/>
+      {children}
     </div>
   )
 }
 ```
 
-**Pattern:** Each layout wraps its children. Layouts compose automatically based on route hierarchy.
+**Pattern:** Each layout wraps children. Layouts compose automatically based on route hierarchy.
 
-**Benefit:** Shared UI (headers, sidebars) doesn't re-render when navigating between sibling routes.
+**Benefit:** Shared UI doesn't re-render when navigating between sibling routes.
 
-**Adoption:** 100% of App Router projects use nested layouts (helix: 3 layouts, policy-node: 2 layouts).
+**Adoption:** 100% of App Router projects use nested layouts (helix: 3, policy-node: 2).
 
-### Pages Router: Single Global Layout
+## Pages Router Global Layout
 
-Pages Router has single global `_app.tsx` for layouts. Per-route layouts require manual composition or HOCs.
+Pages Router has single global `_app.tsx` for layouts. Per-route layouts require manual composition.
 
 ```tsx
-// pages/_app.tsx (kariusdx pattern)
+// pages/_app.tsx
 import Layout from 'components/Layout'
-
-export default function MyApp({ Component, pageProps }) {
-  return (
+export default function MyApp({Component,pageProps}){
+  return(
     <Layout globalData={pageProps.globalData}>
-      <Component {...pageProps} />
+      <Component {...pageProps}/>
     </Layout>
   )
 }
@@ -246,35 +221,28 @@ export default function MyApp({ Component, pageProps }) {
 **Limitation:** Per-route layouts require conditional logic or HOC composition:
 
 ```tsx
-// Manual per-route layout (not automatic)
-export default function BlogPage(props) {
-  return (
+export default function BlogPage(props){
+  return(
     <BlogLayout>
-      <BlogContent {...props} />
+      <BlogContent {...props}/>
     </BlogLayout>
   )
 }
 ```
 
-**Comparison:** App Router layouts persist and compose automatically. Pages Router requires manual layout management.
+**Comparison:** App Router layouts persist and compose automatically. Pages Router requires manual management.
 
-## Metadata Management
-
-### App Router: Built-in Metadata API
+## App Router Metadata API
 
 App Router provides type-safe Metadata API for SEO, social sharing, and document head management.
 
 ```tsx
-// app/layout.tsx (helix pattern)
-import type { Metadata } from 'next'
-
-export const metadata: Metadata = {
-  title: {
-    template: '%s | Helix',  // Page title template
-    default: 'Helix',
-  },
-  description: '...',
-  metadataBase: new URL('https://helix.com'),
+// app/layout.tsx
+import type {Metadata} from 'next'
+export const metadata:Metadata={
+  title:{template:'%s | Helix',default:'Helix'},
+  description:'...',
+  metadataBase:new URL('https://helix.com'),
 }
 ```
 
@@ -282,46 +250,30 @@ export const metadata: Metadata = {
 
 ```tsx
 // app/blog/[slug]/page.tsx
-export async function generateMetadata({ params }): Promise<Metadata> {
-  const post = await sanityFetch({ query, params })
-
-  return {
-    title: post.title,
-    description: post.excerpt,
-    openGraph: {
-      images: [post.coverImage],
-    },
-  }
+export async function generateMetadata({params}):Promise<Metadata>{
+  const p=await sanityFetch({query,params})
+  return{title:p.title,description:p.excerpt,openGraph:{images:[p.coverImage]}}
 }
 ```
 
-**Pattern:** Static metadata in `layout.tsx`, dynamic metadata in `page.tsx` via async function.
+**Pattern:** Static metadata in `layout.tsx`, dynamic in `page.tsx` via async function.
 
 **Benefit:** Type-safe, no runtime overhead, automatic deduplication, streaming support.
 
-**Adoption:** 100% of App Router projects use Metadata API (helix: 1 static export, policy-node: 1 dynamic).
+**Adoption:** 100% of App Router projects (helix: 1 static, policy-node: 1 dynamic).
 
-### Pages Router: External SEO Library
+## Pages Router SEO Libraries
 
 Pages Router requires external library (next-seo) for metadata management.
 
 ```tsx
-// pages/_app.tsx (kariusdx pattern)
-import { DefaultSeo } from 'next-seo'
-
-<DefaultSeo
-  title="Site Title"
-  description="Site description"
-  openGraph={{ ... }}
-/>
+// pages/_app.tsx
+import {DefaultSeo} from 'next-seo'
+<DefaultSeo title="Site Title" description="..." openGraph={{...}}/>
 
 // pages/index.tsx
-import { NextSeo } from 'next-seo'
-
-<NextSeo
-  title="Page Title"
-  description="Page description"
-/>
+import {NextSeo} from 'next-seo'
+<NextSeo title="Page Title" description="..."/>
 ```
 
 **Pattern:** Component-based SEO requires rendering `<NextSeo>` in every page. Adds runtime overhead.

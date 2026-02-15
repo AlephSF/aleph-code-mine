@@ -61,44 +61,23 @@ The prefix prevents collision with WordPress core types (`post`, `page`, `attach
 
 ## Taxonomy Naming Pattern
 
-Custom taxonomies follow the same namespacing pattern but include additional context when applying to specific post types. Taxonomy names can be more granular to distinguish purpose (content classification vs geographic filtering vs content type categorization).
+Custom taxonomies follow same namespacing pattern with additional context for specific post types. Names distinguish purpose (classification vs filtering vs categorization).
 
 ```php
 <?php
-function register_custom_taxonomies() {
-    // Geographic taxonomy applied to multiple post types
-    register_taxonomy(
-        'bnb_country_content',
-        array('post', 'bnb_media'),
-        array(
-            'hierarchical'      => true,
-            'labels'            => $labels,
-            'show_admin_column' => true,
-            'rewrite'           => array('slug' => 'country-content'),
-        )
-    );
-
-    // Single-purpose taxonomy
-    register_taxonomy(
-        'kelsey_event_category',
-        array('kelsey_event'),
-        array(
-            'hierarchical'      => true,
-            'labels'            => $labels,
-            'show_in_rest'      => true,
-            'rewrite'           => array('slug' => 'events/category'),
-        )
-    );
+function register_custom_taxonomies(){
+  register_taxonomy('bnb_country_content',array('post','bnb_media'),array('hierarchical'=>true,'labels'=>$labels,'show_admin_column'=>true,'rewrite'=>array('slug'=>'country-content')));
+  register_taxonomy('kelsey_event_category',array('kelsey_event'),array('hierarchical'=>true,'labels'=>$labels,'show_in_rest'=>true,'rewrite'=>array('slug'=>'events/category')));
 }
-add_action('init', 'register_custom_taxonomies');
+add_action('init','register_custom_taxonomies');
 ```
 
 **Taxonomy naming patterns:**
-- Multi-purpose: `{prefix}_{entity}_{purpose}` (e.g., `bnb_country_content`)
-- Single-purpose: `{prefix}_{posttype}_category` (e.g., `kelsey_event_category`)
-- Content classification: `{prefix}_{posttype}_content_type` (e.g., `bnb_post_content_type`)
+- Multi-purpose: `{prefix}_{entity}_{purpose}` (`bnb_country_content`)
+- Single-purpose: `{prefix}_{posttype}_category` (`kelsey_event_category`)
+- Content classification: `{prefix}_{posttype}_content_type`
 
-Analyzed codebases show 7 custom taxonomies using prefixed naming, with 100% applying hierarchical structure and 85% enabling REST API exposure via `show_in_rest`.
+Analyzed codebases show 7 custom taxonomies using prefixed naming, 100% hierarchical structure, 85% REST API exposure.
 
 ## Database Impact
 

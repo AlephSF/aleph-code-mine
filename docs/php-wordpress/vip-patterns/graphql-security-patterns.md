@@ -359,51 +359,28 @@ query IntrospectionQuery {
 
 ## Client MU-Plugin for GraphQL Security
 
-WordPress VIP centralizes GraphQL security in a dedicated `graphql-security.php` client MU-plugin. The pattern consolidates all GraphQL defenses in a single file for auditability and maintainability.
+WordPress VIP centralizes GraphQL security in dedicated `graphql-security.php` client MU-plugin. Consolidates all defenses in single file.
 
 ```php
 // client-mu-plugins/graphql-security.php
 <?php
-/**
- * GraphQL DoS protection for headless WordPress.
- * Implements multi-layer security: query size, deduplication, complexity.
- */
-
-// Layer 1: Query size limiting (10KB max)
-add_filter( 'graphql_request_data', function( $data ) {
-    if ( empty( $data['query'] ) ) {
-        return $data;
-    }
-
-    $max_size = apply_filters( 'airbnb_graphql_max_query_size', 10000 );
-    if ( strlen( $data['query'] ) > $max_size ) {
-        throw new \GraphQL\Error\UserError(
-            sprintf( 'Query exceeds maximum size of %d bytes.', $max_size )
-        );
-    }
-
-    // Layer 2: Field deduplication
-    $data['query'] = preg_replace( '/\b(\w+)(\s+\1)+\b/', '$1', $data['query'] );
-
-    return $data;
-}, 1 );
-
-// Layer 3: Query complexity limiting (500 max)
+add_filter('graphql_request_data',function($data){
+  if(empty($data['query'])){return $data;}
+  $max=apply_filters('airbnb_graphql_max_query_size',10000);
+  if(strlen($data['query'])>$max){throw new \GraphQL\Error\UserError(sprintf('Query exceeds %d bytes.',$max));}
+  $data['query']=preg_replace('/\b(\w+)(\s+\1)+\b/','$1',$data['query']);
+  return $data;
+},1);
 use GraphQL\Validator\Rules\QueryComplexity;
-
-add_filter( 'graphql_validation_rules', function( $rules ) {
-    $max_complexity = apply_filters( 'airbnb_graphql_max_complexity', 500 );
-    $rules['query_complexity'] = new QueryComplexity( $max_complexity );
-    return $rules;
-} );
-
-// Disable introspection in production
-add_filter( 'graphql_introspection_enabled', function( $enabled ) {
-    if ( defined('VIP_GO_ENV') && 'production' === VIP_GO_ENV ) {
-        return false;
-    }
-    return $enabled;
-} );
+add_filter('graphql_validation_rules',function($rules){
+  $max=apply_filters('airbnb_graphql_max_complexity',500);
+  $rules['query_complexity']=new QueryComplexity($max);
+  return $rules;
+});
+add_filter('graphql_introspection_enabled',function($enabled){
+  if(defined('VIP_GO_ENV')&&'production'===VIP_GO_ENV){return false;}
+  return $enabled;
+});
 ```
 
 **File location:** `/client-mu-plugins/graphql-security.php`

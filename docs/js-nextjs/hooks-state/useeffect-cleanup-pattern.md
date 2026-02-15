@@ -116,49 +116,31 @@ Each dependency change triggers cleanup of the previous listener before adding t
 
 ## Multiple Listeners Per Component
 
-Components often need multiple event listeners for different interactions. Use separate useEffect hooks for each listener to keep concerns separated and make dependencies explicit.
+Components needing multiple event listeners use separate useEffect hooks to keep concerns separated and dependencies explicit.
 
 ```typescript
-export default function SiteHeader() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [isLocaleSelectorOpen, setIsLocaleSelectorOpen] = useState(false)
-
-  // Resize handler
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 744) {
-        setIsMobileMenuOpen(false)
-      }
-    }
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
-
-  // Escape key for mobile menu
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isMobileMenuOpen) {
-        setIsMobileMenuOpen(false)
-      }
-    }
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [isMobileMenuOpen])
-
-  // Escape key for locale selector
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isLocaleSelectorOpen) {
-        setIsLocaleSelectorOpen(false)
-      }
-    }
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [isLocaleSelectorOpen])
+export default function SiteHeader(){
+  const [isMobileMenuOpen,setIsMobileMenuOpen]=useState(false)
+  const [isLocaleSelectorOpen,setIsLocaleSelectorOpen]=useState(false)
+  useEffect(()=>{
+    const h=()=>{if(window.innerWidth>=744){setIsMobileMenuOpen(false)}}
+    window.addEventListener('resize',h)
+    return()=>window.removeEventListener('resize',h)
+  },[])
+  useEffect(()=>{
+    const h=(e:KeyboardEvent)=>{if(e.key==='Escape'&&isMobileMenuOpen){setIsMobileMenuOpen(false)}}
+    document.addEventListener('keydown',h)
+    return()=>document.removeEventListener('keydown',h)
+  },[isMobileMenuOpen])
+  useEffect(()=>{
+    const h=(e:KeyboardEvent)=>{if(e.key==='Escape'&&isLocaleSelectorOpen){setIsLocaleSelectorOpen(false)}}
+    document.addEventListener('keydown',h)
+    return()=>document.removeEventListener('keydown',h)
+  },[isLocaleSelectorOpen])
 }
 ```
 
-Separate effects make each listener's lifecycle independent, with clear dependencies showing when each listener needs to update.
+Separate effects make each listener's lifecycle independent with clear dependencies.
 
 ## Browser Compatibility Patterns
 

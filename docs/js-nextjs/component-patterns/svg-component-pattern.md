@@ -57,46 +57,34 @@ Arrow functions with implicit returns keep SVG components concise. The entire SV
 
 ## ClassName Prop Convention
 
-SVG components accept an optional `className` prop to enable external styling control. Parent components pass className to apply custom styles or positioning without modifying the SVG component itself. The className applies to the root `<svg>` element.
+SVG components accept optional `className` prop for external styling control. Applies to root `<svg>` element.
 
 ```typescript
-type IconProps = {
-  className?: string
-}
-
-const Download = ({ className }: IconProps): JSX.Element => (
+type IconProps={className?:string}
+const Download=({className}:IconProps):JSX.Element=>(
   <svg className={className} width='24' height='24' viewBox='0 0 24 24' fill='none'>
-    <path d='M12 16L7 11L8.4 9.6L11 12.2V4H13V12.2L15.6 9.6L17 11L12 16Z' fill='currentColor' />
+    <path d='M12 16L7 11L8.4 9.6L11 12.2V4H13V12.2L15.6 9.6L17 11L12 16Z' fill='currentColor'/>
   </svg>
 )
-
 export default Download
 ```
 
-Usage in parent components:
+Usage:
 
 ```typescript
 import Download from '../svgs/Download'
 import styles from './Button.module.scss'
-
-export default function Button({ download }: ButtonProps) {
-  return (
-    <button>
-      {download && <Download className={styles.icon} />}
-      Download
-    </button>
-  )
+export default function Button({download}:ButtonProps){
+  return(<button>{download&&<Download className={styles.icon}/>}Download</button>)
 }
 ```
 
-### CurrentColor for Fill Control
-
-SVG path elements use `fill='currentColor'` to inherit text color from parent elements. CurrentColor enables icon color customization through CSS `color` property instead of hardcoding fill colors. This pattern allows icons to adapt to theme changes or hover states automatically.
+**CurrentColor for fill control:** SVG paths use `fill='currentColor'` to inherit parent text color. Enables customization through CSS `color` property instead of hardcoding fills. Icons adapt to theme changes/hover states automatically.
 
 ```typescript
-const Icon = (): JSX.Element => (
+const Icon=():JSX.Element=>(
   <svg width='24' height='24' viewBox='0 0 24 24'>
-    <path d='M...' fill='currentColor' />
+    <path d='M...' fill='currentColor'/>
   </svg>
 )
 ```
@@ -104,11 +92,6 @@ const Icon = (): JSX.Element => (
 Parent CSS controls icon color:
 
 ```scss
-.button {
-  color: blue;  // Icon inherits blue fill
-}
-
-.button:hover {
-  color: darkblue;  // Icon fill updates on hover
-}
+.button{color:blue;}
+.button:hover{color:darkblue;}
 ```

@@ -98,56 +98,34 @@ This pattern ensures menus close and UI resets when users navigate to new pages,
 
 ## Separating Effects by Concern
 
-Components with multiple side effects use separate useEffect hooks rather than combining logic in one effect with complex dependencies. This makes dependency management clearer and effects more maintainable.
+Components with multiple side effects use separate useEffect hooks rather than combining logic. Makes dependency management clearer.
 
 ```typescript
-// ✅ Separated effects (policy-node SiteHeader pattern)
-export default function SiteHeader() {
-  const pathname = usePathname()
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [isLocaleSelectorOpen, setIsLocaleSelectorOpen] = useState(false)
-
-  // Effect 1: Navigation change
-  useEffect(() => {
-    handleNavigation()
-  }, [pathname])
-
-  // Effect 2: Mobile menu keyboard handling
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isMobileMenuOpen) {
-        setIsMobileMenuOpen(false)
-      }
-    }
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [isMobileMenuOpen])
-
-  // Effect 3: Locale selector keyboard handling
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isLocaleSelectorOpen) {
-        setIsLocaleSelectorOpen(false)
-      }
-    }
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [isLocaleSelectorOpen])
-
-  // Effect 4: Window resize
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 744) {
-        setIsMobileMenuOpen(false)
-      }
-    }
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
+// policy-node SiteHeader
+export default function SiteHeader(){
+  const pathname=usePathname()
+  const [isMobileMenuOpen,setIsMobileMenuOpen]=useState(false)
+  const [isLocaleSelectorOpen,setIsLocaleSelectorOpen]=useState(false)
+  useEffect(()=>{handleNavigation()},[pathname])
+  useEffect(()=>{
+    const h=(e:KeyboardEvent)=>{if(e.key==='Escape'&&isMobileMenuOpen){setIsMobileMenuOpen(false)}}
+    document.addEventListener('keydown',h)
+    return()=>document.removeEventListener('keydown',h)
+  },[isMobileMenuOpen])
+  useEffect(()=>{
+    const h=(e:KeyboardEvent)=>{if(e.key==='Escape'&&isLocaleSelectorOpen){setIsLocaleSelectorOpen(false)}}
+    document.addEventListener('keydown',h)
+    return()=>document.removeEventListener('keydown',h)
+  },[isLocaleSelectorOpen])
+  useEffect(()=>{
+    const h=()=>{if(window.innerWidth>=744){setIsMobileMenuOpen(false)}}
+    window.addEventListener('resize',h)
+    return()=>window.removeEventListener('resize',h)
+  },[])
 }
 ```
 
-Each effect has clear, independent dependencies and lifecycle. Combining these into one effect would create a dependency array nightmare.
+Each effect has clear, independent dependencies. Combining would create dependency array nightmare.
 
 ## Function Dependencies
 

@@ -26,7 +26,7 @@ Components without interactivity (static content, layout wrappers, data-fetching
 
 ## When to Use 'use client' Directive
 
-Client components require the `'use client'` directive at the top of the file (before imports). Client components are necessary when components use React hooks, browser APIs, event handlers, or any interactive functionality. Client components render on both server (initial HTML) and client (hydration + interactivity).
+Client components require `'use client'` directive at top of file (before imports). Necessary when using React hooks, browser APIs, event handlers, or interactive functionality. Render on both server (initial HTML) and client (hydration + interactivity).
 
 ```typescript
 'use client'

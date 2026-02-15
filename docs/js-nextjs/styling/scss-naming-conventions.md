@@ -24,24 +24,23 @@ Next.js projects use camelCase for base CSS class names combined with BEM-style 
 
 ## Base Class Naming: camelCase
 
-All CSS class names use camelCase convention where first word is lowercase and subsequent words are capitalized. This pattern enables dot notation access in JavaScript/TypeScript.
+All CSS class names use camelCase where first word is lowercase and subsequent words are capitalized. Enables dot notation access in JavaScript/TypeScript.
 
 ```scss
-// FooterNav.module.scss (helix-dot-com-next)
-.nav { }           // Base element
-.navList { }       // Compound word: camelCase
-.section { }       // Single word: lowercase
-.title { }         // Single word: lowercase
-.titleWrap { }     // Compound word: camelCase
-.linkItem { }      // Compound word: camelCase
-.subheader { }     // Compound word: camelCase
+// FooterNav.module.scss (helix)
+.nav{}
+.navList{}
+.section{}
+.title{}
+.titleWrap{}
+.linkItem{}
+.subheader{}
 ```
 
 **Usage in components:**
 
 ```tsx
 import styles from './FooterNav.module.scss'
-
 <nav className={styles.nav}>
   <div className={styles.navList}>
     <div className={styles.section}>
@@ -51,181 +50,85 @@ import styles from './FooterNav.module.scss'
 </nav>
 ```
 
-**TypeScript benefit:** Autocomplete and type-checking work naturally with dot notation. Invalid class names are caught at compile time.
+**TypeScript benefit:** Autocomplete and type-checking work naturally with dot notation. Invalid class names caught at compile time.
 
-### Forbidden Patterns
-
-Projects avoid kebab-case, snake_case, and PascalCase for CSS class names. These patterns either break JavaScript dot notation or conflict with React component naming.
+**Forbidden patterns:** Projects avoid kebab-case (breaks dot notation), snake_case (not idiomatic), and PascalCase (conflicts with components).
 
 ```scss
-/* ❌ NEVER USE - kebab-case breaks dot notation */
-.nav-list { }
-.title-wrap { }
-
-/* ❌ NEVER USE - snake_case not idiomatic in CSS */
-.nav_list { }
-.title_wrap { }
-
-/* ❌ NEVER USE - PascalCase conflicts with components */
-.NavList { }
-.TitleWrap { }
-
-/* ✅ CORRECT - camelCase works with dot notation */
-.navList { }
-.titleWrap { }
+/* ❌ NEVER */
+.nav-list{}
+.nav_list{}
+.NavList{}
+/* ✅ CORRECT */
+.navList{}
 ```
 
-**Consistency:** Zero kebab-case or snake_case class names found in 194 CSS Module files. 100% camelCase adoption.
+**Consistency:** Zero kebab-case or snake_case in 194 CSS Module files. 100% camelCase adoption.
 
-## BEM Modifiers: Double Underscore
+## BEM Element Modifiers (State/Type Variants)
 
-Class variants use BEM (Block Element Modifier) convention with double underscore (`__`) to indicate relationship to base class. CSS Modules eliminate need for block prefixes since all classes are automatically scoped.
-
-### Element Modifiers (State or Type Variants)
-
-Element modifiers describe different states or types of the base element. The double underscore signals this class modifies the base behavior.
+Class variants use BEM convention with double underscore (`__`) to indicate relationship to base class. CSS Modules eliminate need for block prefixes.
 
 ```scss
-// FooterNav.module.scss (helix-dot-com-next)
-.title {
-  @include body7;
-  color: $charcoal-300;
-  text-align: left;
-
-  // Modifier: mobile button variant
-  &__mobileBtn {
-    @include buttonReset;
-  }
-}
-
-// Compiled class names (CSS Modules adds hash):
-// .title_abc123
-// .title__mobileBtn_def456
+// FooterNav.module.scss (helix)
+.title{@include body7;color:$charcoal-300;text-align:left;&__mobileBtn{@include buttonReset;}}
 ```
 
 **Usage:**
 
 ```tsx
-<button className={cx(styles.title, styles.title__mobileBtn)}>
-  {section.title}
-</button>
+<button className={cx(styles.title,styles.title__mobileBtn)}>{section.title}</button>
 ```
 
-**Pattern:** Base class (`.title`) establishes defaults. Modifier class (`.title__mobileBtn`) applied alongside base class to override specific properties.
+**Pattern:** Base class establishes defaults. Modifier class applied alongside base to override specific properties.
 
-### Layout Modifiers
+## BEM Layout Modifiers
 
-Layout modifiers indicate positional or layout variations of base element. Common pattern for components with multiple layout options.
+Layout modifiers indicate positional or layout variations. Common pattern for components with multiple layout options.
 
 ```scss
-// PageSection.module.scss (helix-dot-com-next)
-.textWrap {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-
-  // Modifier: image positioned left
-  &__imgleft {
-    flex-direction: row;
-  }
-
-  // Modifier: image positioned right
-  &__imgright {
-    flex-direction: row-reverse;
-  }
-}
+// PageSection.module.scss (helix)
+.textWrap{display:flex;flex-direction:column;gap:24px;&__imgleft{flex-direction:row;}&__imgright{flex-direction:row-reverse;}}
 ```
 
 **Usage:**
 
 ```tsx
-<div className={cx(
-  styles.textWrap,
-  imagePosition === 'left' && styles.textWrap__imgleft,
-  imagePosition === 'right' && styles.textWrap__imgright
-)}>
-  ...
-</div>
+<div className={cx(styles.textWrap,imagePosition==='left'&&styles.textWrap__imgleft,imagePosition==='right'&&styles.textWrap__imgright)}>...</div>
 ```
 
-**Pattern:** Base class defines default layout (column). Modifier classes change flex direction based on image position.
+**Pattern:** Base class defines default layout. Modifier classes change flex direction based on image position.
 
-### Size Modifiers
+## BEM Size Modifiers
 
 Size modifiers provide variant sizing for components. Common pattern for buttons, icons, and typography.
 
 ```scss
 // Button.module.scss (policy-node)
-.ButtonIcon {
-  width: to-rem(48px);
-  height: to-rem(48px);
-
-  // Modifier: large variant
-  &__large {
-    width: space(8);
-    height: space(8);
-
-    svg {
-      width: space(4);
-      height: space(4);
-    }
-  }
-
-  // Modifier: small variant
-  &__small {
-    width: space(4);
-    height: space(4);
-
-    svg {
-      width: space(2);
-      height: space(2);
-    }
-  }
-}
+.ButtonIcon{width:to-rem(48px);height:to-rem(48px);&__large{width:space(8);height:space(8);svg{width:space(4);height:space(4);}}&__small{width:space(4);height:space(4);svg{width:space(2);height:space(2);}}}
 ```
 
 **Usage:**
 
 ```tsx
-<button className={cx(
-  styles.ButtonIcon,
-  size === 'large' && styles.ButtonIcon__large,
-  size === 'small' && styles.ButtonIcon__small
-)}>
-  <IconComponent />
-</button>
+<button className={cx(styles.ButtonIcon,size==='large'&&styles.ButtonIcon__large,size==='small'&&styles.ButtonIcon__small)}><IconComponent/></button>
 ```
 
-**Pattern:** Base class defines default size. Modifier classes override dimensions for specific sizes. Always applied alongside base class.
+**Pattern:** Base class defines default size. Modifiers override dimensions. Always applied alongside base class.
 
-### Context Modifiers
+## BEM Context Modifiers
 
-Context modifiers adapt element styling based on surrounding context or theme. Common pattern for navigation items, links, and layout elements.
+Context modifiers adapt element styling based on surrounding context or theme. Common for navigation items, links, and layout elements.
 
 ```scss
 // SiteHeader.module.scss (policy-node)
-.menuItem {
-  padding: space(2);
-  color: $color-hof;
-
-  // Modifier: secondary navigation context
-  &__secondaryNav {
-    padding: space(1);
-    font-size: to-rem(14px);
-    color: $color-foggy;
-  }
-}
+.menuItem{padding:space(2);color:$color-hof;&__secondaryNav{padding:space(1);font-size:to-rem(14px);color:$color-foggy;}}
 ```
 
 **Usage:**
 
 ```tsx
-<li className={cx(
-  styles.menuItem,
-  isSecondaryNav && styles.menuItem__secondaryNav
-)}>
-  {item.title}
-</li>
+<li className={cx(styles.menuItem,isSecondaryNav&&styles.menuItem__secondaryNav)}>{item.title}</li>
 ```
 
 **Pattern:** Base class defines primary nav styling. Modifier adapts styling for secondary navigation context.
@@ -334,54 +237,14 @@ SCSS parent selector (`&`) enables defining modifiers directly nested under base
 Complete component showing naming conventions in practice:
 
 ```scss
-// PageSection.module.scss (helix-dot-com-next)
-.wrap {
-  @include pageSectionWrap;
-
-  &__bgwhite {
-    background-color: $white;
-  }
-
-  &__bgdarkBlue {
-    background-color: $darkblue-100;
-  }
-}
-
-.wrapInner {
-  position: relative;
-}
-
-.introWrap {
-  @include containerGrid;
-  margin-bottom: to-rem($page-section-intro-margin-bottom);
-}
-
-.intro {
-  @include pageSectionColumns;
-  text-align: center;
-}
-
-.title {
-  @include pageSectionHeader;
-
-  .wrap__bgdarkBlue & {
-    color: $white;
-  }
-}
-
-.text {
-  @include pageSectionIntroBody;
-
-  .wrap__bgdarkBlue & {
-    color: $white;
-  }
-}
-
-.innerBlocks {
-  > :not(:last-child) {
-    margin-bottom: to-rem(40px);
-  }
-}
+// PageSection.module.scss (helix)
+.wrap{@include pageSectionWrap;&__bgwhite{background-color:$white;}&__bgdarkBlue{background-color:$darkblue-100;}}
+.wrapInner{position:relative;}
+.introWrap{@include containerGrid;margin-bottom:to-rem($page-section-intro-margin-bottom);}
+.intro{@include pageSectionColumns;text-align:center;}
+.title{@include pageSectionHeader;.wrap__bgdarkBlue &{color:$white;}}
+.text{@include pageSectionIntroBody;.wrap__bgdarkBlue &{color:$white;}}
+.innerBlocks{>:not(:last-child){margin-bottom:to-rem(40px);}}
 ```
 
 **Component usage:**
@@ -389,14 +252,9 @@ Complete component showing naming conventions in practice:
 ```tsx
 import cx from 'classnames'
 import styles from './PageSection.module.scss'
-
-export default function PageSection({ bgColor, children }) {
-  return (
-    <section className={cx(
-      styles.wrap,
-      bgColor === 'white' && styles.wrap__bgwhite,
-      bgColor === 'darkBlue' && styles.wrap__bgdarkBlue
-    )}>
+export default function PageSection({bgColor,children}){
+  return(
+    <section className={cx(styles.wrap,bgColor==='white'&&styles.wrap__bgwhite,bgColor==='darkBlue'&&styles.wrap__bgdarkBlue)}>
       <div className={styles.wrapInner}>
         <div className={styles.introWrap}>
           <div className={styles.intro}>
@@ -404,9 +262,7 @@ export default function PageSection({ bgColor, children }) {
             <p className={styles.text}>Introduction text</p>
           </div>
         </div>
-        <div className={styles.innerBlocks}>
-          {children}
-        </div>
+        <div className={styles.innerBlocks}>{children}</div>
       </div>
     </section>
   )
