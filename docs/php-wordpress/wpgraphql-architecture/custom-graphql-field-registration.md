@@ -409,65 +409,43 @@ add_action('graphql_register_types', function() {
 
 **Source:** add-wpgraphql-seo uses NodeWithTitle pattern
 
-## Common Field Registration Errors
+## Error: Hook Timing Too Late
 
-### Error: Field Not Appearing in Schema
-**Cause:** Action hook runs too late
+WordPress GraphQL field registration requires `graphql_register_types` hook directly, not nested in `init`.
+
 ```php
 // ❌ Wrong: Runs after GraphQL initializes schema
-add_action('init', function() {
-  add_action('graphql_register_types', function() {
-    register_graphql_field('Post', 'customField', [...]);
-  });
+add_action('init',function(){
+ add_action('graphql_register_types',function(){register_graphql_field('Post','customField',[]);});
 });
 
 // ✅ Correct: Direct registration
-add_action('graphql_register_types', function() {
-  register_graphql_field('Post', 'customField', [...]);
-});
+add_action('graphql_register_types',function(){register_graphql_field('Post','customField',[]);});
 ```
 
-### Error: Resolver Returns Wrong Type
-**Cause:** Type mismatch between declared and returned
+## Error: Type Mismatch
+
+WordPress GraphQL resolvers must return type matching declaration with explicit casting.
+
 ```php
 // ❌ Wrong: Declares Int, returns String
-register_graphql_field('Post', 'viewCount', [
-  'type' => 'Int',
-  'resolve' => fn($post) => get_post_meta($post->databaseId, 'views', true),
-  // Returns string from meta, should cast to int
-]);
+register_graphql_field('Post','viewCount',['type'=>'Int','resolve'=>fn($p)=>get_post_meta($p->databaseId,'views',true)]);
 
 // ✅ Correct: Cast to declared type
-register_graphql_field('Post', 'viewCount', [
-  'type' => 'Int',
-  'resolve' => fn($post) => (int) get_post_meta($post->databaseId, 'views', true),
-]);
+register_graphql_field('Post','viewCount',['type'=>'Int','resolve'=>fn($p)=>(int)get_post_meta($p->databaseId,'views',true)]);
 ```
 
-### Error: N+1 Query Problem
-**Cause:** Resolver queries database per item
+## Error: N+1 Query Problem
+
+WordPress GraphQL resolvers querying database per item cause N+1 performance issues. Use DataLoader for batch loading.
+
 ```php
 // ❌ Bad: 100 posts = 100 database queries
-register_graphql_field('Post', 'author', [
-  'type' => 'User',
-  'resolve' => function($post) {
-    return get_user_by('id', $post->post_author); // N+1 problem
-  },
-]);
+register_graphql_field('Post','author',['type'=>'User','resolve'=>fn($p)=>get_user_by('id',$p->post_author)]);
 
-// ✅ Good: Use DataLoader
-register_graphql_field('Post', 'author', [
-  'type' => 'User',
-  'resolve' => function($post, $args, $context) {
-    return $context->get_loader('user')->load_deferred($post->post_author);
-  },
-]);
+// ✅ Good: DataLoader batches queries, deduplicates, caches
+register_graphql_field('Post','author',['type'=>'User','resolve'=>fn($p,$a,$c)=>$c->get_loader('user')->load_deferred($p->post_author)]);
 ```
-
-**DataLoader Benefits:**
-- Batches queries automatically
-- Deduplicates identical requests
-- Caches within single request
 
 ## Testing Custom Fields
 

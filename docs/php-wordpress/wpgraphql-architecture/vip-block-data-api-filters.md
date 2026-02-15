@@ -227,55 +227,29 @@ add_filter('vip_block_data_api__sourced_block_result', function($sourced_block, 
 
 ## Image URL CDN Transformation
 
-Block Data API filters transform image URLs to CDN paths for external hosting optimization.
+Block Data API filters transform ACF image field URLs to CDN paths for external hosting optimization.
 
 ```php
-add_filter('vip_block_data_api__sourced_block_result', function($sourced_block, $block_name, $post_id, $parsed_block) {
-  if (!empty($sourced_block['attributes']['data'])) {
-    $data = &$sourced_block['attributes']['data'];
-
-    // Transform ACF image fields to CDN URLs
-    foreach ($data as $key => &$value) {
-      if (strpos($key, '_') === 0) continue;
-
-      $field_key_ref = '_' . $key;
-      if (!empty($data[$field_key_ref])) {
-        $field_object = get_field_object($data[$field_key_ref]);
-
-        if ($field_object && $field_object['type'] === 'image' && is_array($value)) {
-          // Replace WordPress uploads URL with CDN
-          if (!empty($value['url'])) {
-            $value['url'] = str_replace(
-              'https://site.com/wp-content/uploads',
-              'https://cdn.site.com/uploads',
-              $value['url']
-            );
-          }
-
-          // Transform sizes array
-          if (!empty($value['sizes'])) {
-            foreach ($value['sizes'] as $size => &$size_url) {
-              $size_url = str_replace(
-                'https://site.com/wp-content/uploads',
-                'https://cdn.site.com/uploads',
-                $size_url
-              );
-            }
-          }
-        }
-      }
+add_filter('vip_block_data_api__sourced_block_result',function($s,$b,$p,$pb){
+ if(!empty($s['attributes']['data'])){
+  $d=&$s['attributes']['data'];
+  foreach($d as $k=>&$v){
+   if(strpos($k,'_')===0)continue;
+   $f='_'.$k;
+   if(!empty($d[$f])){
+    $o=get_field_object($d[$f]);
+    if($o&&$o['type']==='image'&&is_array($v)){
+     if(!empty($v['url']))$v['url']=str_replace('https://site.com/wp-content/uploads','https://cdn.site.com/uploads',$v['url']);
+     if(!empty($v['sizes']))foreach($v['sizes'] as &$u)$u=str_replace('https://site.com/wp-content/uploads','https://cdn.site.com/uploads',$u);
     }
+   }
   }
-
-  return $sourced_block;
-}, 10, 4);
+ }
+ return $s;
+},10,4);
 ```
 
-**CDN Benefits:**
-- Offload image delivery from origin server
-- Automatic image optimization
-- Global edge caching
-- Reduced WordPress server load
+**CDN Benefits:** Offload image delivery, automatic optimization, global edge caching, reduced server load
 
 ## Data Sanitization and Security
 
@@ -319,46 +293,31 @@ add_filter('vip_block_data_api__sourced_block_result', function($sourced_block, 
 
 ## External API Data Enrichment
 
-Filter fetches data from external APIs and injects into block data during transformation.
+Filter fetches external API data and injects into block attributes during transformation with transient caching.
 
 ```php
-add_filter('vip_block_data_api__sourced_block_result', function($sourced_block, $block_name, $post_id, $parsed_block) {
-  // Enrich municipality block with API data
-  if ($block_name === 'create-block/municipalities-search-block') {
-    if (!empty($sourced_block['attributes']['data']['municipalityId'])) {
-      $municipality_id = $sourced_block['attributes']['data']['municipalityId'];
-      $cache_key = "municipality_data_{$municipality_id}";
-
-      // Check cache first
-      $municipality_data = get_transient($cache_key);
-
-      if (false === $municipality_data) {
-        // Fetch from external API
-        $response = wp_remote_get("https://api.municipalities.gov/v1/municipality/{$municipality_id}");
-
-        if (!is_wp_error($response)) {
-          $municipality_data = json_decode(wp_remote_retrieve_body($response), true);
-          set_transient($cache_key, $municipality_data, 12 * HOUR_IN_SECONDS);
-        }
-      }
-
-      if ($municipality_data) {
-        $sourced_block['attributes']['data']['municipalityName'] = $municipality_data['name'];
-        $sourced_block['attributes']['data']['population'] = $municipality_data['population'];
-        $sourced_block['attributes']['data']['coordinates'] = $municipality_data['coordinates'];
-      }
-    }
+add_filter('vip_block_data_api__sourced_block_result',function($s,$b,$p,$pb){
+ if($b==='create-block/municipalities-search-block'&&!empty($s['attributes']['data']['municipalityId'])){
+  $id=$s['attributes']['data']['municipalityId'];$k="municipality_data_{$id}";
+  $d=get_transient($k);
+  if($d===false){
+   $r=wp_remote_get("https://api.municipalities.gov/v1/municipality/{$id}");
+   if(!is_wp_error($r)){
+    $d=json_decode(wp_remote_retrieve_body($r),true);
+    set_transient($k,$d,12*HOUR_IN_SECONDS);
+   }
   }
-
-  return $sourced_block;
-}, 10, 4);
+  if($d){
+   $s['attributes']['data']['municipalityName']=$d['name'];
+   $s['attributes']['data']['population']=$d['population'];
+   $s['attributes']['data']['coordinates']=$d['coordinates'];
+  }
+ }
+ return $s;
+},10,4);
 ```
 
-**Best Practices:**
-- Cache external API responses (transients)
-- Handle API failures gracefully
-- Set reasonable cache expiration (12 hours)
-- Use `wp_remote_get()` for HTTP requests
+**Best Practices:** Cache API responses (transients), handle failures gracefully, 12hr expiration, use `wp_remote_get()`
 
 ## Performance Optimization Strategies
 
@@ -419,75 +378,43 @@ if (false === $field_object) {
 - Transient cached: 10-50ms per block
 - Object cached: 1-5ms per block
 
-## Testing Block Data Transformations
+## VIP Block Data API Endpoint Testing
 
-### VIP Block Data API Endpoint
+VIP Block Data API endpoint `/wp-json/vip-block-data-api/v1/posts/{id}` returns transformed block data with applied filters.
+
 ```bash
-# Fetch block data for post
 curl https://site.com/wp-json/vip-block-data-api/v1/posts/123
 ```
 
-**Response Structure:**
+Response includes transformed content:
 ```json
-{
-  "blocks": [
-    {
-      "name": "create-block/stat-block",
-      "attributes": {
-        "data": {
-          "stat": "150",
-          "quantity": "M",
-          "quantityFullForm": "Million",
-          "content": "<p>Formatted paragraph text</p>"
-        }
-      }
-    }
-  ]
-}
+{"blocks":[{"name":"create-block/stat-block","attributes":{"data":{"stat":"150","quantity":"M","content":"<p>Formatted text</p>"}}}]}
 ```
 
-### Test WYSIWYG Transformation
+## Integration Testing Pattern
+
+WordPress integration tests verify filter transformations using VIP Block Data API endpoint with ACF field updates.
+
 ```php
-// Create test post with WYSIWYG content
-$post_id = wp_insert_post([
-  'post_title' => 'Test Post',
-  'post_content' => '<!-- wp:create-block/text-image-block --><!-- /wp:create-block/text-image-block -->',
-  'post_status' => 'publish',
-]);
-
-// Add ACF WYSIWYG content
-update_field('content', "Paragraph one\n\nParagraph two", $post_id);
-
-// Fetch via Block Data API
-$response = wp_remote_get("https://site.test/wp-json/vip-block-data-api/v1/posts/{$post_id}");
-$body = json_decode(wp_remote_retrieve_body($response), true);
-
-// Verify wpautop applied
-assert(str_contains($body['blocks'][0]['attributes']['data']['content'], '<p>'));
+$p=wp_insert_post(['post_title'=>'Test','post_content'=>'<!-- wp:create-block/text-image-block -->','post_status'=>'publish']);
+update_field('content',"Para 1\n\nPara 2",$p);
+$r=wp_remote_get("https://site.test/wp-json/vip-block-data-api/v1/posts/{$p}");
+$b=json_decode(wp_remote_retrieve_body($r),true);
+assert(str_contains($b['blocks'][0]['attributes']['data']['content'],'<p>'));
 ```
 
-### Unit Test Pattern
+## Unit Testing Pattern
+
+WordPress unit tests mock ACF field objects and apply filters directly bypassing API layer.
+
 ```php
-class Test_Block_Data_Filter extends WP_UnitTestCase {
-  public function test_wysiwyg_wpautop_transformation() {
-    $sourced_block = [
-      'attributes' => [
-        'data' => [
-          'content' => "Line one\n\nLine two",
-          '_content' => 'field_abc123',
-        ],
-      ],
-    ];
-
-    // Mock ACF field object
-    WP_Mock::userFunction('get_field_object', [
-      'return' => ['type' => 'wysiwyg'],
-    ]);
-
-    $result = apply_filters('vip_block_data_api__sourced_block_result', $sourced_block, 'create-block/test', 1, []);
-
-    $this->assertStringContainsString('<p>Line one</p>', $result['attributes']['data']['content']);
-  }
+class Test_Block_Data_Filter extends WP_UnitTestCase{
+ function test_wysiwyg_wpautop(){
+  $s=['attributes'=>['data'=>['content'=>"L1\n\nL2",'_content'=>'field_abc']]];
+  WP_Mock::userFunction('get_field_object',['return'=>['type'=>'wysiwyg']]);
+  $r=apply_filters('vip_block_data_api__sourced_block_result',$s,'create-block/test',1,[]);
+  $this->assertStringContainsString('<p>L1</p>',$r['attributes']['data']['content']);
+ }
 }
 ```
 

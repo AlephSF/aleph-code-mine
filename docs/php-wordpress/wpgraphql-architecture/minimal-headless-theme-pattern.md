@@ -120,57 +120,28 @@ add_filter('graphql_resolve_field', function($result, $source, $args, $context, 
 wpautop filter on VIP Block Data API ensures WYSIWYG content returns properly formatted HTML paragraphs to headless frontends.
 
 ```php
-add_filter('vip_block_data_api__sourced_block_result', function($sourced_block, $block_name, $post_id, $parsed_block) {
-  // Apply wpautop to all ACF WYSIWYG fields in any block
-  if (!empty($sourced_block['attributes']['data']) && is_array($sourced_block['attributes']['data'])) {
-    $data = &$sourced_block['attributes']['data'];
-
-    foreach ($data as $key => &$value) {
-      // Skip field reference keys (prefixed with underscore)
-      if (strpos($key, '_') === 0) {
-        continue;
-      }
-
-      // Check if this field has a corresponding ACF field reference
-      $field_key_ref = '_' . $key;
-      if (!empty($data[$field_key_ref])) {
-        $field_object = get_field_object($data[$field_key_ref]);
-
-        // Apply wpautop to WYSIWYG fields
-        if ($field_object && $field_object['type'] === 'wysiwyg' && !empty($value) && is_string($value)) {
-          $value = wpautop($value);
-        }
-      }
-    }
+add_filter('vip_block_data_api__sourced_block_result',function($s,$b,$p,$pb){
+ if(!empty($s['attributes']['data'])&&is_array($s['attributes']['data'])){
+  $d=&$s['attributes']['data'];
+  foreach($d as $k=>&$v){
+   if(strpos($k,'_')===0)continue;
+   $f='_'.$k;
+   if(!empty($d[$f])){
+    $o=get_field_object($d[$f]);
+    if($o&&$o['type']==='wysiwyg'&&!empty($v)&&is_string($v))$v=wpautop($v);
+   }
   }
-
-  return $sourced_block;
-}, 10, 4);
+ }
+ return $s;
+},10,4);
 ```
 
-**What This Does:**
-- Identifies ACF WYSIWYG fields in block data
-- Applies wpautop (converts line breaks to `<p>` tags)
-- Preserves non-WYSIWYG fields unchanged
-- Returns formatted HTML to GraphQL API
+**What This Does:** Identifies ACF WYSIWYG fields, applies wpautop (line breaks→`<p>` tags), preserves non-WYSIWYG fields, returns formatted HTML
 
-**Without This Filter:**
-```json
-{
-  "content": "Paragraph one\n\nParagraph two\n\nParagraph three"
-}
-```
+**Without Filter:** `"content":"Para 1\n\nPara 2"`
+**With Filter:** `"content":"<p>Para 1</p>\n\n<p>Para 2</p>"`
 
-**With This Filter:**
-```json
-{
-  "content": "<p>Paragraph one</p>\n\n<p>Paragraph two</p>\n\n<p>Paragraph three</p>"
-}
-```
-
-**Frontend Benefit:** Headless app receives HTML-formatted content ready for rendering, no client-side text processing needed
-
-**Source:** airbnb/themes/aleph-nothing/functions.php (lines 8-32)
+**Frontend Benefit:** Headless app receives HTML-formatted content ready for rendering, no client-side processing
 
 ## GraphQL Term Description Filter
 

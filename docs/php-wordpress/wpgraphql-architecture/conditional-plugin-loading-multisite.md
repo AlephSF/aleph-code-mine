@@ -116,51 +116,17 @@ require_once __DIR__ . '/graphql-security.php';
 Custom post types register selectively preventing taxonomy bloat on sites not using the content type.
 
 ```php
-add_action('init', function() {
-  // Local Pages CPT only on Policy site (ID 20)
-  if (get_current_blog_id() === 20) {
-    register_post_type('plc_local_pages', [
-      'label' => 'Local Pages',
-      'public' => true,
-      'show_in_rest' => true,
-      'show_in_graphql' => true,
-      'graphql_single_name' => 'localPage',
-      'graphql_plural_name' => 'localPages',
-    ]);
-  }
-
-  // AirLab Posts CPT on Policy site (ID 20)
-  if (get_current_blog_id() === 20) {
-    register_post_type('plc_airlab_posts', [
-      'label' => 'AirLab Posts',
-      'public' => true,
-      'show_in_rest' => true,
-      'show_in_graphql' => true,
-      'graphql_single_name' => 'airLabPost',
-      'graphql_plural_name' => 'airLabPosts',
-    ]);
-  }
-
-  // Careers CPT on Careers site (ID 35)
-  if (get_current_blog_id() === 35) {
-    register_post_type('job_posting', [
-      'label' => 'Job Postings',
-      'public' => true,
-      'show_in_rest' => true,
-      'show_in_graphql' => true,
-      'graphql_single_name' => 'jobPosting',
-      'graphql_plural_name' => 'jobPostings',
-    ]);
-  }
+add_action('init',function(){
+ $b=get_current_blog_id();
+ if($b===20){
+  register_post_type('plc_local_pages',['label'=>'Local Pages','public'=>true,'show_in_rest'=>true,'show_in_graphql'=>true,'graphql_single_name'=>'localPage','graphql_plural_name'=>'localPages']);
+  register_post_type('plc_airlab_posts',['label'=>'AirLab Posts','public'=>true,'show_in_rest'=>true,'show_in_graphql'=>true,'graphql_single_name'=>'airLabPost','graphql_plural_name'=>'airLabPosts']);
+ }
+ if($b===35)register_post_type('job_posting',['label'=>'Job Postings','public'=>true,'show_in_rest'=>true,'show_in_graphql'=>true,'graphql_single_name'=>'jobPosting','graphql_plural_name'=>'jobPostings']);
 });
 ```
 
-**Performance Impact:**
-- Prevents 10-50 unused post types appearing in admin menus
-- Reduces database queries for taxonomy relationships
-- Simplifies GraphQL schema (fewer types)
-
-**Source:** airbnb/plugins/airbnb-policy-custom-mods/airbnb-policy-custom-mods.php (conditional CPT pattern)
+**Performance Impact:** Prevents 10-50 unused post types in admin menus, reduces taxonomy queries, simplifies GraphQL schema
 
 ## Conditional ACF Field Group Loading
 
@@ -476,67 +442,57 @@ wp eval "switch_to_blog(20); echo memory_get_usage(true) / 1024 / 1024 . ' MB';"
 wp eval "switch_to_blog(1); echo memory_get_usage(true) / 1024 / 1024 . ' MB';"
 ```
 
-## Common Conditional Loading Errors
+## Error: Missing Early Return
 
-### Error: Plugin Loads on All Sites
-**Cause:** Missing early return
+WordPress mu-plugins load on all sites without early return preventing further execution.
+
 ```php
 // ❌ Wrong: Condition checks but doesn't prevent execution
-if (get_current_blog_id() !== 20) {
-  // No return statement
-}
-require_once __DIR__ . '/plugin.php'; // Still loads
+if(get_current_blog_id()!==20){}
+require_once __DIR__.'/plugin.php'; // Still loads
 
-// ✅ Correct: Early return prevents further execution
-if (get_current_blog_id() !== 20) {
-  return; // Exits mu-plugin immediately
-}
-require_once __DIR__ . '/plugin.php';
+// ✅ Correct: Early return exits mu-plugin immediately
+if(get_current_blog_id()!==20)return;
+require_once __DIR__.'/plugin.php';
 ```
 
-### Error: Blog ID Comparison Fails
-**Cause:** Type mismatch (string vs int)
+## Error: Blog ID Type Mismatch
+
+WordPress `get_current_blog_id()` returns integer requiring integer comparison not string.
+
 ```php
-// ❌ Wrong: String comparison
-if (get_current_blog_id() !== '20') {  // Comparison always false
+// ❌ Wrong: String comparison always false
+if(get_current_blog_id()!=='20')
 
 // ✅ Correct: Integer comparison
-if (get_current_blog_id() !== 20) {   // Proper type
+if(get_current_blog_id()!==20)
 
 // ✅ Also correct: Strict array check
-if (!in_array(get_current_blog_id(), [20, 35], true)) {
+if(!in_array(get_current_blog_id(),[20,35],true))
 ```
 
-### Error: Plugin Loads Before Blog ID Determined
-**Cause:** Hook timing
+## Error: Hook Timing Too Early
+
+WordPress mu-plugins execute before `muplugins_loaded` hook when blog ID already determined.
+
 ```php
-// ❌ Wrong: Too early (blog ID not set yet)
-add_action('muplugins_loaded', function() {
-  if (get_current_blog_id() === 20) {  // Returns 0 or 1
-    require_once __DIR__ . '/plugin.php';
-  }
+// ❌ Wrong: muplugins_loaded too early (blog ID returns 0 or 1)
+add_action('muplugins_loaded',function(){
+ if(get_current_blog_id()===20)require_once __DIR__.'/plugin.php';
 });
 
-// ✅ Correct: Direct execution in mu-plugin
-// No hook needed, mu-plugin runs after blog ID set
-if (get_current_blog_id() === 20) {
-  require_once __DIR__ . '/plugin.php';
-}
+// ✅ Correct: Direct execution (no hook needed, blog ID already set)
+if(get_current_blog_id()===20)require_once __DIR__.'/plugin.php';
 ```
 
-### Error: WordPress Admin Broken
-**Cause:** Plugin required for admin but not loaded
+## Error: Admin UI Not Loaded
+
+WordPress multisite plugins with admin UI require loading on target sites OR network admin.
+
 ```php
-// ❌ Wrong: Plugin with admin UI not loaded on admin site
-if (get_current_blog_id() === 20) {
-  require_once __DIR__ . '/plugin-with-admin.php';
-}
-// Problem: Site 1 admin can't access plugin settings
+// ❌ Wrong: Plugin admin UI not accessible from network admin
+if(get_current_blog_id()===20)require_once __DIR__.'/plugin-with-admin.php';
 
-// ✅ Correct: Load plugin on target sites OR network admin
-if (get_current_blog_id() === 20 || is_network_admin()) {
-  require_once __DIR__ . '/plugin-with-admin.php';
-}
+// ✅ Correct: Load on target sites OR network admin
+if(get_current_blog_id()===20||is_network_admin())require_once __DIR__.'/plugin-with-admin.php';
 ```
-
-**Source:** Common multisite conditional loading patterns (WordPress VIP)

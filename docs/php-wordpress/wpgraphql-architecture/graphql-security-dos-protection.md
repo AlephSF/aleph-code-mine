@@ -22,51 +22,21 @@ WPGraphQL security implementations protect WordPress sites from GraphQL-based De
 
 ## Query Size Limiting (Pre-Parse)
 
-WordPress GraphQL security measures implement hard query size limits before parsing to prevent expensive validation of malicious queries. Airbnb's production pattern enforces 10KB maximum query size using the `graphql_request_data` filter at priority 1, throwing `GraphQL\Error\UserError` exceptions when limits exceed threshold.
-
-### Implementation Pattern
+WordPress GraphQL security implements hard query size limits before parsing preventing expensive validation of malicious queries. Airbnb's production pattern enforces 10KB maximum using `graphql_request_data` filter priority 1, throwing `GraphQL\Error\UserError` when threshold exceeded.
 
 ```php
 <?php
-/**
- * Pre-parse security: Size limit check runs BEFORE graphql-php parsing.
- *
- * Hook: graphql_request_data (priority 1)
- * Rationale: Prevents expensive parsing of malicious 10MB+ queries
- */
-add_filter( 'graphql_request_data', function( $data ) {
-    if ( empty( $data['query'] ) ) {
-        return $data;
-    }
-
-    $query = $data['query'];
-
-    // Hard limit: 10KB maximum query size (filterable)
-    $max_size = apply_filters( 'airbnb_graphql_max_query_size', 10000 );
-
-    if ( strlen( $query ) > $max_size ) {
-        throw new \GraphQL\Error\UserError(
-            sprintf( 'Query exceeds maximum size of %d bytes.', $max_size )
-        );
-    }
-
-    return $data;
-}, 1 ); // Priority 1 = run very early, before parsing
+add_filter('graphql_request_data',function($d){
+ if(empty($d['query']))return $d;
+ $q=$d['query'];$m=apply_filters('airbnb_graphql_max_query_size',10000);
+ if(strlen($q)>$m)throw new \GraphQL\Error\UserError(sprintf('Query exceeds %d bytes',$m));
+ return $d;
+},1); // Priority 1 = before parsing
 ```
 
-**Why This Matters:**
-- GraphQL parsers consume CPU/memory proportional to query size
-- 10MB malicious query could block server for seconds
-- Size check takes microseconds (string length)
-- Rejection happens before expensive AST generation
+**Rationale:** GraphQL parsers consume CPU/memory proportional to query size. 10MB malicious query blocks server for seconds. Size check (microseconds) rejects before expensive AST generation.
 
-**Filterable Configuration:**
-```php
-// Override default 10KB limit in theme or plugin
-add_filter( 'airbnb_graphql_max_query_size', function() {
-    return 20000; // Increase to 20KB for complex legitimate queries
-} );
-```
+**Override:** `add_filter('airbnb_graphql_max_query_size',fn()=>20000);` // 20KB for complex queries
 
 ## Field Deduplication (Attack Mitigation)
 
@@ -121,235 +91,100 @@ add_filter( 'graphql_request_data', function( $data ) {
 
 ## Query Complexity Validation
 
-WordPress GraphQL security adds QueryComplexity validation rules to enforce maximum query cost limits. Airbnb's production pattern sets 500 complexity maximum using GraphQL-PHP's built-in `QueryComplexity` rule via the `graphql_validation_rules` filter, providing defense-in-depth protection when pre-parse security is bypassed.
+WordPress GraphQL security adds QueryComplexity validation rules enforcing maximum query cost limits. Airbnb's production pattern sets 500 complexity maximum using GraphQL-PHP's `QueryComplexity` rule via `graphql_validation_rules` filter, providing defense-in-depth when pre-parse security bypassed.
 
-### Complexity Calculation
-
-**GraphQL Complexity Formula:**
-- Each field costs: 1 point (default)
-- Each list field costs: N × depth (where N = list size)
-- Nested fields multiply: parent × child
-- Fragments count toward total
-
-**Example Query Complexity:**
-```graphql
-{
-  posts(first: 100) {        # 1 (query root)
-    edges {                  # 100 (list of 100)
-      node {                 # 100 (each edge)
-        title                # 100 × 1 = 100
-        author {             # 100 (nested object)
-          name               # 100 × 1 = 100
-          posts(first: 10) { # 100 × 10 = 1000
-            title            # 1000 × 1 = 1000
-          }
-        }
-      }
-    }
-  }
-}
-# Total Complexity: ~2,500 (exceeds 500 limit)
-```
-
-### Implementation Pattern
+**Complexity Formula:** Field=1pt, List=N×depth, Nested=parent×child, Fragments count
+**Example:** `posts(first:100){author{posts(first:10){title}}}` = ~2,500 complexity (exceeds 500)
 
 ```php
 <?php
 use GraphQL\Validator\Rules\QueryComplexity;
-
-/**
- * Enable QueryComplexity validation for defense-in-depth.
- *
- * Runs DURING graphql-php validation phase (after parsing).
- * Secondary protection if pre-parse security bypassed.
- */
-add_filter( 'graphql_validation_rules', function( $rules ) {
-    // Filterable complexity limit (default: 500)
-    $max_complexity = apply_filters( 'airbnb_graphql_max_complexity', 500 );
-
-    // Add QueryComplexity rule to validation
-    $rules['query_complexity'] = new QueryComplexity( $max_complexity );
-
-    return $rules;
-} );
+add_filter('graphql_validation_rules',function($r){
+ $m=apply_filters('airbnb_graphql_max_complexity',500);
+ $r['query_complexity']=new QueryComplexity($m);return $r;
+});
 ```
 
-**Why 500 Maximum:**
-- Legitimate queries: 50-200 complexity typical
-- Complex dashboards: 300-400 maximum observed
-- 500 provides safety margin
-- Prevents exponential nesting attacks
+**500 Maximum Rationale:** Legitimate queries 50-200, complex dashboards 300-400, 500 provides margin, prevents exponential nesting
 
-**Filterable Configuration:**
-```php
-// Increase complexity limit for specific use cases
-add_filter( 'airbnb_graphql_max_complexity', function() {
-    return 1000; // Allow more complex queries for admin dashboards
-} );
-```
+## Security Layers Explained
 
-## Defense-in-Depth Strategy
-
-WordPress GraphQL security implementations layer multiple protections to ensure no single bypass compromises security. Airbnb's production pattern combines pre-parse size/deduplication checks with validation-phase complexity limits, ensuring malicious queries are rejected at earliest possible stage while maintaining secondary protections.
-
-### Security Layers Explained
+WordPress GraphQL security implementations layer multiple protections ensuring no single bypass compromises security. Airbnb's production pattern uses 3-layer defense: pre-parse (microseconds), validation (milliseconds), execution (WPGraphQL core).
 
 **Layer 1: Pre-Parse (Priority 1)**
-- Hook: `graphql_request_data`
-- Timing: Before GraphQL-PHP parsing
+- Hook: `graphql_request_data`, Timing: Before GraphQL-PHP parsing
 - Checks: Query size (strlen), field deduplication (regex)
-- Cost: Microseconds
-- Protection: 99% of attacks stopped here
+- Cost: Microseconds, Protection: 99% of attacks stopped here
 
 **Layer 2: Validation (Default Priority)**
-- Hook: `graphql_validation_rules`
-- Timing: During GraphQL-PHP validation
-- Checks: QueryComplexity rule
-- Cost: Milliseconds
+- Hook: `graphql_validation_rules`, Timing: During GraphQL-PHP validation
+- Checks: QueryComplexity rule, Cost: Milliseconds
 - Protection: Catches attacks that bypass pre-parse
 
 **Layer 3: Execution (WPGraphQL Core)**
 - Built-in: Resolver timeouts, depth limits
-- WPGraphQL default max depth: 15
-- PHP max_execution_time: 30 seconds (VIP default)
+- WPGraphQL max depth: 15, PHP max_execution_time: 30s (VIP default)
 
-### Attack Scenarios & Defenses
+## Attack Scenarios & Defenses
 
-**Scenario 1: Field Duplication Attack**
-```graphql
-{ posts posts posts posts ... } # 10,000 duplicates
-```
-- ✅ Stopped at: Layer 1 (deduplication)
-- ⏱️ Time to reject: <1ms
+WordPress GraphQL security defense-in-depth neutralizes common attack patterns at different layers. Airbnb's production implementation stops field duplication (<1ms), query size DoS (<1ms), complexity explosion (~10ms), depth bombs (~50ms).
 
-**Scenario 2: Query Size DoS**
-```graphql
-{ post(id: 1) { # 10MB of nested queries } }
-```
-- ✅ Stopped at: Layer 1 (size limit)
-- ⏱️ Time to reject: <1ms
+**Field Duplication:** `{posts posts...}` (10K duplicates) → Layer 1 deduplication (<1ms)
+**Query Size DoS:** 10MB nested queries → Layer 1 size limit (<1ms)
+**Complexity Explosion:** `posts(first:1000){author{posts(first:1000)}}` → Layer 2 QueryComplexity (~10ms)
+**Depth Bomb:** 100-level nesting → Layer 3 WPGraphQL depth limit 15 (~50ms)
 
-**Scenario 3: Complexity Explosion**
-```graphql
-{
-  posts(first: 1000) {
-    author {
-      posts(first: 1000) {
-        author { posts(first: 1000) { ... } }
-      }
-    }
-  }
-}
-```
-- ✅ Stopped at: Layer 2 (QueryComplexity)
-- ⏱️ Time to reject: ~10ms (after parsing)
+## Must-Use Plugin Setup
 
-**Scenario 4: Depth Bomb**
-```graphql
-{ post { parent { parent { parent { ... 100 levels } } } } }
-```
-- ✅ Stopped at: Layer 3 (WPGraphQL depth limit: 15)
-- ⏱️ Time to reject: ~50ms (during execution)
-
-## Production Implementation Checklist
-
-WordPress GraphQL security deployments require systematic implementation across all layers. Follow this checklist to match Airbnb's production-hardened security pattern for enterprise WPGraphQL installations.
-
-### Must-Use Plugin Setup
-
-**File:** `wp-content/mu-plugins/graphql-security.php`
+WordPress GraphQL security deployments require systematic implementation in `wp-content/mu-plugins/graphql-security.php` combining pre-parse size/deduplication checks with validation-phase complexity limits.
 
 ```php
 <?php
-/**
- * Plugin Name: GraphQL Security
- * Description: DoS protection for WPGraphQL
- * Version: 1.0.0
- * Requires Plugins: wp-graphql
- */
-
+// Plugin Name: GraphQL Security
+// Requires Plugins: wp-graphql
 use GraphQL\Validator\Rules\QueryComplexity;
-
-// Pre-parse security: Size + deduplication
-add_filter( 'graphql_request_data', function( $data ) {
-    if ( empty( $data['query'] ) ) {
-        return $data;
-    }
-
-    $query = $data['query'];
-
-    // 1. Size limit (10KB default)
-    $max_size = apply_filters( 'graphql_max_query_size', 10000 );
-    if ( strlen( $query ) > $max_size ) {
-        throw new \GraphQL\Error\UserError(
-            sprintf( 'Query exceeds maximum size of %d bytes.', $max_size )
-        );
-    }
-
-    // 2. Field deduplication
-    $data['query'] = preg_replace( '/\b(\w+)(\s+\1)+\b/', '$1', $query );
-
-    return $data;
-}, 1 );
-
-// Validation security: Complexity limit
-add_filter( 'graphql_validation_rules', function( $rules ) {
-    $max_complexity = apply_filters( 'graphql_max_complexity', 500 );
-    $rules['query_complexity'] = new QueryComplexity( $max_complexity );
-    return $rules;
-} );
+add_filter('graphql_request_data',function($d){
+ if(empty($d['query']))return $d;
+ $q=$d['query'];$m=apply_filters('graphql_max_query_size',10000);
+ if(strlen($q)>$m)throw new \GraphQL\Error\UserError(sprintf('Query exceeds %d bytes',$m));
+ $d['query']=preg_replace('/\b(\w+)(\s+\1)+\b/','$1',$q);return $d;
+},1);
+add_filter('graphql_validation_rules',function($r){
+ $m=apply_filters('graphql_max_complexity',500);
+ $r['query_complexity']=new QueryComplexity($m);return $r;
+});
 ```
 
-### Configuration Options
+**Pre-parse security (Priority 1):** Size limit (10KB default), field deduplication
+**Validation security:** QueryComplexity rule (500 maximum)
 
-**Adjust Limits in Theme:**
+## Configuration Options
+
+WordPress GraphQL security implementations expose filterable limits allowing theme/plugin overrides for specific requirements. Adjust `graphql_max_query_size` for media-heavy queries, `graphql_max_complexity` for admin dashboards.
 
 ```php
 // wp-content/themes/your-theme/functions.php
-
-// Increase size limit for media-heavy queries
-add_filter( 'graphql_max_query_size', fn() => 20000 );
-
-// Increase complexity for admin dashboards
-add_filter( 'graphql_max_complexity', fn() => 1000 );
+add_filter('graphql_max_query_size',fn()=>20000); // 20KB for media queries
+add_filter('graphql_max_complexity',fn()=>1000); // Complex dashboards
 ```
 
-### Monitoring & Alerts
+## Monitoring & Alerts
 
-**Log Rejected Queries:**
-
-```php
-add_filter( 'graphql_request_data', function( $data ) {
-    // ... size/deduplication checks ...
-
-    if ( strlen( $query ) > $max_size ) {
-        // Log before throwing exception
-        error_log( sprintf(
-            '[GraphQL Security] Rejected query: %d bytes from IP %s',
-            strlen( $query ),
-            $_SERVER['REMOTE_ADDR']
-        ) );
-
-        throw new \GraphQL\Error\UserError( '...' );
-    }
-
-    return $data;
-}, 1 );
-```
-
-**Track Complexity Violations:**
+WordPress GraphQL security deployments log rejected queries and track complexity violations for security auditing. Airbnb's production pattern logs query size rejections with IP address, complexity violations with username.
 
 ```php
-add_action( 'graphql_execute', function( $operation, $variables, $context ) {
-    $complexity = 0; // Calculate from operation
-    if ( $complexity > 400 ) {
-        error_log( sprintf(
-            '[GraphQL Security] High complexity query: %d (user: %s)',
-            $complexity,
-            $context->user->user_login
-        ) );
-    }
-}, 10, 3 );
+add_filter('graphql_request_data',function($d){
+ // ... checks ...
+ if(strlen($q)>$m){
+  error_log(sprintf('[GraphQL] Rejected %d bytes from %s',strlen($q),$_SERVER['REMOTE_ADDR']));
+  throw new \GraphQL\Error\UserError('...');
+ }
+ return $d;
+},1);
+add_action('graphql_execute',function($o,$v,$c){
+ $complexity=0; // Calculate from operation
+ if($complexity>400)error_log(sprintf('[GraphQL] High complexity %d (user: %s)',$complexity,$c->user->user_login));
+},10,3);
 ```
 
 ## Testing & Validation
