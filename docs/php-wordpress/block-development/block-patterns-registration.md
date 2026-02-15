@@ -22,7 +22,6 @@ WordPress block patterns provide pre-configured block compositions that users in
 
 **Source confidence:** 60% adoption (1/2 theme projects implement patterns, 0/5 block plugins register patterns). rkv-block-editor registers 6 patterns across common layout types (hero, media-text, three-column). Patterns are theme-level features rather than plugin features.
 
-## Basic Pattern Registration
 
 ## Single Pattern Registration
 
@@ -67,7 +66,6 @@ register_block_pattern(
 - `viewportWidth`: Preview width in pixels (default: 1200)
 - `blockTypes`: Array of block types this pattern supports
 
-## Pattern Categories
 
 ## Custom Category Registration
 
@@ -105,7 +103,6 @@ register_block_pattern(
 
 **Real-world usage:** rkv-block-editor registers single "custom" category containing all 6 patterns, indicating flat organization preferred over hierarchical categorization.
 
-## Pattern Content Generation
 
 ## Block Markup Serialization
 
@@ -162,7 +159,6 @@ register_block_pattern('rkv-block-editor/hero-pattern', ['title' => __('Hero', '
 
 **Benefits:** Version control, syntax highlighting, template hierarchy, easier maintenance. **Adoption:** All 6 rkv-block-editor patterns.
 
-## Pattern Types Analysis
 
 ## Layout Patterns
 
@@ -185,7 +181,6 @@ WordPress layout patterns combine structural blocks (columns, groups, spacers) f
 
 **rkv-block-editor:** Hero (1), Media & Text (1), Three columns (1), Step-by-step (1), Heading with breadcrumb (1), Video with title (1).
 
-## Custom Block Integration
 
 ## Mixing Core and Custom Blocks in Patterns
 
@@ -229,7 +224,6 @@ register_block_pattern(
 
 **Use case:** Agencies can create branded pattern libraries combining standard WordPress blocks with client-specific custom blocks for consistent page building.
 
-## Block Styles with Patterns
 
 ## registerBlockStyle for Style Variations
 
@@ -260,7 +254,6 @@ registerBlockStyle( 'core/button', {
 
 **Real-world usage:** 37 registerBlockStyle calls found in analyzed codebase, primarily for button and heading variations. Block styles complement patterns by providing visual consistency across pattern library.
 
-## Pattern Discovery and Keywords
 
 ## Keyword Array for Search
 
@@ -287,7 +280,6 @@ register_block_pattern(
 
 **Search behavior:** WordPress pattern search matches keywords, title, and description fields. Comprehensive keywords improve pattern adoption by making patterns easier to find.
 
-## Pattern Organization Strategy
 
 ## Centralized Pattern Registration
 
@@ -312,7 +304,6 @@ add_action('init', 'rkv_register_patterns');
 
 **Benefits:** Single file for all logic, loop-based registration reduces duplication, template hierarchy enables overrides, easy array modification.
 
-## Pattern vs Block Decision
 
 ## When to Use Patterns vs Custom Blocks
 
@@ -336,7 +327,6 @@ WordPress patterns and custom blocks solve different problems. Understanding whe
 
 **Hybrid approach:** Create custom blocks for unique components, then combine those custom blocks with core blocks in patterns for complete page sections.
 
-## Common Pitfalls
 
 ## Invalid Block Markup
 

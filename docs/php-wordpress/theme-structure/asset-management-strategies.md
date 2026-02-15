@@ -22,7 +22,6 @@ WordPress themes use two primary asset management strategies: **webpack build pi
 
 **Manual Pattern:** Static assets (`css/`, `js/`) → Direct enqueue → `wp_enqueue_style/script()` → No versioning/minification
 
-## Webpack Asset Pipeline (57% - 8 themes)
 
 ## Configuration Structure
 
@@ -161,7 +160,6 @@ vendor.js (node_modules dependencies)
 
 **Tree-Shaking:** Removes unused code in production builds.
 
-## Manual wp_enqueue Pattern (43% - 6 themes)
 
 ## Directory Structure
 

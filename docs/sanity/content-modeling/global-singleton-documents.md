@@ -33,7 +33,6 @@ Global documents differ from regular documents in three ways:
 - Desk structure plugin configuration
 - Optional singleton enforcement
 
-## Schema Definition
 
 ## Homepage Selector Example
 
@@ -107,7 +106,6 @@ export default defineType({
 })
 ```
 
-## Common Global Document Types
 
 ## Observed Patterns (Ripplecom v4)
 
@@ -212,7 +210,6 @@ export default defineType({
 })
 ```
 
-## Desk Structure Configuration
 
 ## Registering Global Documents
 
@@ -273,7 +270,6 @@ export default defineConfig({
 })
 ```
 
-## Singleton Enforcement
 
 ## Document Actions Customization
 
@@ -371,7 +367,6 @@ export default {
 - All settings in one transaction
 - Harder to version control specific sections
 
-## Frontend Data Fetching
 
 ## Next.js App Router Example
 
@@ -453,7 +448,6 @@ export async function getGlobalData() {
 }
 ```
 
-## Pattern Selection Guidelines
 
 ## Use Multiple Global Documents When:
 
@@ -479,7 +473,6 @@ export async function getGlobalData() {
 
 **Source Confidence**: 33% (helix v3 has no globals)
 
-## Common Pitfalls
 
 ## Forgetting Fixed Document IDs
 

@@ -22,7 +22,6 @@ WordPress `@wordpress/scripts` package provides modern build tooling for Gutenbe
 
 **Source confidence:** 20% adoption (1/5 block plugins uses @wordpress/scripts, 4/5 use deprecated cgb-scripts). The modern pattern from airbnb-policy-blocks represents WordPress recommended practices as of 2024.
 
-## Installation and Configuration
 
 ## Package Installation
 
@@ -69,7 +68,6 @@ WordPress @wordpress/scripts provides standard build and development commands. C
 - `format`: Auto-fix code style with Prettier
 - `lint:css`/`lint:js`: Run style and JavaScript linters
 
-## Per-Block Build Output
 
 ## Automatic Entry Point Detection
 
@@ -140,7 +138,6 @@ wp_enqueue_script(
 
 **Benefit:** Automatic dependency resolution replaces manual `array('wp-blocks', 'wp-element')` declarations.
 
-## Custom Build Additions
 
 ## Global Stylesheet Compilation
 
@@ -201,7 +198,6 @@ WordPress @wordpress/scripts supports concurrent processes using `&` for paralle
 3. Edit globals.scss → automatic Sass recompilation
 4. Changes appear in block editor without page refresh (HMR enabled)
 
-## Migration from Create Guten Block (cgb-scripts)
 
 ## Build Tool Comparison
 
@@ -335,7 +331,6 @@ register_block_type( 'airbnb/hero-cluster', array(
 register_block_type( __DIR__ . '/build/hero-block' );
 ```
 
-## Build Configuration Customization
 
 ## webpack.config.js Override
 
@@ -375,7 +370,6 @@ NODE_ENV=production npm run build
 
 **File size difference:** Development builds are ~3-5x larger due to verbose source maps and unminified code.
 
-## Troubleshooting
 
 ## Common Build Errors
 
@@ -408,7 +402,6 @@ WordPress @wordpress/scripts builds can be slow for large plugins with 20+ block
 - 10 blocks: ~20-30 seconds
 - 30 blocks: ~60-90 seconds
 
-## Integration with WordPress Coding Standards
 
 ## ESLint Configuration
 
@@ -445,7 +438,6 @@ WordPress @wordpress/scripts integrates with Husky for pre-commit linting. This 
 
 **Benefit:** Automated code quality checks before version control commits.
 
-## Real-World Examples
 
 ## airbnb-policy-blocks Plugin
 

@@ -28,7 +28,6 @@ GROQ conditional field expansion (`_type == '...' => {...}`) enables type-specif
 
 **Average:** 2.8 conditional expansions per query file.
 
-## Basic Conditional Expansion
 
 ## Single Type Condition
 
@@ -114,7 +113,6 @@ defineField({
 
 **Benefit:** Single query fetches all content blocks with appropriate fields for each type.
 
-## Page Builder Pattern
 
 ## Helix Accordion Example (Nested Conditional Expansion)
 
@@ -162,7 +160,6 @@ Helix uses conditional expansion for complex page builder arrays with nested con
 
 **Observation:** Helix pageBuilder arrays average 5-8 conditional types per query.
 
-## Kariusdx Nested Content Pattern
 
 ## Multi-Level Conditional Expansion
 
@@ -228,7 +225,6 @@ const pageQuery = (slug: string[]) => groq`
 
 **Benefit:** Handles nested polymorphic content in a single query.
 
-## Ripplecom Modern Pattern with Partials
 
 ## Conditional Expansion with Partial Interpolation
 
@@ -283,7 +279,6 @@ export const getPageByPathQuery = defineQuery(`
 
 **Benefit:** Conditional expansion logic encapsulated in partial, reusable across multiple queries.
 
-## Conditional Expansion for Reference Filtering
 
 ## Type-Based Reference Dereferencing
 
@@ -330,7 +325,6 @@ defineField({
 
 **Fetches different fields based on referenced document type.**
 
-## Kariusdx Dynamic Content Type Pattern
 
 ## Conditional Content Fetching Based on Component
 
@@ -366,7 +360,6 @@ content[]{
 
 **Benefit:** Single component (resourceContentGrid) dynamically fetches different content types based on configuration.
 
-## Multiple Conditions for Same Type
 
 ## Sequential Conditional Checks
 
@@ -394,7 +387,6 @@ content[] {
 
 **Fetches different configuration fields based on both `_type` and `variant`.**
 
-## Default Fields with Spread Operator
 
 ## Pattern: Universal Fields + Type-Specific Fields
 
@@ -430,7 +422,6 @@ content[] {
 
 **Recommendation:** Always use `...` before conditional expansions for complete field coverage.
 
-## Performance Considerations
 
 ## Over-Expansion vs Selective Expansion
 
@@ -457,7 +448,6 @@ content[] {
 
 **Impact:** Selective expansion reduces payload size by 60-80% in analyzed queries.
 
-## Anti-Patterns to Avoid
 
 ## ❌ Missing Spread Operator
 

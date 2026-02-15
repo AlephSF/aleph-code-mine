@@ -28,7 +28,6 @@ GROQ template interpolation (`${}`) enables modular query composition by injecti
 
 **Average:** 3 projections per query file for modular composition.
 
-## Basic Projection with Partials
 
 ## Simple Partial Interpolation
 
@@ -77,7 +76,6 @@ const pageQuery = groq`
 - Single source of truth for image expansion
 - Easy to update globally (modify partial, all queries updated)
 
-## Multi-Partial Composition
 
 ## Kariusdx Pattern (Composed Query with Multiple Partials)
 
@@ -124,7 +122,6 @@ export default pageQuery
 
 **Observation:** Kariusdx averages 4 partial interpolations per query (highest of all projects).
 
-## Conditional Projection with Helpers
 
 ## Dynamic Query Fragments Based on Route
 
@@ -161,7 +158,6 @@ const pageQuery = (slug: string[]) => groq`
 
 **Result:** Route-specific data fetching without separate query files.
 
-## Nested Projection for Content Blocks
 
 ## Ripplecom Pattern (Content Array with Nested Projections)
 
@@ -218,7 +214,6 @@ export const getPageByPathQuery = defineQuery(`
 
 **Benefit:** Handles polymorphic content blocks (textSection, heroSection) with partial interpolation for repeated patterns (richText, seo).
 
-## Parameterized Projection
 
 ## Dynamic Partial with Parameters
 
@@ -251,7 +246,6 @@ const homepageQuery = groq`
 
 **Benefit:** Single helper function with parameters for flexible pagination.
 
-## Projection for Global Data
 
 ## Site-Wide Data Composition
 
@@ -286,7 +280,6 @@ const pageQuery = (slug: string[]) => groq`
 
 **Observation:** Global data projection appears in 100% of kariusdx queries (17 files).
 
-## Inline vs Partial Projection Trade-offs
 
 ## Helix Pattern (Inline Projections)
 
@@ -347,7 +340,6 @@ Kariusdx extracts more patterns into partials/helpers (8 total).
 
 **Recommendation:** Use partials for patterns repeated 2+ times. Use inline projections for query-specific logic.
 
-## Projection with Filtering
 
 ## Filtered Projections in Content Arrays
 
@@ -368,7 +360,6 @@ const pageQuery = groq`
 
 **Filters content array to only published blocks before expansion.**
 
-## Anti-Patterns to Avoid
 
 ## ❌ Over-Interpolation (Too Many Partials)
 
@@ -423,7 +414,6 @@ const query = groq`
 
 **Better:** Use consistent `${}` interpolation throughout.
 
-## Performance Considerations
 
 ## Projection Overhead
 

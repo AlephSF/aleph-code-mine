@@ -302,7 +302,6 @@ export default defineType({
 - Pages can appear in multiple nav locations
 - Content editors control navigation directly
 
-## Pattern Comparison
 
 ## Hierarchical Pages vs Flat Taxonomies
 
@@ -316,7 +315,6 @@ export default defineType({
 | **Use Case** | Documentation, corporate sites | Blogs, news, e-commerce |
 | **Adoption** | 33% (helix only) | 67% (kariusdx + ripplecom) |
 
-## Pattern Selection Guidelines
 
 ## Use Hierarchical Pages When:
 
@@ -359,7 +357,6 @@ export default defineType({
 - Multi-brand sites
 - Complex mega-menu requirements
 
-## Frontend Implementation
 
 ## Hierarchical Page Routing
 
@@ -431,7 +428,6 @@ export default async function BlogPost({ params }: { params: { slug: string } })
 }
 ```
 
-## Common Pitfalls
 
 ## Self-Referencing Pages
 
@@ -489,7 +485,6 @@ validation: (Rule) => Rule.custom(async (value, context) => {
 
 **Solution**: Limit categories to 5-10, use tags for granular classification
 
-## Migration Strategies
 
 ## From Flat to Hierarchical
 

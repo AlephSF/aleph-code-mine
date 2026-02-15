@@ -29,7 +29,6 @@ Sanity allows custom icons for document and object types to improve visual navig
 
 **Total:** 121 icon customizations across 147 schemas = **82% adoption**
 
-## Icon Packages by Sanity Version
 
 ## Sanity v2: react-icons Library
 
@@ -86,7 +85,6 @@ import { ImageIcon } from "@sanity/icons"
 import { TagIcon } from "@sanity/icons"
 ```
 
-## Document Type Icon Examples
 
 ## Page/Document Icons
 
@@ -192,7 +190,6 @@ export default defineType({
 })
 ```
 
-## Object Type Icon Examples
 
 ## Component/Block Icons
 
@@ -248,7 +245,6 @@ export default defineType({
 })
 ```
 
-## Icon Selection Guidelines
 
 ## Semantic Matching
 
@@ -311,7 +307,6 @@ const leadGeneration = defineType({
 })
 ```
 
-## Installation and Setup
 
 ## Installing react-icons (Sanity v2)
 
@@ -344,7 +339,6 @@ import {
 } from "@sanity/icons"
 ```
 
-## Custom SVG Icons
 
 ## Using Custom SVG Components
 
@@ -391,7 +385,6 @@ const BadIcon = () => (
 )
 ```
 
-## Icon Benefits
 
 ## Improved Navigation
 
@@ -440,7 +433,6 @@ const companyPage = defineType({
 })
 ```
 
-## Anti-Patterns
 
 ## Overusing Distinctive Icons
 

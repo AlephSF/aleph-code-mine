@@ -29,7 +29,6 @@ TypeScript typing for GROQ query results ensures type safety when consuming Sani
 
 **Source Confidence:** 100% (all projects type query results)
 
-## Auto-Generated Types (Sanity v4+ with defineQuery)
 
 ## Modern Pattern with Type Generation
 
@@ -163,7 +162,6 @@ schema.json
   run: npm run type-check
 ```
 
-## Manual Type Definitions (Sanity v2/v3)
 
 ## Helix Pattern (Manual Types with Inference)
 
@@ -266,7 +264,6 @@ import type { PageQueryResult } from '@/types/page'
 const data: PageQueryResult = await client.fetch(pageQuery(slug))
 ```
 
-## Partial Type Generation (Hybrid Approach)
 
 ## Using Sanity Codegen for v2/v3 Projects
 
@@ -299,7 +296,6 @@ export type PageQueryResult = Pick<Page, 'title' | 'slug'> & {
 - Query result types manually crafted (projected fields, computed fields)
 - Partial automation reduces manual work
 
-## Query Parameter Typing
 
 ## Typed Query Parameters
 
@@ -328,7 +324,6 @@ const pageByPathQuery = (pagePath: string) => groq`
 await client.fetch(pageByPathQuery('/about'))  // ✅ Type-checked
 ```
 
-## Polymorphic Content Block Typing
 
 ## Discriminated Union Types
 
@@ -389,7 +384,6 @@ const renderBlock = (block: ContentBlock) => {
 - Type narrowing in switch statements
 - Autocomplete for type-specific fields
 
-## Null Safety Patterns
 
 ## Handling Nullable Query Results
 
@@ -433,7 +427,6 @@ type PageData = {
 {page.excerpt !== null && <p>{page.excerpt}</p>}  // Null check
 ```
 
-## Type-Safe Partial Interpolation
 
 ## Typing Reusable Partials
 
@@ -475,7 +468,6 @@ export type PageResult = {
 
 **Benefit:** Single source of truth for both GROQ partial and TypeScript type.
 
-## Best Practices
 
 ## 1. Always Type Query Results
 

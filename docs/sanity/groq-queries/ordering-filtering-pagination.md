@@ -32,7 +32,6 @@ GROQ provides `|order` for server-side sorting and array slicing (`[N..M]`) for 
 
 **Source Confidence:** 67% (helix + kariusdx)
 
-## Server-Side Ordering with |order
 
 ## Basic Ordering Pattern
 
@@ -103,7 +102,6 @@ const videosQuery = groq`
 
 **Use case:** Posts with optional publishedDate field - falls back to creation date.
 
-## Array Slicing for Pagination
 
 ## Basic Array Slicing
 
@@ -175,7 +173,6 @@ export const newsDataQueryString = (slug: string[]) => (
 
 **Observation:** Only kariusdx uses `count()` (50% adoption). Helix may handle totals client-side or skip pagination.
 
-## Filtering Before Ordering
 
 ## Combined Filter and Order
 
@@ -221,7 +218,6 @@ export const newsDataQueryString = (slug: string[]) => (
 
 **Result:** Upcoming events within date range, sorted chronologically.
 
-## Client-Side vs Server-Side Sorting
 
 ## Helix Pattern (Client-Side Sorting)
 
@@ -281,7 +277,6 @@ const LatestNews = async () => {
 
 **Recommendation:** Use server-side ordering for pagination and large datasets. Use client-side sorting for small datasets (<50 items) with user-controlled sorting.
 
-## Ordering by Custom Weights
 
 ## Priority-Based Ordering
 
@@ -306,7 +301,6 @@ defineField({
 
 **Result:** Announcements sorted by priority (1 first), then by date within each priority level.
 
-## Pagination Patterns
 
 ## Offset Pagination (Kariusdx)
 
@@ -339,7 +333,6 @@ const page2 = getNewsPage(2, 10)  // [10..19]
 
 **Use case:** Infinite scroll, "Load More" buttons.
 
-## Ordering Limitations
 
 ## Cannot Order by Reference Fields Directly
 
@@ -373,7 +366,6 @@ const page2 = getNewsPage(2, 10)  // [10..19]
 }|order(tagCount desc)
 ```
 
-## Performance Considerations
 
 ## Ordering vs Client-Side Sorting
 

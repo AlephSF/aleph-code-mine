@@ -20,7 +20,6 @@ Preview mode enables content editors to view unpublished draft content before ma
 
 All analyzed codebases (helix-dot-com-next, kariusdx-next, policy-node) implement preview mode with 100% adoption across CMS-integrated routes. App Router projects use `draftMode()`, while Pages Router projects use legacy `preview` context.
 
-## App Router Preview Pattern
 
 ## Draft Mode API
 
@@ -114,7 +113,6 @@ export async function sanityFetch<T>({
 
 **Security Note:** Draft mode check at fetch time prevents token exposure in client bundles. Token stored server-side in environment variables.
 
-## Pages Router Preview Pattern
 
 ## Preview Context Parameter
 
@@ -238,7 +236,6 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
 - `res.clearPreviewData()` removes preview cookie
 - Query parameter determines redirect destination
 
-## WordPress Preview with Token Authentication
 
 ## Header-Based Token Injection
 
@@ -293,7 +290,6 @@ https://example.com/api/preview?slug=my-post&token=abc123xyz
 - Sanity: Cookie-based, no token in URL
 - WordPress: Token in query parameter, validated server-side
 
-## Preview Banner Component Pattern
 
 ## Universal Visual Indicator
 
@@ -339,7 +335,6 @@ export default function RootLayout({ children }) {
 }
 ```
 
-## Sanity Studio Integration
 
 ## Preview Secret Configuration
 
@@ -396,7 +391,6 @@ export function PreviewPane(props: { document: { displayed: { slug?: { current?:
 - Automatic preview based on document slug field
 - Real-time updates as editor modifies content
 
-## Preview Mode Security Considerations
 
 ## Token Validation Best Practices
 
@@ -437,7 +431,6 @@ export async function GET(request: NextRequest) {
 
 **Source Evidence:** helix-dot-com-next implements secret validation in preview route. kariusdx-next omits validation (lower security posture).
 
-## Migration Path: Pages Router to App Router
 
 ## Before (Pages Router)
 ```typescript

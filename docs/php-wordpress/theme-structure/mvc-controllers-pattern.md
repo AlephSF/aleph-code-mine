@@ -376,7 +376,6 @@ public function featuredPosts()
 - **Instance methods:** Data fetching (posts, terms, metadata)
 - **Static methods:** Utilities (formatting, calculations, called from templates)
 
-## Advanced Controller Patterns
 
 ## Returning Collections
 
@@ -586,7 +585,6 @@ class FrontPageControllerTest extends TestCase
 }
 ```
 
-## Common Patterns
 
 ## Pagination
 

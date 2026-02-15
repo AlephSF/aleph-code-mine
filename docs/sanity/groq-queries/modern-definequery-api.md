@@ -31,7 +31,6 @@ Sanity v4 introduced the `defineQuery()` helper function to replace the legacy `
 - Sanity v3: `groq` template only (defineQuery not available)
 - Sanity v2: `groq` template only
 
-## Modern defineQuery Pattern (v4+)
 
 ## Basic Query with defineQuery
 
@@ -155,7 +154,6 @@ async function Page({ params }: { params: { path: string } }) {
 }
 ```
 
-## Legacy groq Template Pattern (v2/v3)
 
 ## Basic Query with groq Template
 
@@ -217,7 +215,6 @@ const data: PageQueryResult = await client.fetch(pageQuery(slug))
 - Types must be updated when query changes
 - More boilerplate code
 
-## Comparison: defineQuery vs groq Template
 
 ## Side-by-Side Comparison
 
@@ -281,7 +278,6 @@ export type GetPostsResult = Post[]
 - ⚠️ Maintaining legacy codebases with established patterns
 - ⚠️ Cannot run type generation in build pipeline
 
-## Migration Path from groq to defineQuery
 
 ## Step 1: Upgrade to Sanity v4
 
@@ -347,7 +343,6 @@ import { getPageQuery } from '@/queries/sanity/pages'
 import type { GetPageQueryResult } from '../../sanity.types'  // Auto-generated
 ```
 
-## Best Practices
 
 ## 1. Use Named Exports
 

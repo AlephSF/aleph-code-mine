@@ -20,7 +20,6 @@ Custom fetch wrappers abstract data fetching logic into reusable utilities that 
 
 All analyzed codebases (helix-dot-com-next, kariusdx-next, policy-node) implement custom fetch wrappers with 100% adoption across data-fetched routes. Wrappers centralize concerns like preview mode, cache configuration, timeout management, and error logging.
 
-## Sanity CMS Fetch Wrapper
 
 ## Basic Pattern with Cache Control
 
@@ -289,7 +288,6 @@ export default async function fetchGraphQLOptimized<T>(
 | **Type Safety** | ✅ Generic return type | ✅ Generic return type | ✅ GetStaticProps type |
 | **Batching** | ❌ Not needed (GROQ) | ✅ Optional optimization | ❌ N/A |
 
-## Anti-Patterns to Avoid
 
 ## Direct Client Usage Without Wrapper
 

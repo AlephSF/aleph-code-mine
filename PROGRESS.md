@@ -14,7 +14,8 @@
 **Optimization Phase:** Wave 8 - 100% complete (5/5 files, 11 violations fixed) ✅
 **Optimization Phase:** Wave 9 - 100% complete (6/6 files, 20 violations fixed) ✅
 **Optimization Phase:** Wave 10 - 100% complete (15/15 files, 23 violations fixed) ✅
-**Remaining:** 0 section_length violations - 100% RAG OPTIMIZED! 🎉
+**Optimization Phase:** Wave 11 - 100% complete (43/43 files, 329 empty headings removed) ✅
+**Remaining:** 0 section_length violations, 0 empty headings - 100% RAG OPTIMIZED! 🎉
 
 ---
 
@@ -380,6 +381,50 @@
 **Remaining after Wave 10:** 0 section_length violations - 100% RAG OPTIMIZED! 🎉
 
 **Cumulative:** 174 violations fixed across 10 complete waves (46+16+14+7+2+21+14+11+20+23)
+
+### Wave 11: Remove Empty Section Headings ✅ COMPLETE
+
+**Goal:** Eliminate 329 empty `## Heading` lines that create wasted RAG chunks
+
+**Background:** During initial doc generation, a two-tier heading structure was used where a generic "category label" `## Heading` was placed above a specific "topic" `## Heading`. The category heading has zero content—all content lives under the specific topic heading. This created 325 empty RAG chunks across 43 files, wasting retrieval slots.
+
+| Affected Directory | Files | Empty Headings |
+|-------------------|-------|----------------|
+| docs/sanity/ | 33 | 170 |
+| docs/php-wordpress/block-development/ | 8 | 69 |
+| docs/js-nextjs/data-fetching/ | 8 | 58 |
+| docs/php-wordpress/theme-structure/ | 3 | 6 |
+| **Total** | **43** | **329** |
+
+**Session 12 (2026-02-14):**
+- Script: `remove_empty_headings.py` (automated removal)
+- Files processed: 188 total (43 had empty headings)
+- Empty headings removed: 329
+- Validation: 0 empty headings remain (verified with re-scan)
+- File count unchanged: 188 files (no deletions)
+- No new validation failures introduced
+
+**RAG Impact:**
+- Before: ~3,800 chunks (329 empty = 8.7% waste)
+- After: ~3,471 chunks (0 empty = 100% useful)
+- Efficiency gain: Eliminated 329 wasted retrieval slots
+
+**Example Fix:**
+```markdown
+# Before
+## Webhook Route Handlers
+
+## CMS Revalidation Webhooks
+Route handlers process CMS webhooks...
+
+# After
+## CMS Revalidation Webhooks
+Route handlers process CMS webhooks...
+```
+
+**Wave 11 Progress:** ✅ 100% complete (329 empty headings removed from 43 files)
+
+**Cumulative:** 174 section_length violations + 329 empty headings = 503 total RAG optimizations
 
 ---
 

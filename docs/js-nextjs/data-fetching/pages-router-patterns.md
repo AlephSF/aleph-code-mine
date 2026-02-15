@@ -20,7 +20,6 @@ Next.js Pages Router (v12-v13) uses specialized data fetching functions that exe
 
 All analyzed codebases implement Pages Router patterns with 100% adoption across pages requiring data: 51 `getStaticProps` implementations, 51 `getServerSideProps`, and 48 `getStaticPaths` across helix-dot-com-next, kariusdx-next, and policy-node.
 
-## getStaticProps Pattern
 
 ## Static Generation with Data
 
@@ -77,7 +76,6 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
 - **30 seconds:** Moderate updates (blog posts, product catalogs) - 35% of analyzed pages
 - **60 seconds:** Low-update content (legal pages, documentation) - 20% of analyzed pages
 
-## getStaticPaths Pattern
 
 ## Defining Static Generation Paths
 
@@ -157,7 +155,6 @@ export const getStaticPaths: GetStaticPaths = async () => ({
 
 **Evidence:** 100% use `fallback: 'blocking'`. Zero `true`/`false` observed. Preferred for SEO and simple logic.
 
-## getServerSideProps Pattern
 
 ## Server-Side Rendering on Every Request
 
@@ -226,7 +223,6 @@ export const getServerSideProps: GetServerSideProps = async ({ params, preview =
 - Often redirects non-preview requests to static version
 - Fetches draft/unpublished content only in preview mode
 
-## Catch-All Routes
 
 ## Multi-Level Dynamic Paths
 
@@ -304,7 +300,6 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
 - CMS-driven sites where homepage is also dynamic
 - Avoids need for separate `pages/index.tsx`
 
-## Reusable getStaticProps Wrapper
 
 ## Abstraction Pattern for Common Logic
 
@@ -340,7 +335,6 @@ export default function Page({ pageData, globalData, preview }) {
 
 **Evidence:** kariusdx uses wrapper for 14 pages with zero inline getStaticProps. 100% consistency in preview/revalidation/errors.
 
-## Context Object Properties
 
 ## Available Context Parameters
 
@@ -377,7 +371,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 }
 ```
 
-## API Routes Pattern
 
 ## Server-Side Logic in Pages Router
 
@@ -414,7 +407,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
 **Source Evidence:** Zero API routes observed in Pages Router codebases analyzed (all use App Router route handlers or external endpoints). Pattern documented for completeness.
 
-## Anti-Patterns to Avoid
 
 ## Fetching Data in Component
 

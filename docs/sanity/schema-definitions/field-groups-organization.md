@@ -28,7 +28,6 @@ Sanity field groups organize schema fields into tabs within the Studio editor, i
 
 **Observation:** Low adoption suggests field groups are underutilized despite providing clear UX benefits for content-heavy schemas.
 
-## Standard Pattern: Content + Meta/SEO Separation
 
 ## Two-Group Pattern (Most Common)
 
@@ -138,7 +137,6 @@ export default defineType({
 })
 ```
 
-## Group Naming Conventions
 
 ## Standard Group Names (100% Consistency)
 
@@ -185,7 +183,6 @@ groups: [
 ]
 ```
 
-## Field Assignment to Groups
 
 ## Explicit Group Assignment
 
@@ -226,7 +223,6 @@ fields: [
 ]
 ```
 
-## When to Use Field Groups
 
 ## Schemas That Benefit from Groups
 
@@ -247,7 +243,6 @@ Simple schemas with 3-4 fields rarely benefit from tabs.
 - **Tag**: Name, slug (2 fields)
 - **Settings**: Single-purpose configuration objects (2-4 fields)
 
-## Complex Example: Kariusdx Page Schema
 
 ## Multi-Section Document with Conditional Fields
 
@@ -314,7 +309,6 @@ export default {
 }
 ```
 
-## Benefits of Field Groups
 
 ## Reduced Cognitive Load
 
@@ -368,7 +362,6 @@ Different team members can focus on their domain without navigating irrelevant f
 - **Publishers**: Set metadata in "Meta" tab
 - **SEO Specialists**: Optimize in "SEO" tab
 
-## Anti-Patterns
 
 ## Too Many Groups
 

@@ -20,7 +20,6 @@ Consistent naming conventions for Sanity content blocks improve developer experi
 
 **Adoption**: 100% of projects follow consistent naming within their codebase. Patterns differ: modern purpose-driven names (ripplecom v4), descriptive technical names (kariusdx v2), minimal objects (helix v3).
 
-## Naming Pattern Taxonomy
 
 ## Purpose-Driven Names (Modern)
 
@@ -79,7 +78,6 @@ Helix (v3) uses simple descriptive names for reusable objects:
 - No redundant suffixes
 - Minimal object count (2 total)
 
-## Naming Components by Type
 
 ## Section Components
 
@@ -183,7 +181,6 @@ investmentCard        // Investment opportunity card
 - Improves business-dev communication
 - Self-documenting for domain experts
 
-## Case Conventions
 
 ## camelCase (Preferred)
 
@@ -227,7 +224,6 @@ CardGrid       // ❌ Avoid - conflicts with frontend
 
 **Problem**: Requires quotes, inconsistent with JavaScript property naming
 
-## Suffix Guidelines
 
 ## When to Use "Section"
 
@@ -259,7 +255,6 @@ quote           // Not quoteSection
 video           // Not videoSection
 ```
 
-## Naming Anti-Patterns
 
 ## Over-Abbreviation
 
@@ -327,7 +322,6 @@ imageSection
 ctaSection
 ```
 
-## Frontend Component Mapping
 
 ## Direct Name Mapping
 
@@ -374,7 +368,6 @@ export function getComponent(schemaType: string) {
 }
 ```
 
-## File Naming Conventions
 
 ## Schema Files
 
@@ -410,7 +403,6 @@ export default function HeroSection(props: HeroSectionProps) {
 - `cardGrid` (schema) → `CardGrid.tsx` (component file)
 - `ctaSection` (schema) → `CtaSection.tsx` (component file)
 
-## Documentation Naming
 
 ## README Files
 
@@ -442,7 +434,6 @@ content: [
 - ...
 ```
 
-## Pattern Selection Guidelines
 
 ## Use Purpose-Driven Names When:
 
@@ -484,7 +475,6 @@ Before finalizing component names, verify:
 - [ ] Easy to search/grep
 - [ ] Self-documenting for content editors
 
-## Common Pitfalls
 
 ## Changing Names After Launch
 

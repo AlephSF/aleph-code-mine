@@ -29,7 +29,6 @@ All analyzed Sanity repositories implement dedicated SEO metadata object schemas
 
 **Total:** 178 SEO/metadata field references
 
-## Standard SEO Object Pattern
 
 ## Core SEO Fields Object
 
@@ -119,7 +118,6 @@ export default {
 }
 ```
 
-## Universal SEO Fields (100% Adoption)
 
 ## SEO Title Override
 
@@ -190,7 +188,6 @@ All projects provide boolean flags to control search engine crawling and indexin
 }
 ```
 
-## Open Graph Fields (Social Media)
 
 ## Open Graph Image
 
@@ -225,7 +222,6 @@ Projects provide separate Open Graph fields to customize social media appearance
 }
 ```
 
-## Ripplecom Pattern: Separation of Concerns
 
 ## Separate SEO and Meta Objects
 
@@ -320,7 +316,6 @@ export default defineType({
 })
 ```
 
-## Focus Keyword Pattern (Helix)
 
 ## SEO Analysis Support
 
@@ -343,7 +338,6 @@ Helix includes focus keyword and synonym fields for SEO analysis tools.
 
 **Use Case:** Integration with SEO analysis tools (Yoast-like functionality) to score content based on keyword usage.
 
-## Schema Validation Best Practices
 
 ## Character Limits for SEO Fields
 
@@ -381,7 +375,6 @@ validation: (Rule) => Rule.required()
 validation: (Rule) => Rule.max(60)
 ```
 
-## Default Value Strategy
 
 ## Frontend Fallback Pattern
 
@@ -415,7 +408,6 @@ export async function generateMetadata({ params }) {
 }
 ```
 
-## Common SEO Object Structures
 
 ## Minimal SEO Object
 
@@ -480,7 +472,6 @@ export default defineType({
 })
 ```
 
-## Anti-Patterns
 
 ## Duplicating SEO Fields Across Schemas
 

@@ -20,7 +20,6 @@ Next.js App Router (v13+) fundamentally changes data fetching by enabling async 
 
 App Router adoption shows 67% across analyzed codebases: helix-dot-com-next (v15) and policy-node (v14) implement App Router patterns extensively with 119 combined async fetch calls in server components. kariusdx-next (v12) remains Pages Router only.
 
-## Async Server Components
 
 ## Direct Data Fetching in Components
 
@@ -81,7 +80,6 @@ export default async function ProductPage({ params }: { params: { id: string } }
 - Segments without explicit revalidation inherit from parent
 - Root `app/layout.tsx` can set site-wide default
 
-## generateStaticParams Pattern
 
 ## Defining Static Paths
 
@@ -163,7 +161,6 @@ export default async function Page({ params }: { params: { lang: string; slug: s
 
 **Source Evidence:** policy-node generates 800+ multilingual pages with ~12 minute build time using GraphQL batching.
 
-## generateMetadata Pattern
 
 ## SEO Metadata Generation
 
@@ -269,7 +266,6 @@ export default function buildMetaData({
 - Robots directive from CMS noindex flag
 - Type-safe with TypeScript Metadata type
 
-## Parallel Data Fetching
 
 ## Multiple Concurrent Requests
 
@@ -302,7 +298,6 @@ export default async function ResourcePage() {
 
 **Performance Impact:** policy-node `Promise.all` reduced page generation from 2.5s to 0.8s per page (67% improvement) by parallelizing GraphQL queries for content, navigation, and footer data.
 
-## Streaming with Suspense
 
 ## Progressive Page Rendering
 
@@ -348,7 +343,6 @@ async function Analytics() {
 
 **Adoption Note:** Zero streaming patterns observed in analyzed codebases. All pages wait for complete data (traditional SSR/SSG). Streaming opportunity for slow third-party API integrations.
 
-## Loading States
 
 ## loading.tsx Pattern
 
@@ -379,7 +373,6 @@ export default async function BlogPage() {
 - Route-specific (each segment can have own loading.tsx)
 - Instant navigation feedback without custom Suspense
 
-## Server-Only Data Access
 
 ## Direct Database Queries
 
@@ -418,7 +411,6 @@ export const db = new PrismaClient()
 
 **Source Evidence:** Zero direct database access observed in analyzed codebases (all use CMS APIs). Pattern documented here as App Router capability demonstrated in Next.js documentation.
 
-## Migration Comparison: Pages Router vs App Router
 
 ## Before (Pages Router)
 ```typescript
@@ -482,7 +474,6 @@ export default async function BlogPost({ params }: { params: { slug: string } })
 - `return { notFound: true }` → `notFound()` function call
 - `revalidate` in return object → Named export constant
 
-## Anti-Patterns to Avoid
 
 ## Client Component Data Fetching
 

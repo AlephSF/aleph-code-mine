@@ -20,7 +20,6 @@ Sanity projects with page builders accumulate 15-35 reusable content block schem
 
 **Adoption**: 67% of analyzed projects (kariusdx v2 + ripplecom v4) use dedicated folders for content blocks. Helix v3 uses minimal `objects/` folder for SEO and image metadata only.
 
-## Folder Structure Patterns
 
 ## Modern Components Pattern (Sanity v3+)
 
@@ -121,7 +120,6 @@ schemas/
 - No page builder components
 - Focus on hierarchical pages over modular content
 
-## Naming Conventions
 
 ## Components Folder (Modern)
 
@@ -153,7 +151,6 @@ schemas/
 
 **Philosophy**: Names describe component function, often including technical details
 
-## Schema Registry Organization
 
 ## Modern Index Pattern (TypeScript)
 
@@ -258,7 +255,6 @@ export default createSchema({
 })
 ```
 
-## Folder Guidelines by Project Size
 
 ## Small Projects (< 10 Content Blocks)
 
@@ -305,7 +301,6 @@ schemaTypes/
 
 **Rationale**: Group components by category for easier navigation
 
-## Component Categorization Strategies
 
 ## By Purpose (Recommended)
 
@@ -381,7 +376,6 @@ components/
 
 **Appropriate for**: Projects with < 20 components
 
-## Legacy Content Migration
 
 ## Migration Folder Pattern
 
@@ -410,7 +404,6 @@ schemaTypes/
 - Clear separation of old vs new
 - Safe deprecation path
 
-## Pattern Selection Guidelines
 
 ## Use components/ Folder When:
 
@@ -436,7 +429,6 @@ schemaTypes/
 
 **Source Confidence**: 33% (helix v3 uses minimal objects)
 
-## Common Pitfalls
 
 ## Mixing Data Objects with Content Blocks
 
@@ -456,7 +448,6 @@ schemaTypes/
 
 **Solution**: Move deprecated schemas to `legacy/` folder, document migration path
 
-## Frontend Mapping Patterns
 
 ## Component Map from Folder Structure
 

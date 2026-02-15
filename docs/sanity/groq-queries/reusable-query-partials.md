@@ -28,7 +28,6 @@ GROQ query partials are reusable fragments that represent common content structu
 
 **Total:** 13 partials representing common patterns across 51 query files.
 
-## Image Reference Partial Pattern
 
 ## Universal Adoption (100%)
 
@@ -130,7 +129,6 @@ const pageQuery = groq`
 - Consistent metadata fetching (width/height for Next.js Image)
 - Easy to add fields globally (add blurHash to 20 queries by editing one partial)
 
-## SEO Metadata Partial Pattern
 
 ## Adoption: 67% (Kariusdx + Ripplecom)
 
@@ -192,7 +190,6 @@ export const getPageByPathQuery = defineQuery(`
 - noIndex, noFollow flags (robots meta tags)
 - keywords array (deprecated but still used)
 
-## Rich Text / Portable Text Partial
 
 ## Adoption: 67% (Kariusdx + Ripplecom)
 
@@ -239,7 +236,6 @@ const pageQuery = groq`
 - Conditional expansion based on _type
 - Asset dereferencing for embedded media
 
-## Navigation Partial Pattern
 
 ## Adoption: 33% (Kariusdx Only)
 
@@ -278,7 +274,6 @@ const pageQuery = (slug: string[]) => groq`
 - Single query for header/footer data
 - Consistent navigation structure across all pages
 
-## Global Data Partial Pattern
 
 ## Adoption: 33% (Kariusdx Only)
 
@@ -318,7 +313,6 @@ const pageQuery = (slug: string[]) => groq`
 `
 ```
 
-## Link Partial Pattern
 
 ## Adoption: 67% (Helix + Ripplecom)
 
@@ -355,7 +349,6 @@ const heroQuery = groq`
 `
 ```
 
-## Video Partial Pattern
 
 ## Adoption: 33% (Ripplecom Only)
 
@@ -470,7 +463,6 @@ const query = groq`link { ${linkData} }`
 
 **Recommendation:** Use camelCase with descriptive names. Add "Groq" or "Data" suffix if helpful for clarity in larger projects.
 
-## Anti-Patterns to Avoid
 
 ## ❌ Over-Abstraction
 

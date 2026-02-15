@@ -29,7 +29,6 @@ Sanity preview configuration controls how documents appear in the Studio sidebar
 
 **Total:** 100 preview configurations across 147 schemas = **68% adoption**
 
-## Basic Preview Pattern
 
 ## Simple Title + Subtitle
 
@@ -77,7 +76,6 @@ export default defineType({
 [Image] New Feature Launch
 ```
 
-## Advanced Preview with prepare()
 
 ## Custom Subtitle Formatting
 
@@ -131,7 +129,6 @@ preview: {
 }
 ```
 
-## Selecting Referenced Document Data
 
 ## Dereferencing Author/Person
 
@@ -176,7 +173,6 @@ preview: {
 }
 ```
 
-## Status and Metadata Display
 
 ## Publishing Status Indicators
 
@@ -237,7 +233,6 @@ preview: {
 }
 ```
 
-## Preview for Object Types
 
 ## Component/Block Previews
 
@@ -303,7 +298,6 @@ export default defineType({
 })
 ```
 
-## Internationalization (i18n) Preview
 
 ## Multi-Language Content
 
@@ -340,7 +334,6 @@ Acerca de Nosotros
 🇪🇸 ES | acerca-de-nosotros
 ```
 
-## Media Field Selection
 
 ## Priority-Based Media Selection
 
@@ -385,7 +378,6 @@ preview: {
 }
 ```
 
-## Dynamic Preview Titles
 
 ## Computed Titles
 
@@ -434,7 +426,6 @@ preview: {
 }
 ```
 
-## Preview Performance
 
 ## Limiting Selected Fields
 
@@ -491,7 +482,6 @@ prepare({ title, status }) {
 }
 ```
 
-## Default Preview Behavior
 
 ## When preview is Omitted
 
@@ -519,7 +509,6 @@ export default defineType({
 - No custom formatting needed
 - No referenced data to display
 
-## Anti-Patterns
 
 ## Overly Complex Preview Logic
 

@@ -22,7 +22,6 @@ WordPress custom block categories organize blocks in the editor inserter panel b
 
 **Source confidence:** 100% adoption (5/5 analyzed block plugins register custom categories). Every block plugin analyzed adds at least one custom category for organizational clarity.
 
-## Basic Category Registration
 
 ## Single Category Registration
 
@@ -83,7 +82,6 @@ add_filter( 'block_categories_all', 'airbnb_add_block_categories', 10, 2 );
 
 **Use case:** Multi-site networks or agencies managing blocks for different client departments/brands benefit from separate categories per organizational unit.
 
-## Assigning Blocks to Categories
 
 ## Using category in block.json
 
@@ -119,7 +117,6 @@ registerBlockType( 'thekelsey/slideshow', {
 
 **Migration note:** 58 blocks in analyzed codebase use this legacy pattern. Modern blocks with block.json eliminate this duplication by defining category once in metadata.
 
-## Category Naming Conventions
 
 ## Slug Naming Patterns
 
@@ -146,7 +143,6 @@ WordPress custom category titles use human-readable names with proper capitaliza
 
 **Best practice:** Omit "Blocks" from title when category purpose is obvious from context (users already know they're selecting blocks). Include "Blocks" only when disambiguation adds clarity.
 
-## Icon Customization
 
 ## Dashicon Selection
 
@@ -174,7 +170,6 @@ array(
 
 **Real-world usage:** 40% of analyzed categories omit icon field, indicating icons provide marginal UX benefit for named categories.
 
-## Category Ordering
 
 ## Default Category Insertion Point
 
@@ -212,7 +207,6 @@ function thekelsey_add_block_category( $categories, $post ) {
 
 **Observed pattern:** 0% of analyzed codebases use priority ordering, suggesting most developers accept default WordPress-first ordering.
 
-## Context-Aware Registration
 
 ## Post-Type-Specific Categories
 
@@ -242,7 +236,6 @@ add_filter( 'block_categories_all', 'airbnb_add_block_categories', 10, 2 );
 
 **Adoption:** 0% of analyzed codebases implement conditional registration, indicating universal category registration is standard practice even for specialized blocks.
 
-## Legacy Filter Support
 
 ## block_categories Filter (Deprecated)
 
@@ -262,7 +255,6 @@ add_filter( 'block_categories_all', 'thekelsey_add_block_category', 10, 2 );
 
 **Migration impact:** 80% of analyzed codebases use deprecated block_categories filter, indicating need for bulk migration across older plugins.
 
-## Complete Plugin Example
 
 ## Full Category Registration with Block Assignment
 
@@ -313,7 +305,6 @@ add_action( 'init', 'thekelsey_blocks_register' );
 
 **Result:** All 7 thekelsey blocks appear under "The Kelsey Custom Blocks" section in block inserter with admin-plugins icon.
 
-## Common Pitfalls
 
 ## Category Slug Mismatch
 

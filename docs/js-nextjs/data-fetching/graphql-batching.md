@@ -20,7 +20,6 @@ GraphQL request batching consolidates multiple concurrent GraphQL queries into b
 
 Batching adoption shows 33% across analyzed codebases: policy-node implements sophisticated batching for WordPress GraphQL API during builds generating 800+ pages. helix-dot-com-next and kariusdx-next use Sanity CMS which handles caching internally without requiring application-level batching.
 
-## The Build-Time Performance Problem
 
 ## Concurrent Request Overload
 
@@ -54,7 +53,6 @@ export default async function Page({ params }) {
 
 **Source Evidence:** policy-node experienced build failures before implementing batching. WordPress GraphQL API responded with 503 errors under concurrent load from 800+ page generations.
 
-## Batching Strategy
 
 ## Time-Window Batch Collection
 
@@ -94,7 +92,6 @@ class GraphQLBatcher {
 
 **10ms Window Rationale:** Next.js spawns pages rapidly during static generation. 10ms window captures 20-50 queries per batch without latency impact.
 
-## Batch Execution Logic
 
 ## Concurrent Execution with Promise.allSettled
 
@@ -139,7 +136,6 @@ class GraphQLBatcher {
 
 **Execution Strategy:** `Promise.allSettled` executes all queries regardless of individual failures. Single query bypasses batching for low-concurrency optimization. Batch failure rejects all queries.
 
-## Global Resolver Registry
 
 ## Cross-Batch Promise Resolution
 
@@ -175,7 +171,6 @@ if (resolver) {
 - Resolver deleted after resolution prevents memory leaks
 - Required because batch executes asynchronously after caller returns
 
-## Single Query Execution with Retry
 
 ## Individual Query Fetch Logic
 
@@ -210,7 +205,6 @@ class GraphQLBatcher {
 
 30s timeout, exponential backoff (1s→2s→4s), GraphQL/network error handling.
 
-## Fetch Wrapper Integration
 
 ## Transparent Batching API
 
@@ -270,7 +264,6 @@ export default async function Page({ params }) {
 - Batching happens automatically during `generateStaticParams`
 - Individual page doesn't know about batching
 
-## Performance Impact
 
 ## Build Time Optimization
 
@@ -297,7 +290,6 @@ Batching dramatically improves build times for large static sites.
 
 **Source Evidence:** policy-node build metrics before/after batching implementation. Data from CI/CD logs over 50+ production builds.
 
-## When to Use Batching
 
 ## Use Case Criteria
 
@@ -315,7 +307,6 @@ Batching dramatically improves build times for large static sites.
 - Preview mode (needs fresh data)
 - Single query per page
 
-## Configuration Options
 
 ## Tuning Batch Parameters
 
@@ -352,7 +343,6 @@ class GraphQLBatcher {
 - **Timeout (10-30s):** Balance speed vs reliability
 - **Retries (2-5):** More retries = higher reliability, slower failure
 
-## Anti-Patterns to Avoid
 
 ## Batching All Requests Including Preview
 

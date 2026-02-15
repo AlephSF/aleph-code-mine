@@ -161,7 +161,6 @@ export default {
 }
 ```
 
-## Custom Styles Configuration
 
 ## Heading Hierarchy
 
@@ -205,7 +204,6 @@ const components = {
 }
 ```
 
-## Custom Marks (Decorators)
 
 ## Standard Decorators
 
@@ -261,7 +259,6 @@ const components = {
 }
 ```
 
-## Link Annotations
 
 ## Simple Link Pattern
 
@@ -430,7 +427,6 @@ export default defineType({
 - Restricted styles for consistency
 - Enhanced semantics for SEO
 
-## Frontend Rendering
 
 ## Next.js Portable Text
 
@@ -480,7 +476,6 @@ export function RichTextRenderer({ content }) {
 }
 ```
 
-## Pattern Selection Guidelines
 
 ## Use Object Wrapper When:
 
@@ -514,7 +509,6 @@ export function RichTextRenderer({ content }) {
 
 **Source Confidence**: 33% (ripplecom v4 only)
 
-## Common Pitfalls
 
 ## Allowing H1 in Rich Text
 

@@ -29,7 +29,6 @@ Sanity validation rules enforce data quality constraints at the schema level, pr
 
 **Total:** 231 validation rules across 147 schemas = **1.57 rules per schema (average)**
 
-## Common Validation Patterns
 
 ## Required Fields
 
@@ -117,7 +116,6 @@ defineField({
 })
 ```
 
-## Chaining Validation Rules
 
 ## Multiple Constraints on Single Field
 
@@ -156,7 +154,6 @@ validation: (Rule) => Rule.max(60)
 validation: (Rule) => Rule.required().regex(/^[A-Z]{2}-\d{4}$/)
 ```
 
-## Custom Validation Functions
 
 ## Custom Validation with Error Messages
 
@@ -240,7 +237,6 @@ defineField({
 })
 ```
 
-## Helix Pattern: Hierarchical Slug Validation
 
 ## Unique Slugs Across All Documents
 
@@ -294,7 +290,6 @@ export default async function isUniqueAcrossAllDocuments(slug, context) {
 }
 ```
 
-## Array and Reference Validation
 
 ## Required Array with Minimum Items
 
@@ -334,7 +329,6 @@ defineField({
 })
 ```
 
-## URL and Email Validation
 
 ## URL Format Validation
 
@@ -370,7 +364,6 @@ defineField({
 })
 ```
 
-## Conditional Validation
 
 ## Validation Based on Document State
 
@@ -395,7 +388,6 @@ defineField({
 })
 ```
 
-## Error Severity Levels
 
 ## Error vs Warning vs Info
 
@@ -414,7 +406,6 @@ validation: (Rule) =>
   Rule.min(50).info("Longer descriptions tend to perform better")
 ```
 
-## Validation Best Practices
 
 ## Progressive Validation Strategy
 
@@ -458,7 +449,6 @@ validation: (Rule) =>
       .error("SEO title is required and must be 60 characters or less for optimal search display")
 ```
 
-## Anti-Patterns
 
 ## Over-Validation
 

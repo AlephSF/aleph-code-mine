@@ -22,7 +22,6 @@ WordPress InnerBlocks component enables parent-child block relationships by allo
 
 **Source confidence:** 100% adoption for container blocks (126 InnerBlocks calls across analyzed plugins: 116 airbnb + 10 thekelsey). 40% of all blocks use InnerBlocks for parent-child relationships.
 
-## Basic InnerBlocks Implementation
 
 ## Edit Component with InnerBlocks
 
@@ -75,7 +74,6 @@ export default function save() {
 
 **Validation requirement:** InnerBlocks nesting structure must match exactly between edit and save. Mismatched depth causes "This block contains unexpected or invalid content" errors.
 
-## Restricting Allowed Child Blocks
 
 ## allowedBlocks Prop
 
@@ -104,7 +102,6 @@ WordPress allowedBlocks prop restricts child blocks to a specific set of block t
 
 **Best practice:** Always use allowedBlocks when the parent block has specific child requirements (e.g., slideshow must contain only slides/images).
 
-## Default Block Templates
 
 ## Template Prop for Initial Structure
 
@@ -162,7 +159,6 @@ WordPress templateLock prop prevents users from adding, removing, or reordering 
 
 **Use case:** Landing page sections, call-to-action blocks, or any layout where structure must remain consistent across editors.
 
-## Block Appender Controls
 
 ## renderAppender Prop
 
@@ -194,7 +190,6 @@ WordPress renderAppender prop controls the "Add block" button appearance for ins
 
 **Usage pattern:** 12 ButtonBlockAppender instances found in analyzed codebase, primarily for repeating structures (slideshows, galleries, step lists).
 
-## Advanced Patterns
 
 ## Slideshow Parent-Child Pattern
 
@@ -273,7 +268,6 @@ export default function save({ attributes }) {
 
 **Real-world usage:** Section blocks represent the most common InnerBlocks pattern in analyzed plugins, providing structural containers without restricting editor creativity.
 
-## Common Pitfalls
 
 ## Nesting Depth Mismatch
 
@@ -325,7 +319,6 @@ function save() {
 }
 ```
 
-## Migration from Legacy Patterns
 
 ## Converting wp.blockEditor to @wordpress/block-editor
 

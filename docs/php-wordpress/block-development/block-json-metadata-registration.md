@@ -22,7 +22,6 @@ WordPress block.json metadata file serves as the single source of truth for bloc
 
 **Source confidence:** 20% adoption (20 block.json files in airbnb-policy-blocks, 0 in other 4 block plugins using deprecated cgb-scripts). This represents WordPress recommended practice since version 5.8 (2021).
 
-## block.json File Structure
 
 ## Required Fields
 
@@ -145,7 +144,6 @@ WordPress block.json editorScript and editorStyle fields point to compiled JavaS
 
 **Path resolution:** WordPress resolves `file:./` paths relative to block.json location. For `build/section-block/block.json`, `file:./index.js` resolves to `build/section-block/index.js`.
 
-## PHP Registration Pattern
 
 ## Directory-Based Registration
 
@@ -235,7 +233,6 @@ WordPress looks for `index.asset.php` next to `index.js` referenced in editorScr
 
 **Version caching:** The version hash changes when build output changes, ensuring cache busting without manual version increments.
 
-## JavaScript Integration
 
 ## Importing block.json Metadata
 
@@ -315,7 +312,6 @@ registerBlockType( 'airbnb/hero-cluster', {
 
 **Code reduction:** Metadata-driven registration reduces registerBlockType() from 15-30 lines to 5-8 lines.
 
-## Dynamic Blocks with render_callback
 
 ## Server-Side Rendering Configuration
 
@@ -361,7 +357,6 @@ registerBlockType( metadata.name, {
 - Blocks requiring PHP-only APIs (WP_Query, get_posts)
 - ACF blocks using ACF's render_template or render_callback
 
-## Block Variations
 
 ## Defining Variations in block.json
 
@@ -398,7 +393,6 @@ WordPress block.json supports variations array for creating block presets with p
 
 **Inserter behavior:** Variations appear as separate blocks in the inserter, allowing users to select the appropriate preset.
 
-## Example Templates
 
 ## Block.json Example Patterns Overview
 
@@ -480,7 +474,6 @@ WordPress blocks containing nested content use supports.html: false to prevent d
 
 **example field:** Defines preview content shown in block inserter hover state.
 
-## Migration from Legacy Registration
 
 ## Converting Inline Metadata Overview
 
@@ -563,7 +556,6 @@ registerBlockType( metadata.name, {
 - Automatic PHP/JS sync
 - Easier unit testing (metadata is data, not code)
 
-## Validation and Debugging
 
 ## Schema Validation
 
@@ -620,7 +612,6 @@ WordPress block.json validation failures often stem from incorrect field types o
 }
 ```
 
-## Real-World Example
 
 ## airbnb-policy-blocks section-block Overview
 

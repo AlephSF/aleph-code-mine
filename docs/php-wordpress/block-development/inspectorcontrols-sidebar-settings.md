@@ -22,7 +22,6 @@ WordPress InspectorControls component renders block settings in the editor sideb
 
 **Source confidence:** 100% adoption for blocks with settings (74 InspectorControls implementations across analyzed plugins: 67 airbnb + 7 thekelsey). Every block requiring user configuration uses InspectorControls.
 
-## Basic InspectorControls Structure
 
 ## Minimal Sidebar Implementation
 
@@ -61,7 +60,6 @@ export default function Edit({ attributes, setAttributes }) {
 
 **Best practice:** Always use Fragment (`<>`) or `<div>` to wrap InspectorControls + block content, as React requires single root element.
 
-## Common Control Components
 
 ## TextControl for String Input
 
@@ -151,7 +149,6 @@ WordPress RangeControl renders numeric slider input with min/max bounds. The com
 
 **Real-world usage:** 10+ RangeControl instances for column counts, opacity levels, animation durations, and spacing multipliers.
 
-## Multi-Panel Organization
 
 ## Grouping Related Settings
 
@@ -195,7 +192,6 @@ WordPress PanelBody components group related controls into collapsible sections.
 
 **Best practice:** 70+ instances average 2-3 panels per block. First panel primary settings (initialOpen: true), subsequent panels styling/advanced (initialOpen: false).
 
-## Complete Pattern Example
 
 ## Section Block with Sidebar Controls
 
@@ -224,7 +220,6 @@ export default function Edit({ attributes, setAttributes }) {
 
 **Features:** i18n (`__()`), multiple panels, mixed controls, conditional classes.
 
-## Advanced Patterns
 
 ## ColorPalette for Color Selection
 
@@ -277,7 +272,6 @@ import { Button } from '@wordpress/components';
 - `alt`: Image alt text (string)
 - `title`: Image title (string)
 
-## addFilter for Extending All Blocks
 
 ## Global InspectorControls Injection
 
@@ -305,7 +299,6 @@ addFilter('editor.BlockEdit', 'rkv/spacing-controls', addSpacing);
 
 **Example:** rkv-block-editor adds spacing controls to every block for universal bottom margin adjustment. **Adoption:** 17% (1/6 plugins).
 
-## Common Pitfalls
 
 ## Missing setAttributes Callback
 
@@ -343,7 +336,6 @@ WordPress InspectorControls requires PanelBody wrapper for proper styling. Contr
 </InspectorControls>
 ```
 
-## Migration from Legacy Patterns
 
 ## Converting wp.components to @wordpress/components
 

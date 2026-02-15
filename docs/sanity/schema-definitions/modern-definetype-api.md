@@ -28,7 +28,6 @@ Sanity v3+ introduced the modern `defineType()` and `defineField()` helper funct
 
 **Observation:** Despite Helix running v3.10.0 (which supports the modern API), it continues using the v2-compatible object-literal pattern for backward compatibility.
 
-## Modern API Pattern (v3+)
 
 ## Document Schema with defineType
 
@@ -119,7 +118,6 @@ export default defineType({
 })
 ```
 
-## Legacy Object-Literal Pattern (v2-Compatible)
 
 ## Document Schema (Legacy)
 
@@ -186,7 +184,6 @@ export default createSchema({
 })
 ```
 
-## Benefits of Modern API
 
 ## Enhanced TypeScript Support
 
@@ -260,7 +257,6 @@ fields: [
 ]
 ```
 
-## Migration Path
 
 ## Incremental Migration Strategy
 
@@ -318,7 +314,6 @@ import { defineType, defineField } from "sanity"
 // Runtime validation but no autocomplete
 ```
 
-## Anti-Patterns
 
 ## Mixing Patterns Inconsistently
 

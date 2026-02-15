@@ -87,7 +87,6 @@ export const schemaTypes: SchemaTypeDefinition[] = [
 ]
 ```
 
-## Migration Strategies
 
 ## Strategy 1: Dual Schema Support (Recommended)
 
@@ -181,7 +180,6 @@ const transformedContent = content.map((block) => {
 
 **Source Confidence**: N/A (not observed, but common pattern)
 
-## Frontend Rendering Strategies
 
 ## Unified Component Mapping
 
@@ -260,7 +258,6 @@ function renderBlock(block: SanityBlock) {
 }
 ```
 
-## Studio UI Indicators
 
 ## Deprecation Warnings
 
@@ -308,7 +305,6 @@ export default defineConfig({
 
 **Benefit**: Existing content renders, but editors cannot add new legacy sections
 
-## Migration Scripts
 
 ## Identify Content Needing Migration
 
@@ -389,7 +385,6 @@ migrateFaqSections()
 
 **Important**: Always backup content before running migration scripts
 
-## Phased Rollout
 
 ## Phase 1: Dual Schema Support
 
@@ -424,7 +419,6 @@ migrateFaqSections()
 
 **Goal**: Zero legacy content, clean codebase
 
-## Pattern Selection Guidelines
 
 ## Use Legacy Folder When:
 
@@ -462,7 +456,6 @@ migrateFaqSections()
 
 **Source Confidence**: 67% (helix + kariusdx have no legacy folders)
 
-## Common Pitfalls
 
 ## Removing Schemas Before Content Migration
 
@@ -493,7 +486,6 @@ sanity dataset export production backup-$(date +%Y%m%d).tar.gz
 
 **Solution**: Frontend must support both legacy and modern during transition
 
-## Monitoring Migration Progress
 
 ## Dashboard Query
 

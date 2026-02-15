@@ -28,7 +28,6 @@ The GROQ reference expansion operator (`->`) dereferences Sanity references to f
 
 **Total:** 134 `->` operators across 51 query files (average 2.6 per query).
 
-## Basic Reference Expansion
 
 ## Single Reference Dereferencing
 
@@ -75,7 +74,6 @@ defineField({
 }
 ```
 
-## Image Asset Reference Expansion
 
 ## Universal Pattern for Image Dereferencing
 
@@ -145,7 +143,6 @@ const pageQuery = groq`
 
 **Observation:** Image expansion appears in 100% of projects, accounting for ~40% of all reference expansions (54 of 134 instances).
 
-## Array Reference Expansion
 
 ## Dereferencing Arrays with []->
 
@@ -231,7 +228,6 @@ defineField({
 }
 ```
 
-## Nested Reference Expansion
 
 ## Multi-Level Dereferencing
 
@@ -276,7 +272,6 @@ GROQ supports dereferencing references within referenced documents.
 
 **Observation:** Nested expansions appear in 15% of queries (primarily navigation and author structures).
 
-## Conditional Reference Expansion
 
 ## Expansion with Type Checking
 
@@ -320,7 +315,6 @@ defineField({
 
 **Expands different fields based on document type.**
 
-## Reference Expansion with Filtering
 
 ## Filtered Array References
 
@@ -350,7 +344,6 @@ defineField({
 
 **Filters expanded references to only published pages.**
 
-## Renaming Expanded Fields
 
 ## Projection with Reference Expansion
 
@@ -377,7 +370,6 @@ defineField({
 
 **Use case:** Flatten nested structures for simpler component props.
 
-## Null Safety with References
 
 ## Handling Missing References
 
@@ -408,7 +400,6 @@ defineField({
 
 **Observation:** Null safety patterns appear in 10% of queries (primarily kariusdx).
 
-## Performance Considerations
 
 ## Expansion Depth Limit
 

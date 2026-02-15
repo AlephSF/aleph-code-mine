@@ -20,7 +20,6 @@ Route Handlers in Next.js App Router replace Pages Router API routes with a file
 
 Route handler adoption shows 67% across analyzed codebases with App Router: helix-dot-com-next (8 handlers) and policy-node (14 handlers) implement route handlers for preview mode, webhooks, and API endpoints. kariusdx-next (Pages Router only) has 0 route handlers.
 
-## Basic Route Handler Pattern
 
 ## File-Based API Routes
 
@@ -47,7 +46,6 @@ export async function GET() {
 
 **Source Evidence:** helix-dot-com-next implements 8 route handlers at `app/api/*/route.ts` for preview mode and webhooks. policy-node implements 14 route handlers for multilingual preview, revalidation, and sitemap generation.
 
-## HTTP Method Handlers
 
 ## Supported Method Exports
 
@@ -85,7 +83,6 @@ export async function POST(request: NextRequest) {
 - Each method handler receives `NextRequest` parameter
 - Must return `Response` or `NextResponse` object
 
-## NextRequest and NextResponse APIs
 
 ## Request Object Methods
 
@@ -160,7 +157,6 @@ export async function POST(request: NextRequest) {
 - `NextResponse.rewrite(url)` - Internal rewrite (URL stays same)
 - `NextResponse.next()` - Continue to next middleware
 
-## Dynamic Route Handlers
 
 ## Path Parameters in Routes
 
@@ -231,7 +227,6 @@ export async function GET(
 }
 ```
 
-## Preview Mode Route Handlers
 
 ## Draft Mode Enable/Disable Pattern
 
@@ -282,7 +277,6 @@ export async function GET() {
 
 **Source Evidence:** helix-dot-com-next implements preview handlers at `app/api/preview/route.ts` and `app/api/exit-preview/route.ts`. 100% of App Router projects with CMS integration implement this pattern.
 
-## Webhook Route Handlers
 
 ## CMS Revalidation Webhooks
 
@@ -339,7 +333,6 @@ export async function POST(request: NextRequest) {
 - `revalidateTag()` invalidates all fetches with tag
 - Error handling with appropriate status codes
 
-## CORS Configuration
 
 ## Cross-Origin Request Handling
 
@@ -379,7 +372,6 @@ export async function OPTIONS(request: NextRequest) {
 - Include credentials header if using cookies
 - Consistent headers across all methods
 
-## Route Handler Caching
 
 ## Default Cache Behavior
 
@@ -424,7 +416,6 @@ export async function GET() {
 }
 ```
 
-## Migration from Pages Router API Routes
 
 ## Before (Pages Router)
 ```typescript
@@ -463,7 +454,6 @@ export async function GET() {
 - `pages/api/` directory → `app/api/` directory
 - Filename flexibility → Must be named `route.ts`
 
-## Error Handling in Route Handlers
 
 ## Try/Catch with Proper Status Codes
 
@@ -507,7 +497,6 @@ export async function GET(
 - Include error message in JSON body
 - Log errors server-side with context
 
-## Anti-Patterns to Avoid
 
 ## Missing Method Handlers
 

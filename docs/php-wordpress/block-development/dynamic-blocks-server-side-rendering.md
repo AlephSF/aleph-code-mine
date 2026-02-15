@@ -22,7 +22,6 @@ WordPress dynamic blocks execute PHP rendering logic at runtime instead of savin
 
 **Source confidence:** 40% adoption (2/5 plugins analyzed implement dynamic blocks). rkv-block-editor contains 2 dynamic blocks (Carousel, Marketo Form) with OOP base class pattern. airbnb-policy-blocks uses dynamic rendering for 15 ACF blocks.
 
-## Basic Dynamic Block Registration
 
 ## PHP render_callback Pattern
 
@@ -81,7 +80,6 @@ registerBlockType( metadata.name, {
 
 **Key requirement:** save: () => null tells WordPress to invoke render_callback instead of using stored HTML from post_content.
 
-## OOP Base Class Pattern
 
 ## Abstract Base Class for Template Hierarchy
 
@@ -162,7 +160,6 @@ $settings = $attributes['tsSettings'] ?? [];
 
 **Benefits:** DRY template hierarchy, theme overrides, unit testable, scalable. **Adoption:** 17% confidence (1/6 plugins).
 
-## ACF Blocks with Dynamic Rendering
 
 ## ACF Block Registration
 
@@ -196,7 +193,6 @@ registerBlockType(metadata.name, { edit: Edit, save: () => null });
 
 **Usage:** 58% of airbnb-policy-blocks (15/26 blocks).
 
-## Template Hierarchy Customization
 
 ## Theme Override Pattern
 
@@ -232,7 +228,6 @@ $images = $attributes['images'] ?? [];
 
 **Use case:** Agencies can customize plugin blocks per client without forking plugin code, enabling core plugin updates while maintaining client-specific presentation.
 
-## Dynamic Data Queries
 
 ## WP_Query in render_callback
 
@@ -270,7 +265,6 @@ wp_cache_set($cache_key, $html, '', 300); // 5 minute cache
 return $html;
 ```
 
-## Edit Component for Dynamic Blocks
 
 ## ServerSideRender Component
 
@@ -298,7 +292,6 @@ export default function Edit({ attributes, setAttributes }) {
 
 **Performance:** Triggers on every keystroke. Debounce expensive attributes or implement custom preview.
 
-## When to Use Dynamic Blocks
 
 ## Dynamic vs Static Decision Matrix
 
@@ -320,7 +313,6 @@ WordPress blocks should use dynamic rendering when content changes frequently or
 
 **Real-world split:** airbnb-policy-blocks uses 11 static blocks (sections, layouts) and 15 dynamic ACF blocks (data-driven content). rkv-block-editor uses 2 dynamic blocks (Carousel, Marketo Form) for runtime logic.
 
-## Common Pitfalls
 
 ## Forgetting save: () => null
 

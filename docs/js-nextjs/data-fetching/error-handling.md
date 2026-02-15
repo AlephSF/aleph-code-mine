@@ -20,7 +20,6 @@ Error handling in Next.js data fetching ensures application resilience against n
 
 All analyzed codebases show extensive error handling with 4060+ try/catch blocks across data fetching logic. Sophistication varies from basic throws (helix, kariusdx) to production-grade retry mechanisms with timeout detection (policy-node).
 
-## Try/Catch Pattern Universality
 
 ## Basic Error Boundaries
 
@@ -86,7 +85,6 @@ export default async function BlogPost({ params }: { params: { slug: string } })
 
 **Source Evidence:** policy-node uses `notFound()` in 100% of dynamic routes with missing content. helix and kariusdx prefer null checks with fallback UI.
 
-## Timeout Management
 
 ## AbortController Pattern
 
@@ -126,7 +124,6 @@ export default async function fetchGraphQL<T>(query: string, { timeout = 30000, 
 
 **Evidence:** policy-node uses across 70 fetches with zero timeout failures. helix/kariusdx lack timeouts.
 
-## Retry Logic with Exponential Backoff
 
 ## Network Error Retry Pattern
 
@@ -165,7 +162,6 @@ export default async function fetchGraphQL<T>(query: string, { retries = 3, retr
 
 **Evidence:** policy-node retry reduced failures 8%→<0.1% for 800+ pages.
 
-## GraphQL Error Handling
 
 ## Error Response Structure
 
@@ -216,7 +212,6 @@ if (!result.pages || result.pages.length === 0) {
 const firstPage = result.pages[0].title // Safe access
 ```
 
-## Structured Error Logging
 
 ## Production-Grade Logger Integration
 
@@ -247,7 +242,6 @@ logger.error(`Failed GraphQL "${queryName}"`, {
 
 **Evidence:** policy-node logger captures 70 fetch contexts. Enables debugging intermittent failures via `duration > 28000` filter (near-timeout).
 
-## Error.tsx Boundary Pattern
 
 ## App Router Error Handling UI
 
@@ -314,7 +308,6 @@ app/
 - If `app/blog/error.tsx` missing → caught by `app/error.tsx`
 - If `app/error.tsx` missing → Next.js default error page
 
-## Pages Router Error Handling
 
 ## getStaticProps Error Pattern
 
@@ -358,7 +351,6 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
 
 **Production Pattern:** policy-node returns `notFound` for transient fetch errors during build. Prevents build failures from temporary API unavailability while ISR eventually resolves content.
 
-## Anti-Patterns to Avoid
 
 ## Silent Error Swallowing
 

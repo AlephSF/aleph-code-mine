@@ -20,7 +20,6 @@ Incremental Static Regeneration (ISR) revalidation enables automatic page update
 
 All analyzed codebases (helix-dot-com-next, kariusdx-next, policy-node) implement ISR revalidation across 100% of their data-fetched pages. Revalidation intervals range from 10 to 60 seconds depending on content source volatility.
 
-## App Router Revalidation Pattern
 
 ## Segment-Level Configuration
 
@@ -64,7 +63,6 @@ export default async function Page({ params }) {
 }
 ```
 
-## Pages Router Revalidation Pattern
 
 ## Return Object Configuration
 
@@ -121,7 +119,6 @@ const getStaticPropsWithPreview: GetStaticProps = async ({ params, preview = fal
 }
 ```
 
-## Revalidation Interval Guidelines
 
 ## Choosing Revalidation Timing
 
@@ -147,7 +144,6 @@ Content volatility determines appropriate revalidation intervals across analyzed
 
 **Pattern Insight:** Lower revalidation intervals increase server load. Policy-node uses 60s for WordPress to prevent API rate limiting. Helix uses 10s default with 30s in fetch wrapper as safety net.
 
-## Fetch-Level Revalidation Override
 
 ## Custom Fetch Wrapper Pattern
 
@@ -187,7 +183,6 @@ export async function sanityFetch<T>({
 - Draft mode bypasses cache entirely (no revalidation)
 - Development mode disables caching for instant feedback
 
-## Tag-Based Revalidation
 
 ## On-Demand Cache Invalidation
 
@@ -225,7 +220,6 @@ export async function POST(request: NextRequest) {
 
 **Source Evidence:** helix-dot-com-next implements tag-based revalidation in sanityFetch wrapper. Tags map to Sanity document types ('page', 'post', 'author').
 
-## Anti-Patterns to Avoid
 
 ## Missing Revalidation Configuration
 
@@ -283,7 +277,6 @@ async function getData() {
 }
 ```
 
-## Migration Path: Pages Router to App Router
 
 ## Before (Pages Router)
 ```typescript

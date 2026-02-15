@@ -22,7 +22,6 @@ WordPress allowed_block_types_all filter restricts available blocks in the edito
 
 **Source confidence:** 40% adoption (2/5 plugins implement allowed block filtering). airbnb-policy-blocks uses tiered allowlist pattern for different post types (Pages, Priority Pages, Local Pages). rkv-block-editor restricts blocks for specific custom post types.
 
-## Basic Allowlist Implementation
 
 ## Global Block Restriction
 
@@ -52,7 +51,6 @@ add_filter( 'allowed_block_types_all', 'restrict_blocks', 10, 2 );
 
 **Use case:** Simplify editor for non-technical users by removing advanced blocks (embeds, code, custom HTML).
 
-## Post-Type-Specific Allowlists
 
 ## Tiered Allowlist Pattern
 
@@ -87,7 +85,6 @@ add_filter('allowed_block_types_all', 'restrict_blocks', 10, 2);
 
 **Real-world example:** airbnb-policy-blocks implements 4-tier system (universal, page-type, pages-only, local-pages-only) managing 25+ block types across 3 post types.
 
-## Editor Context Detection
 
 ## Pattern Editor Exception
 
@@ -136,7 +133,6 @@ if ( ! empty( $editor_context->name ) && strpos( $editor_context->name, 'core/ed
 
 **FSE-specific blocks:** template-part, query, post-template, post-title, post-date, navigation, site-logo, site-title.
 
-## Core Block Categories
 
 ## Selective Core Block Allowlist
 
@@ -169,7 +165,6 @@ add_filter('allowed_block_types_all', 'restrict_blocks', 10, 2);
 
 **Excluded core blocks:** code, custom-html, shortcode, freeform, missing, all embed variations (twitter, youtube, spotify, etc.).
 
-## User Capability Detection
 
 ## Role-Based Allowlists
 
@@ -211,7 +206,6 @@ add_filter( 'allowed_block_types_all', 'restrict_blocks', 10, 2 );
 
 **Use case:** Multi-author sites where content quality varies by contributor experience level.
 
-## Dynamic Allowlist Generation
 
 ## Registry-Based Allowlist
 
@@ -251,7 +245,6 @@ add_filter( 'allowed_block_types_all', 'restrict_blocks', 10, 2 );
 
 **Benefits:** Automatically includes new blocks matching criteria without hardcoded namespace updates.
 
-## Allowlist Maintenance
 
 ## Centralized Block List Constants
 
@@ -306,7 +299,6 @@ add_filter( 'allowed_block_types_all', 'restrict_blocks', 10, 2 );
 - Easy to share lists across post types
 - Constants available in other plugin code (admin interfaces, documentation)
 
-## Complete Example
 
 ## Multi-Tier Post-Type-Aware Allowlist
 
@@ -345,7 +337,6 @@ add_filter('allowed_block_types_all', 'airbnb_restrict_blocks', 10, 2);
 
 **Features:** Constants for maintainable lists, pattern editor exception (all blocks), three-tier system (universal/page/local), post type detection, fallback to universal.
 
-## Performance Considerations
 
 ## Caching Allowlist Results
 
@@ -383,7 +374,6 @@ function restrict_blocks( $allowed_block_types, $editor_context ) {
 - Simple hardcoded array returns
 - Allowlists already stored as constants
 
-## Common Pitfalls
 
 ## Blocking Reusable Blocks
 

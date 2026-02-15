@@ -20,7 +20,6 @@ Sanity object types enable reusable data structures across multiple document typ
 
 **Adoption**: 100% of projects use reusable objects. Common patterns: SEO objects (100%), link objects (67%), image objects (67%), navigation items (67%).
 
-## Object Type vs Document Type
 
 ## Object Type Characteristics
 
@@ -56,7 +55,6 @@ export default defineType({
 })
 ```
 
-## SEO Metadata Object Pattern
 
 ## Universal Pattern (100% Adoption)
 
@@ -143,7 +141,6 @@ fields: [
 ]
 ```
 
-## Link Object Pattern
 
 ## Enhanced Link Object (Ripplecom Pattern)
 
@@ -227,7 +224,6 @@ export default {
 
 **Source Confidence**: 33% (helix v3 has no link objects)
 
-## Image Object Pattern
 
 ## Featured Image Object
 
@@ -281,7 +277,6 @@ fields: [
 
 **Source Confidence**: 100% (helix v3 + kariusdx v2)
 
-## Navigation Item Object
 
 ## Simple Navigation Item
 
@@ -360,7 +355,6 @@ fields: [
 
 **Source Confidence**: 67% (kariusdx v2 + ripplecom v4)
 
-## Meta Fields Object
 
 ## Publishing Metadata Object
 
@@ -418,7 +412,6 @@ fields: [
 
 **Source Confidence**: 33% (ripplecom v4 only)
 
-## Stat Object Pattern
 
 ## Statistics Display Object
 
@@ -480,7 +473,6 @@ fields: [
 
 **Source Confidence**: 33% (kariusdx v2 only)
 
-## Address/Contact Info Object
 
 ## Contact Information Object
 
@@ -521,7 +513,6 @@ export default defineType({
 
 **Source Confidence**: 33% (ripplecom v4 only)
 
-## Pattern Selection Guidelines
 
 ## Create Reusable Object When:
 
@@ -549,7 +540,6 @@ export default defineType({
 
 **Example**: One-off boolean or string field
 
-## Common Pitfalls
 
 ## Document When Should Be Object
 
@@ -579,7 +569,6 @@ validation: (Rule) => Rule.required().max(60)
 
 **Solution**: Use specific names: `seoMetadata`, `contactInfo`, `publishingMeta`
 
-## Frontend Usage
 
 ## Rendering Objects
 

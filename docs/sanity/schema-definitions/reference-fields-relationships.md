@@ -28,7 +28,6 @@ Sanity reference fields create typed relationships between documents, enabling s
 
 **Observation:** Ripplecom uses references 3x more than other projects, primarily for taxonomies (categories, tags) and author attribution.
 
-## Basic Reference Pattern
 
 ## Single Reference Field
 
@@ -77,7 +76,6 @@ defineField({
 })
 ```
 
-## Array of References Pattern
 
 ## Categories and Tags (Most Common)
 
@@ -141,7 +139,6 @@ defineField({
 })
 ```
 
-## Author Reference Pattern
 
 ## Single Author Attribution
 
@@ -173,7 +170,6 @@ defineField({
 })
 ```
 
-## Related Content Pattern
 
 ## Related Posts/Articles
 
@@ -218,7 +214,6 @@ defineField({
 })
 ```
 
-## Reference Options
 
 ## Disable Inline Creation (disableNew)
 
@@ -275,7 +270,6 @@ defineField({
 })
 ```
 
-## Weak References
 
 ## Standard vs Weak References
 
@@ -301,7 +295,6 @@ defineField({
 
 **Use Case:** Weak references for suggestions, drafts, or non-critical relationships.
 
-## Hierarchical References (Helix Pattern)
 
 ## Parent-Child Page Relationships
 
@@ -352,7 +345,6 @@ export default {
 
 **Result:** Pages like `/about-us/team` where "Team" page references "About Us" as parent.
 
-## Preview Configuration with References
 
 ## Displaying Referenced Data in Previews
 
@@ -379,7 +371,6 @@ export default defineType({
 })
 ```
 
-## Querying References in GROQ
 
 ## Fetching Referenced Documents
 
@@ -414,7 +405,6 @@ const query = `*[_type == "blogPost" && author->name == "John Doe"]`
 const query = `*[_type == "blogPost" && "Technology" in categories[]->title]`
 ```
 
-## Common Reference Use Cases
 
 ## Taxonomy Systems
 
@@ -487,7 +477,6 @@ fields: [
 ]
 ```
 
-## Anti-Patterns
 
 ## Over-Referencing Simple Data
 

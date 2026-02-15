@@ -28,7 +28,6 @@ Sanity projects consistently organize GROQ queries into dedicated directories wi
 
 **Observation:** All projects place queries outside component directories, treating them as shared data-fetching utilities rather than component-specific logic.
 
-## Standard Directory Structure
 
 ## Helix Pattern (Flat with Partials Subdirectory)
 
@@ -112,7 +111,6 @@ apps/ripple-web/src/queries/sanity/
 - Descriptive filenames match Sanity document types
 - Partials represent common content structures (image, link, richText)
 
-## File Naming Conventions
 
 ## Query Files (Main Queries)
 
@@ -132,7 +130,6 @@ export default pageByPathQuery
 
 **Recommendation:** Use descriptive nouns (pages.ts, posts.ts) with named exports for multiple related queries per file. This reduces file proliferation and groups related queries logically.
 
-## Partials Subdirectory Pattern
 
 ## Purpose of Partials
 
@@ -207,7 +204,6 @@ export const clinicalDataQueryString = (slug: string[]) => (
 - Dynamic parameter interpolation
 - Query string builders for complex filters
 
-## Anti-Patterns to Avoid
 
 ## ❌ Queries Inside Component Files
 

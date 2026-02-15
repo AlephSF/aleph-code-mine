@@ -199,7 +199,6 @@ export default {
 }
 ```
 
-## Querying Page Builder Content
 
 ## Flat Structure Query (Ripplecom)
 
@@ -259,7 +258,6 @@ Nested structures require multiple levels of array expansion:
 }
 ```
 
-## Pattern Selection Guidelines
 
 ## Choose Flat Content Array When:
 
@@ -287,7 +285,6 @@ Nested structures require multiple levels of array expansion:
 
 **Source Confidence**: 33% (helix v3 uses simple fields)
 
-## Frontend Rendering Patterns
 
 ## React Component Mapping (Flat Structure)
 
@@ -348,7 +345,6 @@ export function PageBuilder({ pageBuilder }: { pageBuilder: PageSection[] }) {
 }
 ```
 
-## Common Pitfalls
 
 ## Nested Array Issues
 
@@ -417,7 +413,6 @@ preview: {
 }
 ```
 
-## Migration Path
 
 ## From Simple Fields to Page Builder
 

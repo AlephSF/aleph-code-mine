@@ -20,7 +20,6 @@ WordPress template hierarchy determines which template file renders based on req
 
 Template hierarchy checks files in specific order: most-specific → least-specific → `index.php/index.blade.php` fallback. Blade themes follow **identical hierarchy** as PHP themes, only file extension differs.
 
-## Template Hierarchy by Request Type
 
 ## Homepage
 
@@ -167,7 +166,6 @@ Hierarchy (in order checked):
 5. index.php / index.blade.php
 ```
 
-## Blade vs PHP Template Files
 
 ## Traditional PHP Template
 

@@ -28,7 +28,6 @@ Sanity's `hidden` property dynamically shows or hides schema fields based on doc
 
 **Total:** 87 conditional visibility rules across 147 schemas
 
-## Basic Pattern: Boolean Toggle
 
 ## Hide Field Until Toggle Enabled
 
@@ -102,7 +101,6 @@ export default {
 }
 ```
 
-## Conditional Visibility Based on Field Values
 
 ## Hide Fields Based on Slug/ID
 
@@ -178,7 +176,6 @@ export default defineType({
 })
 ```
 
-## Context Objects: document vs parent
 
 ## Document Context (Top-Level Fields)
 
@@ -250,7 +247,6 @@ When hiding fields in array items, use `{ parent }` for the array item data.
 }
 ```
 
-## Complex Conditional Logic
 
 ## Multiple Conditions (AND Logic)
 
@@ -300,7 +296,6 @@ hidden: ({ document }) => !document?.showAdvanced
 hidden: ({ document }) => document?.hideAdvanced === true
 ```
 
-## Performance Considerations
 
 ## Memoization for Complex Logic
 
@@ -340,7 +335,6 @@ hidden: ({ document }) => {
 hidden: ({ document }) => !document?.enableAdvanced
 ```
 
-## Validation with Hidden Fields
 
 ## Hidden Fields and Required Validation
 
@@ -379,7 +373,6 @@ defineField({
 })
 ```
 
-## Common Use Cases
 
 ## Feature Flags
 
@@ -457,7 +450,6 @@ fields: [
 ]
 ```
 
-## Anti-Patterns
 
 ## Hiding Required Fields by Default
 
