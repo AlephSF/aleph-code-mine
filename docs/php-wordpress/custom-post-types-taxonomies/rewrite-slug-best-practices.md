@@ -123,7 +123,7 @@ register_post_type('bnb_leadership', $args);
 - Potential conflicts if parent slug changes (requires rewrite flush)
 - No automatic parent page creation (URLs hierarchical, content flat)
 
-The Kelsey uses flat top-level slugs (`/events`, `/projects`, `/learn-center`) suitable for primary content types. Airbnb uses nested slugs for secondary content supporting main sections (`/about-us/leadership` supports About Us page).
+Kelsey uses flat top-level slugs (`/events`, `/projects`) for primary content. Airbnb uses nested slugs for secondary content (`/about-us/leadership`).
 
 ## Taxonomy Rewrite Integration
 

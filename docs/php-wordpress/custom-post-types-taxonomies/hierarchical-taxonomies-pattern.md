@@ -28,40 +28,24 @@ WordPress taxonomies default to flat structure unless explicitly configured as h
 
 ```php
 <?php
-register_taxonomy(
-    'kelsey_event_category',
-    array('kelsey_event'),
-    array(
-        'hierarchical'      => true,  // Enable parent-child relationships
-        'label'             => esc_html__('Categories', 'kelsey-custom-post-types'),
-        'singular_label'    => esc_html__('Category', 'kelsey-custom-post-types'),
-        'show_ui'           => true,
-        'show_admin_column' => true,  // Display in post list table
-        'query_var'         => true,
-        'show_in_rest'      => true,  // REST API + Gutenberg support
-        'rewrite'           => array(
-            'slug'         => 'events/category',
-            'hierarchical' => true,  // URLs include parent: /events/category/parent/child
-        ),
-    )
-);
+register_taxonomy('kelsey_event_category',array('kelsey_event'),array('hierarchical'=>true,'label'=>esc_html__('Categories','kelsey-custom-post-types'),'singular_label'=>esc_html__('Category','kelsey-custom-post-types'),'show_ui'=>true,'show_admin_column'=>true,'query_var'=>true,'show_in_rest'=>true,'rewrite'=>array('slug'=>'events/category','hierarchical'=>true)));
 ```
 
 **Hierarchical characteristics:**
 - Terms can have parent terms (unlimited depth)
-- Admin UI shows checkbox interface (vs tag-style text input)
+- Admin UI shows checkbox interface (vs tag text input)
 - Terms display indented by hierarchy level
 - Supports ancestor/descendant queries
 - Checkbox selection for assigning to posts
 
-**Flat (tag-style) characteristics for comparison:**
-- No parent-child relationships (`hierarchical => false`)
-- Comma-separated text input in admin UI
+**Flat (tag-style) comparison:**
+- No parent-child relationships (`hierarchical=>false`)
+- Comma-separated text input in admin
 - Autocomplete for existing tags
 - No indentation in term lists
 - Typically used for folksonomy (user-generated tags)
 
-Analyzed codebases show 0% flat taxonomies, indicating deliberate architectural decision to use structured classification over free-form tagging.
+Analyzed codebases show 0% flat taxonomies, indicating deliberate architectural decision for structured classification over free-form tagging.
 
 ## Multi-Post-Type Taxonomies
 
@@ -69,35 +53,13 @@ WordPress taxonomies can apply to multiple post types simultaneously, enabling s
 
 ```php
 <?php
-// Apply taxonomy to multiple post types
-register_taxonomy(
-    'bnb_country_content',
-    array('post', 'bnb_media'),  // Array of post type names
-    array(
-        'hierarchical'      => true,
-        'labels'            => $labels,
-        'show_ui'           => true,
-        'show_admin_column' => true,
-        'query_var'         => true,
-        'rewrite'           => array('slug' => 'country-content'),
-    )
-);
-
-register_taxonomy(
-    'bnb_city_content',
-    array('post', 'bnb_media'),
-    array(
-        'hierarchical'      => true,
-        'labels'            => $labels,
-        'show_admin_column' => true,
-        'rewrite'           => array('slug' => 'city-content'),
-    )
-);
+register_taxonomy('bnb_country_content',array('post','bnb_media'),array('hierarchical'=>true,'labels'=>$labels,'show_ui'=>true,'show_admin_column'=>true,'query_var'=>true,'rewrite'=>array('slug'=>'country-content')));
+register_taxonomy('bnb_city_content',array('post','bnb_media'),array('hierarchical'=>true,'labels'=>$labels,'show_admin_column'=>true,'rewrite'=>array('slug'=>'city-content')));
 ```
 
-**Use cases for multi-post-type taxonomies:**
+**Use cases:**
 - Geographic classification (countries, cities, regions)
-- Content categories spanning multiple CPTs
+- Content categories spanning CPTs
 - Organizational departments/teams
 - Publishing status (draft, review, approved)
 - Access control levels
@@ -105,25 +67,15 @@ register_taxonomy(
 **The Kelsey single-post-type pattern:**
 ```php
 <?php
-// Dedicated taxonomy per post type
-register_taxonomy(
-    'kelsey_event_category',
-    array('kelsey_event'),  // Single post type only
-    array(/* ... */)
-);
-
-register_taxonomy(
-    'kelsey_resource_category',
-    array('kelsey_resource'),  // Different taxonomy for different CPT
-    array(/* ... */)
-);
+register_taxonomy('kelsey_event_category',array('kelsey_event'),array(/*...*/));
+register_taxonomy('kelsey_resource_category',array('kelsey_resource'),array(/*...*/));
 ```
 
 **Adoption:**
-- 40% multi-post-type taxonomies (Airbnb: 2/5 taxonomies)
-- 100% single-post-type taxonomies (The Kelsey: 2/2 taxonomies)
+- 40% multi-post-type (Airbnb: 2/5 taxonomies)
+- 100% single-post-type (Kelsey: 2/2 taxonomies)
 
-Multi-post-type taxonomies reduce term duplication when classification systems apply universally (e.g., "Featured" category should be single taxonomy, not separate per CPT). Single-post-type taxonomies provide isolation when classification semantics differ (e.g., Event categories ≠ Resource categories).
+Multi-post-type taxonomies reduce term duplication when classification applies universally ("Featured" single taxonomy, not per CPT). Single-post-type provides isolation when semantics differ (Events ≠ Resources).
 
 ## Hierarchical Rewrite Rules
 

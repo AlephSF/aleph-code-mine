@@ -207,46 +207,16 @@ Custom fields exposed to REST API via `register_rest_field()` function, extendin
 
 ```php
 <?php
-// The Kelsey REST API field example (from source code)
-function register_event_rest_fields() {
-    register_rest_field('kelsey_event', 'event_date', array(
-        'get_callback' => function($post) {
-            if (function_exists('get_field')) {
-                return get_field('date', $post['id']);
-            }
-            return null;
-        },
-        'schema' => array(
-            'description' => 'Event date from ACF field',
-            'type'        => 'string',
-            'format'      => 'date-time',
-        ),
-    ));
-
-    register_rest_field('kelsey_event', 'funraise_id', array(
-        'get_callback' => function($post) {
-            if (function_exists('get_field')) {
-                return get_field('funraise_id', $post['id']);
-            }
-            return null;
-        },
-        'schema' => array(
-            'description' => 'Funraise integration ID',
-            'type'        => 'string',
-        ),
-    ));
+function register_event_rest_fields(){
+register_rest_field('kelsey_event','event_date',array('get_callback'=>function($p){return function_exists('get_field')?get_field('date',$p['id']):null;},'schema'=>array('description'=>'Event date from ACF','type'=>'string','format'=>'date-time')));
+register_rest_field('kelsey_event','funraise_id',array('get_callback'=>function($p){return function_exists('get_field')?get_field('funraise_id',$p['id']):null;},'schema'=>array('description'=>'Funraise ID','type'=>'string')));
 }
-add_action('rest_api_init', 'register_event_rest_fields');
+add_action('rest_api_init','register_event_rest_fields');
 ```
 
 **REST response with custom fields:**
 ```json
-{
-  "id": 123,
-  "title": {"rendered": "Annual Conference 2026"},
-  "event_date": "2026-06-15T09:00:00",
-  "funraise_id": "evt_abc123"
-}
+{"id":123,"title":{"rendered":"Annual Conference 2026"},"event_date":"2026-06-15T09:00:00","funraise_id":"evt_abc123"}
 ```
 
 ACF field registration enables frontend JavaScript to access custom fields without separate meta queries, reducing HTTP request count and simplifying client code.

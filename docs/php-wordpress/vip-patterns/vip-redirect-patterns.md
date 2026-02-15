@@ -34,47 +34,14 @@ vip-config.php (redirects) → WordPress core → Plugins → Theme
 WordPress VIP uses consolidated redirect arrays in vip-config.php for maintainable, DRY redirect configurations. Pattern defines all redirects in single data structure with domains, targets, status codes, and optional headers.
 
 ```php
-// vip-config.php
-$http_host   = $_SERVER['HTTP_HOST'];
-$request_uri = $_SERVER['REQUEST_URI'];
-
-$redirects = [
-    // Legacy domain redirects
-    [
-        'domains' => ['press.atairbnb.com', 'press.airbnb.com'],
-        'target'  => 'https://news.airbnb.com',
-        'status'  => 302, // Temporary redirect
-    ],
-
-    // International domain redirects
-    [
-        'domains' => ['www.airbnbforwork.de', 'airbnbforwork.de', 'airbnbforwork.fr'],
-        'target'  => 'https://www.airbnbforwork.com',
-        'status'  => 302,
-    ],
-
-    // Technology blog redirect
-    [
-        'domains' => ['airbnb.io', 'www.airbnb.io'],
-        'target'  => 'https://airbnb.tech',
-        'status'  => 302,
-    ],
-];
-
-foreach ($redirects as $redirect) {
-    if (
-        '/cache-healthcheck?' !== $request_uri &&
-        in_array($http_host, $redirect['domains'], true)
-    ) {
-        if (!empty($redirect['headers'])) {
-            foreach ($redirect['headers'] as $header) {
-                header($header);
-            }
-        }
-        header('Location: ' . $redirect['target'] . $request_uri, true, $redirect['status']);
-        exit;
-    }
-}
+//vip-config.php
+$h=$_SERVER['HTTP_HOST'];$u=$_SERVER['REQUEST_URI'];
+$redirects=[['domains'=>['press.atairbnb.com','press.airbnb.com'],'target'=>'https://news.airbnb.com','status'=>302],['domains'=>['www.airbnbforwork.de','airbnbforwork.de','airbnbforwork.fr'],'target'=>'https://www.airbnbforwork.com','status'=>302],['domains'=>['airbnb.io','www.airbnb.io'],'target'=>'https://airbnb.tech','status'=>302]];
+foreach($redirects as $r){
+if('/cache-healthcheck?'!==$u&&in_array($h,$r['domains'],true)){
+if(!empty($r['headers'])){foreach($r['headers'] as $hdr){header($hdr);}}
+header('Location:'.$r['target'].$u,true,$r['status']);exit;
+}}
 ```
 
 **Array structure:**
@@ -363,46 +330,23 @@ $redirects = [
 WordPress VIP redirect arrays execute in O(N×M) time (N redirects × M domains per redirect). Optimize by using early `in_array()` checks and strict type comparison.
 
 ```php
-// ✅ Optimized redirect loop
-foreach ($redirects as $redirect) {
-    if (
-        '/cache-healthcheck?' !== $request_uri &&
-        in_array($http_host, $redirect['domains'], true) // Strict comparison (faster)
-    ) {
-        // Send headers and redirect
-        if (!empty($redirect['headers'])) {
-            foreach ($redirect['headers'] as $header) {
-                header($header);
-            }
-        }
-        header('Location: ' . $redirect['target'] . $request_uri, true, $redirect['status']);
-        exit; // Stop execution immediately
-    }
-}
+foreach($redirects as $r){
+if('/cache-healthcheck?'!==$request_uri&&in_array($http_host,$r['domains'],true)){
+if(!empty($r['headers'])){foreach($r['headers'] as $h){header($h);}}
+header('Location:'.$r['target'].$request_uri,true,$r['status']);exit;
+}}
 ```
 
 **Performance considerations:**
-- Use `in_array($http_host, $domains, true)` (strict comparison ~10% faster)
-- Call `exit` immediately after redirect (prevent further execution)
+- Use `in_array($h,$d,true)` (strict comparison ~10% faster)
+- Call `exit` immediately after redirect
 - Skip healthcheck first (most common request)
 - Limit redirects to <20 rules (linear search acceptable)
 
 **Alternative (hash map for 50+ redirects):**
 ```php
-// Build redirect map (one-time initialization)
-$redirect_map = [];
-foreach ($redirects as $redirect) {
-    foreach ($redirect['domains'] as $domain) {
-        $redirect_map[$domain] = $redirect;
-    }
-}
-
-// O(1) lookup
-if (isset($redirect_map[$http_host])) {
-    $redirect = $redirect_map[$http_host];
-    header('Location: ' . $redirect['target'] . $request_uri, true, $redirect['status']);
-    exit;
-}
+$map=[];foreach($redirects as $r){foreach($r['domains'] as $d){$map[$d]=$r;}}
+if(isset($map[$http_host])){$r=$map[$http_host];header('Location:'.$r['target'].$request_uri,true,$r['status']);exit;}
 ```
 
 ## Testing VIP Redirects

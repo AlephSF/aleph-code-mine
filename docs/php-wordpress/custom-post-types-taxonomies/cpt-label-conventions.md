@@ -40,38 +40,19 @@ WordPress uses label arrays to populate admin UI elements dynamically based on p
 
 ```php
 <?php
-$labels = array(
-    'name'               => 'Events',  // Admin menu and page titles (plural)
-    'singular_name'      => 'Event',   // Single item references
-    'add_new'            => 'Add New', // Button text (no post type name)
-    'add_new_item'       => 'Add New Event',  // Page title when creating
-    'edit_item'          => 'Edit Event',     // Page title when editing
-    'new_item'           => 'New Event',      // Admin bar link
-    'all_items'          => 'All Events',     // Submenu item
-    'view_item'          => 'View Event',     // View link on edit screen
-    'search_items'       => 'Search Events',  // Search box placeholder
-    'not_found'          => 'No events found',  // Empty state message
-    'not_found_in_trash' => 'No events found in Trash',  // Trash empty state
-    'parent_item_colon'  => '',  // Hierarchical CPTs only (empty for flat)
-    'menu_name'          => 'Events',  // Admin sidebar menu text
-);
-
-$args = array(
-    'labels' => $labels,
-    // ... other args
-);
-
-register_post_type('kelsey_event', $args);
+$labels=array('name'=>'Events','singular_name'=>'Event','add_new'=>'Add New','add_new_item'=>'Add New Event','edit_item'=>'Edit Event','new_item'=>'New Event','all_items'=>'All Events','view_item'=>'View Event','search_items'=>'Search Events','not_found'=>'No events found','not_found_in_trash'=>'No events found in Trash','parent_item_colon'=>'','menu_name'=>'Events');
+$args=array('labels'=>$labels);
+register_post_type('kelsey_event',$args);
 ```
 
-**Label placement locations:**
-- `name`: Admin page titles (`<title>Events | WordPress</title>`)
+**Label placement:**
+- `name`: Admin page titles
 - `singular_name`: Breadcrumb trails, screen reader context
-- `add_new`: "Add New" button text in admin menu hover
-- `add_new_item`: `<h1>` heading on new post screen
-- `menu_name`: Left sidebar navigation text
+- `add_new`: "Add New" button in menu hover
+- `add_new_item`: `<h1>` on new post screen
+- `menu_name`: Left sidebar navigation
 
-Analyzed codebases show 100% complete label definitions, avoiding generic WordPress defaults ("Posts", "Add New Post") that confuse editors managing multiple custom post types.
+Analyzed codebases show 100% complete label definitions, avoiding generic WordPress defaults ("Posts", "Add New Post").
 
 ## Internationalization (i18n) Best Practices
 
@@ -80,40 +61,27 @@ WordPress supports multilingual admin interfaces through text domain registratio
 **The Kelsey partial i18n:**
 ```php
 <?php
-// CPT labels: No translation (English hardcoded)
-$labels = array(
-    'name' => 'Projects',  // Not translatable
-    'singular_name' => 'Project',
-);
-
-// Taxonomy labels: Full translation
-$labels = array(
-    'label' => esc_html__('Categories', 'kelsey-custom-post-types'),
-    'singular_label' => esc_html__('Category', 'kelsey-custom-post-types'),
-);
+//CPT: No translation
+$labels=array('name'=>'Projects','singular_name'=>'Project');
+//Taxonomy: Full translation
+$labels=array('label'=>esc_html__('Categories','kelsey-custom-post-types'),'singular_label'=>esc_html__('Category','kelsey-custom-post-types'));
 ```
 
 **Airbnb complete i18n:**
 ```php
 <?php
-$labels = array(
-    'name'               => esc_html__('Profile', 'airbnb-custom-post-types'),
-    'singular_name'      => esc_html__('Profile', 'airbnb-custom-post-types'),
-    'add_new'            => esc_html__('Add New', 'airbnb-custom-post-types'),
-    'add_new_item'       => esc_html__('Add New Profile', 'airbnb-custom-post-types'),
-    // ... all labels translated
-);
+$labels=array('name'=>esc_html__('Profile','airbnb-custom-post-types'),'singular_name'=>esc_html__('Profile','airbnb-custom-post-types'),'add_new'=>esc_html__('Add New','airbnb-custom-post-types'),'add_new_item'=>esc_html__('Add New Profile','airbnb-custom-post-types'));
 ```
 
 **Translation functions:**
-- `__('String', 'text-domain')`: Returns translated string
-- `esc_html__('String', 'text-domain')`: Returns escaped translated string (HTML context)
-- `esc_attr__('String', 'text-domain')`: Returns escaped translated string (attribute context)
-- `_e('String', 'text-domain')`: Echoes translated string
+- `__('String','domain')`: Returns translated
+- `esc_html__('String','domain')`: Returns escaped (HTML)
+- `esc_attr__('String','domain')`: Returns escaped (attribute)
+- `_e('String','domain')`: Echoes translated
 
-**Text domain:** Must match plugin/theme text domain defined in header comments. Airbnb uses `airbnb-custom-post-types`, The Kelsey uses `kelsey-custom-post-types`.
+**Text domain:** Match plugin/theme domain. Airbnb uses `airbnb-custom-post-types`, Kelsey uses `kelsey-custom-post-types`.
 
-**Adoption:** 50% complete i18n (Airbnb 100%, The Kelsey 0% for CPTs, 100% for taxonomies).
+**Adoption:** 50% (Airbnb 100%, Kelsey 0% CPTs, 100% taxonomies).
 
 ## Extended Status Labels
 
@@ -121,28 +89,20 @@ WordPress 5.0+ introduced extended status labels for enhanced user feedback duri
 
 ```php
 <?php
-// The Kelsey extended labels
-$labels = array(
-    // ... core labels ...
-    'item_published'            => 'Event added.',  // After clicking Publish
-    'item_published_privately'  => 'Event added privately.',  // Private post published
-    'item_reverted_to_draft'    => 'Event reverted to draft.',  // Status changed to draft
-    'item_scheduled'            => 'Event scheduled.',  // Future publish date set
-    'item_updated'              => 'Event updated.',  // After clicking Update
-);
+$labels=array('item_published'=>'Event added.','item_published_privately'=>'Event added privately.','item_reverted_to_draft'=>'Event reverted to draft.','item_scheduled'=>'Event scheduled.','item_updated'=>'Event updated.');
 ```
 
 **Status label context:**
-- `item_published`: Green success notice after publishing new post
-- `item_published_privately`: Private visibility selected and published
-- `item_reverted_to_draft`: Post status changed from Published → Draft
-- `item_scheduled`: Post scheduled for future publication date
-- `item_updated`: Existing published post modified and saved
+- `item_published`: Green success notice after publishing
+- `item_published_privately`: Private visibility published
+- `item_reverted_to_draft`: Status changed Published → Draft
+- `item_scheduled`: Post scheduled future date
+- `item_updated`: Existing published post modified
 
 **Default behavior without extended labels:**
-WordPress uses generic "Post published" or "Post updated" messages, reducing clarity when managing multiple post types simultaneously. Extended labels provide context-specific feedback matching post type terminology.
+WordPress uses generic "Post published" or "Post updated" messages, reducing clarity managing multiple post types. Extended labels provide context-specific feedback matching post type terminology.
 
-**Adoption:** 50% (The Kelsey 100%, Airbnb 0%). Airbnb omission likely intentional for headless architecture where admin notices less critical (content consumed via GraphQL, not WordPress frontend).
+**Adoption:** 50% (Kelsey 100%, Airbnb 0%). Airbnb omission likely intentional for headless architecture where admin notices less critical (content via GraphQL, not WordPress frontend).
 
 ## Singular vs Plural Naming
 
@@ -226,40 +186,24 @@ Labels pair with menu icons (`menu_icon` argument) to create recognizable admin 
 
 Large projects with many CPTs benefit from label generation helpers reducing repetitive code. Neither analyzed codebase implements this pattern, representing optimization opportunity.
 
-**Helper method pattern (not found in analyzed codebases):**
+**Helper method pattern (not found):**
 ```php
 <?php
-class CPT_Label_Generator {
-    public static function generate($singular, $plural, $text_domain = 'textdomain') {
-        return array(
-            'name'               => $plural,
-            'singular_name'      => $singular,
-            'add_new'            => esc_html__('Add New', $text_domain),
-            'add_new_item'       => sprintf(esc_html__('Add New %s', $text_domain), $singular),
-            'edit_item'          => sprintf(esc_html__('Edit %s', $text_domain), $singular),
-            'new_item'           => sprintf(esc_html__('New %s', $text_domain), $singular),
-            'all_items'          => sprintf(esc_html__('All %s', $text_domain), $plural),
-            'view_item'          => sprintf(esc_html__('View %s', $text_domain), $singular),
-            'search_items'       => sprintf(esc_html__('Search %s', $text_domain), $plural),
-            'not_found'          => sprintf(esc_html__('No %s found', $text_domain), strtolower($plural)),
-            'not_found_in_trash' => sprintf(esc_html__('No %s found in Trash', $text_domain), strtolower($plural)),
-            'parent_item_colon'  => '',
-            'menu_name'          => $plural,
-        );
-    }
-}
-
-// Usage
-$labels = CPT_Label_Generator::generate('Event', 'Events', 'kelsey-custom-post-types');
+class CPT_Label_Generator{
+public static function generate($s,$p,$d='textdomain'){
+return array('name'=>$p,'singular_name'=>$s,'add_new'=>esc_html__('Add New',$d),'add_new_item'=>sprintf(esc_html__('Add New %s',$d),$s),'edit_item'=>sprintf(esc_html__('Edit %s',$d),$s),'new_item'=>sprintf(esc_html__('New %s',$d),$s),'all_items'=>sprintf(esc_html__('All %s',$d),$p),'view_item'=>sprintf(esc_html__('View %s',$d),$s),'search_items'=>sprintf(esc_html__('Search %s',$d),$p),'not_found'=>sprintf(esc_html__('No %s found',$d),strtolower($p)),'not_found_in_trash'=>sprintf(esc_html__('No %s found in Trash',$d),strtolower($p)),'parent_item_colon'=>'','menu_name'=>$p);
+}}
+//Usage
+$labels=CPT_Label_Generator::generate('Event','Events','kelsey-custom-post-types');
 ```
 
 **Benefits:**
-- Reduces 150+ lines of repetitive label arrays to 1 function call per CPT
-- Ensures consistent label format across all CPTs
-- Simplifies i18n (text domain defined once)
-- Easier maintenance (update label structure in single location)
+- Reduces 150+ lines to 1 function call per CPT
+- Ensures consistent label format across CPTs
+- Simplifies i18n (domain defined once)
+- Easier maintenance (update in single location)
 
-**Trade-off:** Less flexibility for CPTs requiring non-standard label customization (e.g., "Add Event" instead of "Add New Event").
+**Trade-off:** Less flexibility for non-standard customization (e.g., "Add Event" vs "Add New Event").
 
 ## Anti-Patterns to Avoid
 

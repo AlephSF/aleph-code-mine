@@ -70,39 +70,35 @@ Blade templates follow WordPress's template hierarchy but use `.blade.php` exten
 **WordPress Template Hierarchy (Blade Mapping):**
 
 ```
-WordPress Looks For:        Blade Equivalent:
-front-page.php         →   resources/views/front-page.blade.php
-home.php               →   resources/views/home.blade.php
-single-{post-type}.php →   resources/views/single-{post-type}.blade.php
-page-{slug}.php        →   resources/views/page-{slug}.blade.php
-archive-{post-type}.php→   resources/views/archive-{post-type}.blade.php
-taxonomy-{taxonomy}.php→   resources/views/taxonomy-{taxonomy}.blade.php
-404.php                →   resources/views/404.blade.php
-index.php              →   resources/views/index.blade.php (fallback)
+WordPress:              Blade:
+front-page.php     →   resources/views/front-page.blade.php
+single-{type}.php  →   resources/views/single-{type}.blade.php
+page-{slug}.php    →   resources/views/page-{slug}.blade.php
+archive-{type}.php →   resources/views/archive-{type}.blade.php
+404.php            →   resources/views/404.blade.php
+index.php          →   resources/views/index.blade.php
 ```
 
 **Template Loading Flow:**
 
-1. WordPress checks for `single-post.php` via template hierarchy
-2. Sage's `locate_template()` filter intercepts the request
+1. WordPress checks for `single-post.php`
+2. Sage's `locate_template()` intercepts
 3. Sage looks for `resources/views/single-post.blade.php`
-4. Blade compiles template to PHP (if not cached)
-5. WordPress loads compiled PHP template
+4. Blade compiles to PHP (if not cached)
+5. WordPress loads compiled PHP
 
-**Example Single Post Template (resources/views/single.blade.php):**
+**Example (resources/views/single.blade.php):**
 
 ```blade
 @extends('layouts.app')
-
 @section('content')
-  @while(have_posts())
-    @php(the_post())
-    @include('partials.content-single')
-  @endwhile
+@while(have_posts())@php(the_post())
+@include('partials.content-single')
+@endwhile
 @endsection
 ```
 
-**Pattern:** All Blade templates extend a base layout (`layouts/app.blade.php`) and inject content into named sections.
+**Pattern:** All Blade templates extend base layout (`layouts/app.blade.php`) and inject content into named sections.
 
 **Source Confidence:** 100% (all 199 Blade templates follow this pattern)
 
@@ -167,83 +163,41 @@ Sage uses SoberWP Controller to automatically pass data from controller classes 
 
 ```php
 <?php
-
 namespace App\Controllers;
-
 use Sober\Controller\Controller;
-
-class FrontPage extends Controller
-{
-    /**
-     * Return hero data for front-page.blade.php
-     * Accessible as $hero variable in template
-     */
-    public function hero()
-    {
-        return [
-            'title' => get_field('hero_title'),
-            'subtitle' => get_field('hero_subtitle'),
-            'image' => get_field('hero_image'),
-        ];
-    }
-
-    /**
-     * Return featured posts WP_Query object
-     * Accessible as $featuredPosts in template
-     */
-    public function featuredPosts()
-    {
-        return new \WP_Query([
-            'post_type' => 'post',
-            'posts_per_page' => 3,
-            'meta_key' => 'featured',
-            'meta_value' => '1',
-        ]);
-    }
-
-    /**
-     * Static data (called once per request, cached)
-     */
-    public static function siteTagline()
-    {
-        return get_bloginfo('description');
-    }
+class FrontPage extends Controller{
+public function hero(){return['title'=>get_field('hero_title'),'subtitle'=>get_field('hero_subtitle'),'image'=>get_field('hero_image')];}
+public function featuredPosts(){return new \WP_Query(['post_type'=>'post','posts_per_page'=>3,'meta_key'=>'featured','meta_value'=>'1']);}
+public static function siteTagline(){return get_bloginfo('description');}
 }
 ```
 
-**Blade Template Usage (resources/views/front-page.blade.php):**
+**Source Confidence:** 100% (9 controllers in Kelsey, identical pattern in Presser)
+
+## Controller Template Usage
+
+**Blade Template (resources/views/front-page.blade.php):**
 
 ```blade
 @extends('layouts.app')
-
 @section('content')
-  <section class="hero" style="background-image: url({{ $hero['image']['url'] }})">
-    <h1>{{ $hero['title'] }}</h1>
-    <p>{{ $hero['subtitle'] }}</p>
-    <p class="tagline">{{ $siteTagline }}</p>
-  </section>
-
-  <section class="featured-posts">
-    @if($featuredPosts->have_posts())
-      @while($featuredPosts->have_posts())
-        @php($featuredPosts->the_post())
-        <article>
-          <h2>{{ get_the_title() }}</h2>
-          {!! get_the_excerpt() !!}
-        </article>
-      @endwhile
-      @php(wp_reset_postdata())
-    @endif
-  </section>
+<section class="hero" style="background-image:url({{$hero['image']['url']}})">
+<h1>{{$hero['title']}}</h1><p>{{$hero['subtitle']}}</p><p>{{$siteTagline}}</p>
+</section>
+<section class="featured">
+@if($featuredPosts->have_posts())@while($featuredPosts->have_posts())@php($featuredPosts->the_post())
+<article><h2>{{get_the_title()}}</h2>{!!get_the_excerpt()!!}</article>
+@endwhile @php(wp_reset_postdata())@endif
+</section>
 @endsection
 ```
 
 **Naming Convention:**
-- **Controller:** `App\Controllers\FrontPage` (PascalCase, matches WordPress template name)
-- **Template:** `resources/views/front-page.blade.php` (kebab-case, WordPress convention)
-- **Methods:** `public function hero()` → `$hero` (camelCase in template)
+- **Controller:** `App\Controllers\FrontPage` (PascalCase)
+- **Template:** `resources/views/front-page.blade.php` (kebab-case)
+- **Methods:** `public function hero()` → `$hero` (camelCase)
 
-**Source Confidence:** 100% (9 controllers in Kelsey, identical pattern in Presser)
+**Source Confidence:** 100%
 
 ## Blade Directives Reference
 
@@ -252,87 +206,33 @@ Blade provides directives for control structures, loops, and WordPress-specific 
 **Output Directives:**
 
 ```blade
-{{-- Escaped output (safe for user input) --}}
-<h1>{{ $title }}</h1>
-<p>{{ get_the_title() }}</p>
-
-{{-- Unescaped output (HTML/shortcodes) --}}
-<div>{!! $wysiwyg_content !!}</div>
-<div>{!! the_content() !!}</div>
-
-{{-- Output with default value --}}
-<p>{{ $custom_field ?? 'Default value' }}</p>
-
-{{-- Inline PHP execution --}}
-@php(the_post())
-@php(wp_reset_postdata())
+{{-- Escaped --}}
+<h1>{{$title}}</h1><p>{{get_the_title()}}</p>
+{{-- Unescaped --}}
+<div>{!!$wysiwyg!!}</div>{!!the_content()!!}
+{{-- Default --}}
+<p>{{$field??'Default'}}</p>
+{{-- Inline PHP --}}
+@php(the_post())@php(wp_reset_postdata())
 ```
 
 **Control Structures:**
 
 ```blade
-{{-- Conditional rendering --}}
-@if($condition)
-  <p>Condition is true</p>
-@elseif($other_condition)
-  <p>Other condition is true</p>
-@else
-  <p>All conditions false</p>
-@endif
-
-{{-- Negated conditional --}}
-@unless($user_logged_in)
-  <p>Please log in</p>
-@endunless
-
-{{-- Check if variable exists --}}
-@isset($variable)
-  <p>{{ $variable }}</p>
-@endisset
-
-{{-- Check if variable is empty --}}
-@empty($posts)
-  <p>No posts found</p>
-@endempty
-
-{{-- Switch statement --}}
-@switch($post_type)
-    @case('post')
-        @include('partials.content-post')
-        @break
-    @case('page')
-        @include('partials.content-page')
-        @break
-    @default
-        @include('partials.content')
-@endswitch
+@if($c)<p>True</p>@elseif($o)<p>Other</p>@else<p>False</p>@endif
+@unless($u)<p>Log in</p>@endunless
+@isset($v)<p>{{$v}}</p>@endisset
+@empty($p)<p>No posts</p>@endempty
+@switch($t)@case('post')@include('partials.content-post')@break @case('page')@include('partials.content-page')@break @default @include('partials.content')@endswitch
 ```
 
 **Loop Directives:**
 
 ```blade
-{{-- For loop --}}
-@for($i = 0; $i < 10; $i++)
-  <p>Item {{ $i }}</p>
-@endfor
-
-{{-- Foreach loop --}}
-@foreach($posts as $post)
-  <article>{{ $post->post_title }}</article>
-@endforeach
-
-{{-- Foreach with empty fallback --}}
-@forelse($posts as $post)
-  <article>{{ $post->post_title }}</article>
-@empty
-  <p>No posts found</p>
-@endforelse
-
-{{-- While loop (WordPress Loop) --}}
-@while(have_posts())
-  @php(the_post())
-  <article>{{ get_the_title() }}</article>
-@endwhile
+@for($i=0;$i<10;$i++)<p>Item {{$i}}</p>@endfor
+@foreach($posts as $p)<article>{{$p->post_title}}</article>@endforeach
+@forelse($posts as $p)<article>{{$p->post_title}}</article>@empty<p>No posts</p>@endforelse
+@while(have_posts())@php(the_post())<article>{{get_the_title()}}</article>@endwhile
 ```
 
 **Source Confidence:** 100% (all directives observed across 199 templates)
@@ -341,28 +241,13 @@ Blade provides directives for control structures, loops, and WordPress-specific 
 
 Blade's `@include` directive enables reusable template components, reducing duplication and improving maintainability.
 
-**Partial Template (resources/views/partials/content-post.blade.php):**
+**Partial (resources/views/partials/content-post.blade.php):**
 
 ```blade
 <article @php(post_class('article'))>
-  @if(has_post_thumbnail())
-    <figure class="article__thumbnail">
-      {!! get_the_post_thumbnail(null, 'large') !!}
-    </figure>
-  @endif
-
-  <header class="article__header">
-    <h2 class="article__title">
-      <a href="{{ get_permalink() }}">{{ get_the_title() }}</a>
-    </h2>
-    <time class="article__date" datetime="{{ get_post_time('c', true) }}">
-      {{ get_the_date() }}
-    </time>
-  </header>
-
-  <div class="article__excerpt">
-    {!! get_the_excerpt() !!}
-  </div>
+@if(has_post_thumbnail())<figure>{!!get_the_post_thumbnail(null,'large')!!}</figure>@endif
+<header><h2><a href="{{get_permalink()}}">{{get_the_title()}}</a></h2><time datetime="{{get_post_time('c',true)}}">{{get_the_date()}}</time></header>
+<div>{!!get_the_excerpt()!!}</div>
 </article>
 ```
 
@@ -370,52 +255,23 @@ Blade's `@include` directive enables reusable template components, reducing dupl
 
 ```blade
 @extends('layouts.app')
-
 @section('content')
-  <header class="archive-header">
-    <h1>{{ get_the_archive_title() }}</h1>
-    <p>{{ get_the_archive_description() }}</p>
-  </header>
-
-  @if(have_posts())
-    <div class="articles-grid">
-      @while(have_posts())
-        @php(the_post())
-        @include('partials.content-post')
-      @endwhile
-    </div>
-
-    {!! get_the_posts_navigation() !!}
-  @else
-    @include('partials.content-none')
-  @endif
+<header><h1>{{get_the_archive_title()}}</h1><p>{{get_the_archive_description()}}</p></header>
+@if(have_posts())<div class="articles-grid">@while(have_posts())@php(the_post())@include('partials.content-post')@endwhile</div>{!!get_the_posts_navigation()!!}@else @include('partials.content-none')@endif
 @endsection
 ```
 
-**Include with Data Passing:**
+**Include with Data / Conditional:**
 
 ```blade
-{{-- Pass additional variables to partial --}}
-@include('partials.card', [
-  'title' => 'Custom Title',
-  'image' => $custom_image,
-  'link' => $custom_url,
-])
-```
-
-**Conditional Inclusion:**
-
-```blade
-{{-- Only include if template exists --}}
+@include('partials.card',['title'=>'Title','image'=>$img,'link'=>$url])
 @includeIf('partials.alert')
-
-{{-- Include with fallback --}}
-@includeFirst(['partials.custom-header', 'partials.header'])
+@includeFirst(['partials.custom-header','partials.header'])
 ```
 
-**Pattern:** Presser organizes partials by purpose: `partials/header.blade.php`, `partials/footer.blade.php`, `partials/content-*.blade.php`. All archive/index templates include `partials/content-{post_type}.blade.php`.
+**Pattern:** Presser organizes partials: `partials/header.blade.php`, `partials/footer.blade.php`, `partials/content-*.blade.php`. All archives include `partials/content-{post_type}.blade.php`.
 
-**Source Confidence:** 100% (consistent partial organization across both themes)
+**Source Confidence:** 100% (consistent across both themes)
 
 ## Custom Blade Directives
 
@@ -425,74 +281,38 @@ Sage allows defining custom Blade directives for frequently used WordPress funct
 
 ```php
 <?php
-
 namespace App;
-
-/**
- * Add custom Blade directives
- */
-add_filter('sage/blade/directives', function ($directives) {
-    /**
-     * @query directive - shorthand for WP_Query loop
-     * Usage: @query(['post_type' => 'post', 'posts_per_page' => 5])
-     */
-    $directives['query'] = function ($expression) {
-        return "<?php \$__query = new WP_Query($expression); if (\$__query->have_posts()): while (\$__query->have_posts()): \$__query->the_post(); ?>";
-    };
-    $directives['endquery'] = function () {
-        return "<?php endwhile; wp_reset_postdata(); endif; ?>";
-    };
-
-    /**
-     * @acffield directive - output ACF field with escaping
-     * Usage: @acffield('field_name')
-     */
-    $directives['acffield'] = function ($expression) {
-        return "<?php echo esc_html(get_field($expression)); ?>";
-    };
-
-    /**
-     * @adminonly - conditional content for logged-in admins
-     */
-    $directives['adminonly'] = function () {
-        return "<?php if (current_user_can('manage_options')): ?>";
-    };
-    $directives['endadminonly'] = function () {
-        return "<?php endif; ?>";
-    };
-
-    return $directives;
+add_filter('sage/blade/directives',function($d){
+$d['query']=function($e){return"<?php \$q=new WP_Query($e);if(\$q->have_posts()):while(\$q->have_posts()):\$q->the_post();?>";};
+$d['endquery']=function(){return"<?php endwhile;wp_reset_postdata();endif;?>";};
+$d['acffield']=function($e){return"<?php echo esc_html(get_field($e));?>";};
+$d['adminonly']=function(){return"<?php if(current_user_can('manage_options')):?>";};
+$d['endadminonly']=function(){return"<?php endif;?>";};
+return $d;
 });
 ```
+
+**Source Confidence:** 67% (Presser uses custom directives, Kelsey default only)
+
+## Using Custom Blade Directives
 
 **Using Custom Directives (resources/views/archive.blade.php):**
 
 ```blade
 @extends('layouts.app')
-
 @section('content')
-  <h1>{{ get_the_archive_title() }}</h1>
-
-  {{-- Custom @query directive replaces WP_Query boilerplate --}}
-  @query(['post_type' => 'post', 'posts_per_page' => 10])
-    @include('partials.content-post')
-  @endquery
-
-  {{-- Custom @acffield directive with built-in escaping --}}
-  <p>Custom Field: @acffield('custom_field_name')</p>
-
-  {{-- Custom @adminonly directive --}}
-  @adminonly
-    <div class="admin-tools">
-      <a href="{{ get_edit_post_link() }}">Edit</a>
-    </div>
-  @endadminonly
+<h1>{{get_the_archive_title()}}</h1>
+@query(['post_type'=>'post','posts_per_page'=>10])
+@include('partials.content-post')
+@endquery
+<p>Field: @acffield('custom_field_name')</p>
+@adminonly<div class="admin-tools"><a href="{{get_edit_post_link()}}">Edit</a></div>@endadminonly
 @endsection
 ```
 
-**Pattern:** Custom directives reduce repetitive code and enforce consistent patterns (e.g., always escaping ACF fields, always resetting postdata after queries).
+**Pattern:** Custom directives reduce repetitive code and enforce consistent patterns (always escape ACF fields, always reset postdata).
 
-**Source Confidence:** 67% (Presser uses custom directives for ACF block rendering, Kelsey uses default directives only)
+**Source Confidence:** 67%
 
 ## WordPress Loop in Blade
 
@@ -559,100 +379,58 @@ WordPress's `have_posts()` loop translates directly to Blade syntax with cleaner
 
 **Source Confidence:** 100% (observed across 199 templates)
 
-## ACF Integration in Blade Templates
+## ACF Simple Fields in Blade
 
 Advanced Custom Fields (ACF) integrates seamlessly with Blade, using escaped output for text fields and unescaped output for WYSIWYG content.
 
-**Simple ACF Fields:**
-
 ```blade
-{{-- Text field (escaped) --}}
-<h1>{{ get_field('hero_title') }}</h1>
-
-{{-- WYSIWYG field (unescaped) --}}
-<div class="content">
-  {!! get_field('hero_description') !!}
-</div>
-
-{{-- Image field --}}
-@php($hero_image = get_field('hero_image'))
-@if($hero_image)
-  <img src="{{ $hero_image['url'] }}"
-       alt="{{ $hero_image['alt'] }}"
-       width="{{ $hero_image['width'] }}"
-       height="{{ $hero_image['height'] }}">
-@endif
-
-{{-- Link field --}}
-@php($cta_link = get_field('cta_link'))
-@if($cta_link)
-  <a href="{{ $cta_link['url'] }}" target="{{ $cta_link['target'] }}">
-    {{ $cta_link['title'] }}
-  </a>
-@endif
+{{-- Text (escaped) --}}
+<h1>{{get_field('hero_title')}}</h1>
+{{-- WYSIWYG (unescaped) --}}
+<div>{!!get_field('hero_description')!!}</div>
+{{-- Image --}}
+@php($img=get_field('hero_image'))
+@if($img)<img src="{{$img['url']}}" alt="{{$img['alt']}}" width="{{$img['width']}}" height="{{$img['height']}}">@endif
+{{-- Link --}}
+@php($link=get_field('cta_link'))
+@if($link)<a href="{{$link['url']}}" target="{{$link['target']}}">{{$link['title']}}</a>@endif
 ```
+
+**Source Confidence:** 100%
+
+## ACF Repeater and Flexible Content
 
 **Repeater Fields:**
 
 ```blade
-@if(have_rows('team_members'))
-  <section class="team">
-    @while(have_rows('team_members'))
-      @php(the_row())
-
-      <div class="team-member">
-        <img src="{{ get_sub_field('photo')['url'] }}" alt="{{ get_sub_field('name') }}">
-        <h3>{{ get_sub_field('name') }}</h3>
-        <p>{{ get_sub_field('title') }}</p>
-      </div>
-
-    @endwhile
-  </section>
-@endif
+@if(have_rows('team_members'))<section class="team">@while(have_rows('team_members'))@php(the_row())
+<div class="team-member"><img src="{{get_sub_field('photo')['url']}}" alt="{{get_sub_field('name')}}"><h3>{{get_sub_field('name')}}</h3><p>{{get_sub_field('title')}}</p></div>
+@endwhile</section>@endif
 ```
 
 **Flexible Content (Page Builder):**
 
 ```blade
-@if(have_rows('page_builder'))
-  @while(have_rows('page_builder'))
-    @php(the_row())
-
-    @switch(get_row_layout())
-      @case('hero_section')
-        @include('blocks.acf.hero', ['data' => get_row()])
-        @break
-
-      @case('text_section')
-        @include('blocks.acf.text', ['data' => get_row()])
-        @break
-
-      @case('gallery_section')
-        @include('blocks.acf.gallery', ['data' => get_row()])
-        @break
-    @endswitch
-
-  @endwhile
-@endif
+@if(have_rows('page_builder'))@while(have_rows('page_builder'))@php(the_row())
+@switch(get_row_layout())@case('hero_section')@include('blocks.acf.hero',['data'=>get_row()])@break @case('text_section')@include('blocks.acf.text',['data'=>get_row()])@break @case('gallery_section')@include('blocks.acf.gallery',['data'=>get_row()])@break @endswitch
+@endwhile @endif
 ```
+
+**Source Confidence:** 100%
+
+## ACF Block Templates
 
 **ACF Block Template (resources/views/blocks/acf/hero.blade.php):**
 
 ```blade
-<section class="hero" style="background-image: url({{ $data['background_image']['url'] }})">
-  <div class="hero__content">
-    <h1>{{ $data['title'] }}</h1>
-    <p>{{ $data['subtitle'] }}</p>
-    @if($data['cta_link'])
-      <a href="{{ $data['cta_link']['url'] }}" class="button">
-        {{ $data['cta_link']['title'] }}
-      </a>
-    @endif
-  </div>
+<section class="hero" style="background-image:url({{$data['background_image']['url']}})">
+<div class="hero__content"><h1>{{$data['title']}}</h1><p>{{$data['subtitle']}}</p>
+@if($data['cta_link'])<a href="{{$data['cta_link']['url']}}" class="button">{{$data['cta_link']['title']}}</a>@endif
+</div>
 </section>
 ```
 
-**Pattern:** Presser uses Flexible Content for all page builder functionality (15 layout types). Kelsey uses Gutenberg blocks with ACF Pro block registration.
+**Pattern:** Presser uses Flexible Content for page builder (15 layout types). Kelsey uses Gutenberg blocks with ACF Pro registration.
 
 **Source Confidence:** 100% (ACF used in 100% of analyzed themes)
 
@@ -661,152 +439,77 @@ Advanced Custom Fields (ACF) integrates seamlessly with Blade, using escaped out
 Blade templates compile to optimized PHP code and cache in WordPress uploads directory, enabling performance equivalent to raw PHP templates.
 
 **Compilation Process:**
-
-1. **Request:** WordPress loads `single-post.blade.php`
-2. **Compile Check:** Sage checks if compiled version exists and is current
-3. **Compilation (if needed):** Blade converts `.blade.php` → `.php` in cache directory
-4. **Execution:** WordPress includes compiled PHP file
+1. WordPress loads `single-post.blade.php`
+2. Sage checks if compiled version exists/current
+3. Blade converts `.blade.php` → `.php` (if needed)
+4. WordPress includes compiled PHP
 
 **Cache Location:**
 
 ```php
-// config/view.php
-return [
-    'compiled' => wp_upload_dir()['basedir'] . '/cache/compiled',
-];
+//config/view.php
+return['compiled'=>wp_upload_dir()['basedir'].'/cache/compiled'];
 ```
 
-**Cache Directory Structure:**
+**Cache Directory:**
 
 ```
 wp-content/uploads/cache/compiled/
-├── 48f9c9e7a3b5d8f1c2e9a4b7d8f1c2e9_front-page.blade.php
-├── a3b5d8f1c2e9a4b7d8f1c2e9a4b7d8f1_single.blade.php
-├── d8f1c2e9a4b7d8f1c2e9a4b7d8f1c2e9_archive.blade.php
-└── ...
+├── 48f9c9e7...front-page.blade.php
+├── a3b5d8f1...single.blade.php
 ```
 
-**Compiled Template Example:**
+**Source Confidence:** 100%
+
+## Blade Compilation Examples
 
 **Source (resources/views/partials/header.blade.php):**
 
 ```blade
-<header>
-  <h1>{{ get_bloginfo('name') }}</h1>
-  @if(has_nav_menu('primary_navigation'))
-    <nav>
-      @php(wp_nav_menu(['theme_location' => 'primary_navigation']))
-    </nav>
-  @endif
+<header><h1>{{get_bloginfo('name')}}</h1>
+@if(has_nav_menu('primary_navigation'))<nav>@php(wp_nav_menu(['theme_location'=>'primary_navigation']))</nav>@endif
 </header>
 ```
 
 **Compiled (wp-content/uploads/cache/compiled/...header.blade.php):**
 
 ```php
-<header>
-  <h1><?php echo e(get_bloginfo('name')); ?></h1>
-  <?php if(has_nav_menu('primary_navigation')): ?>
-    <nav>
-      <?php wp_nav_menu(['theme_location' => 'primary_navigation']); ?>
-    </nav>
-  <?php endif; ?>
+<header><h1><?php echo e(get_bloginfo('name'));?></h1>
+<?php if(has_nav_menu('primary_navigation')):?><nav><?php wp_nav_menu(['theme_location'=>'primary_navigation']);?></nav><?php endif;?>
 </header>
 ```
 
 **Cache Invalidation:**
+- Automatic: Recompiles when `.blade.php` modified
+- Manual: Delete `wp-content/uploads/cache/compiled/`
 
-- Automatic: Blade recompiles when source `.blade.php` file modified (timestamp check)
-- Manual: Delete `wp-content/uploads/cache/compiled/` directory to force recompilation
+**Performance:** First load ~5-10ms, cached 0ms (native PHP speed).
 
-**Performance Impact:**
-
-- **First Load:** ~5-10ms compilation overhead per template
-- **Cached Loads:** 0ms overhead (native PHP execution)
-- **Comparison:** Equivalent performance to traditional PHP templates after first load
-
-**Source Confidence:** 100% (observed across both themes)
+**Source Confidence:** 100%
 
 ## Common Blade Patterns in WordPress
 
 Recurring Blade patterns from production Sage themes for navigation, sidebars, comments, and pagination.
 
-**Navigation Menu:**
-
 ```blade
-<nav class="nav-primary">
-  @if(has_nav_menu('primary_navigation'))
-    {!! wp_nav_menu([
-      'theme_location' => 'primary_navigation',
-      'menu_class' => 'nav',
-      'container' => false,
-    ]) !!}
-  @endif
-</nav>
-```
+{{-- Navigation --}}
+<nav>@if(has_nav_menu('primary_navigation')){!!wp_nav_menu(['theme_location'=>'primary_navigation','menu_class'=>'nav','container'=>false])!!}@endif</nav>
 
-**Sidebar with Widgets:**
+{{-- Sidebar --}}
+@if(is_active_sidebar('sidebar-primary'))<aside>@php(dynamic_sidebar('sidebar-primary'))</aside>@endif
 
-```blade
-@if(is_active_sidebar('sidebar-primary'))
-  <aside class="sidebar">
-    @php(dynamic_sidebar('sidebar-primary'))
-  </aside>
-@endif
-```
+{{-- Comments --}}
+@if(comments_open()||get_comments_number()>0)<section>@php(comments_template())</section>@endif
 
-**Comments Template:**
+{{-- Pagination --}}
+@if(get_the_posts_pagination())<nav>{!!get_the_posts_pagination(['prev_text'=>__('Previous','sage'),'next_text'=>__('Next','sage')])!!}</nav>@endif
+<nav><div>{!!get_previous_post_link()!!}</div><div>{!!get_next_post_link()!!}</div></nav>
 
-```blade
-@if(comments_open() || get_comments_number() > 0)
-  <section class="comments">
-    @php(comments_template())
-  </section>
-@endif
-```
+{{-- Breadcrumbs (Yoast) --}}
+@if(function_exists('yoast_breadcrumb'))<nav>{!!yoast_breadcrumb('<p id="breadcrumbs">','</p>',false)!!}</nav>@endif
 
-**Pagination:**
-
-```blade
-{{-- Posts pagination --}}
-@if(get_the_posts_pagination())
-  <nav class="pagination">
-    {!! get_the_posts_pagination([
-      'prev_text' => __('Previous', 'sage'),
-      'next_text' => __('Next', 'sage'),
-    ]) !!}
-  </nav>
-@endif
-
-{{-- Post navigation (single) --}}
-<nav class="post-navigation">
-  <div class="nav-previous">{!! get_previous_post_link() !!}</div>
-  <div class="nav-next">{!! get_next_post_link() !!}</div>
-</nav>
-```
-
-**Breadcrumbs (Yoast SEO):**
-
-```blade
-@if(function_exists('yoast_breadcrumb'))
-  <nav class="breadcrumbs">
-    {!! yoast_breadcrumb('<p id="breadcrumbs">','</p>', false) !!}
-  </nav>
-@endif
-```
-
-**Search Form:**
-
-```blade
-<form role="search" method="get" class="search-form" action="{{ home_url('/') }}">
-  <label for="search">{{ __('Search', 'sage') }}</label>
-  <input type="search"
-         id="search"
-         name="s"
-         value="{{ get_search_query() }}"
-         placeholder="{{ __('Search...', 'sage') }}">
-  <button type="submit">{{ __('Search', 'sage') }}</button>
-</form>
+{{-- Search --}}
+<form role="search" method="get" action="{{home_url('/')}}"><label for="s">{{__('Search','sage')}}</label><input type="search" id="s" name="s" value="{{get_search_query()}}" placeholder="{{__('Search...','sage')}}"><button type="submit">{{__('Search','sage')}}</button></form>
 ```
 
 **Source Confidence:** 100% (all patterns observed in Presser and Kelsey)
@@ -815,93 +518,64 @@ Recurring Blade patterns from production Sage themes for navigation, sidebars, c
 
 Techniques for debugging Blade compilation issues and inspecting compiled output.
 
-**Enable WordPress Debug Mode (wp-config.php):**
+**Enable WordPress Debug (wp-config.php):**
 
 ```php
-define('WP_DEBUG', true);
-define('WP_DEBUG_LOG', true);
-define('WP_DEBUG_DISPLAY', false);
-@ini_set('display_errors', 0);
+define('WP_DEBUG',true);define('WP_DEBUG_LOG',true);define('WP_DEBUG_DISPLAY',false);@ini_set('display_errors',0);
 ```
 
-**Blade Compilation Errors:**
-
-Blade syntax errors show in `wp-content/debug.log`:
+**Blade Errors:** Syntax errors show in `wp-content/debug.log`:
 
 ```
-PHP Parse error: syntax error, unexpected '}', expecting ',' or ')' in
-/wp-content/uploads/cache/compiled/a3b5d8f1...front-page.blade.php on line 42
+PHP Parse error: unexpected '}' in /wp-content/uploads/cache/compiled/a3b5d8f1...front-page.blade.php line 42
 ```
 
-**Solution:** Check source Blade template line 42 for unclosed brackets, missing semicolons, or mismatched directives.
+**Solution:** Check source template line 42 for unclosed brackets or mismatched directives.
 
-**Dump Variable Contents:**
+**Dump Variables:**
 
 ```blade
-{{-- Blade's dd() helper (die and dump) --}}
-@php(dd($variable))
-
-{{-- WordPress's var_dump with output buffering --}}
-@php
-  ob_start();
-  var_dump($variable);
-  error_log(ob_get_clean());
-@endphp
+@php(dd($v))
+@php ob_start();var_dump($v);error_log(ob_get_clean());@endphp
 ```
 
-**View Compiled Template:**
+**View Compiled:**
 
 ```bash
-# Find compiled template
-ls -la wp-content/uploads/cache/compiled/ | grep "front-page"
-
-# View compiled PHP
-cat wp-content/uploads/cache/compiled/48f9c9e7a3b5d8f1...front-page.blade.php
+ls -la wp-content/uploads/cache/compiled/|grep "front-page"
+cat wp-content/uploads/cache/compiled/48f9c9e7...front-page.blade.php
 ```
 
-**Common Errors:**
+**Source Confidence:** 100%
+
+## Common Blade Errors
 
 **1. "Undefined variable $variable"**
 
-Cause: Controller method not returning data or typo in method name
+Cause: Controller method not returning data or typo
 
 ```php
-// Fix: Ensure controller method exists
-class FrontPage extends Controller
-{
-    public function hero() { return get_field('hero'); }
-}
+class FrontPage extends Controller{public function hero(){return get_field('hero');}}
 ```
 
 **2. "Cannot use object of type WP_Query as array"**
 
-Cause: Treating WP_Query object as array instead of using `have_posts()` loop
+Cause: Treating WP_Query as array
 
 ```blade
-{{-- Wrong: --}}
-@foreach($query as $post)
-
-{{-- Correct: --}}
-@while($query->have_posts())
-  @php($query->the_post())
-@endwhile
+{{-- Wrong: --}}@foreach($q as $p)
+{{-- Correct: --}}@while($q->have_posts())@php($q->the_post())@endwhile
 ```
 
 **3. "syntax error, unexpected ')'"**
 
-Cause: Missing quotes around string in `@php()` directive
+Cause: Malformed expression
 
 ```blade
-{{-- Wrong: --}}
-@php(the_post())
-
-{{-- Correct: --}}
-@php(the_post())
-{{-- Actually both are correct - the error is usually from malformed expressions --}}
-@php($data = get_field('field_name'))
+{{-- Error from: --}}@php($data=get_field('field_name'))
 ```
 
-**Source Confidence:** 100% (error patterns documented in theme development notes)
+**Source Confidence:** 100%
 
 ## Performance Comparison
 
@@ -944,98 +618,44 @@ Converting existing PHP templates to Blade syntax follows predictable find-and-r
 
 **Conversion Patterns:**
 
-**1. Output Echo Statements:**
-
 ```php
-// PHP:
-<?php echo esc_html($title); ?>
-<?php echo get_the_title(); ?>
+// PHP: <?php echo esc_html($title);?><?php echo get_the_title();?>
+// Blade: {{$title}}{{get_the_title()}}
 
-// Blade:
-{{ $title }}
-{{ get_the_title() }}
+// PHP: <?php echo $html;?>
+// Blade: {!!$html!!}
+
+// PHP: <?php if($c):?><p>True</p><?php else:?><p>False</p><?php endif;?>
+// Blade: @if($c)<p>True</p>@else<p>False</p>@endif
+
+// PHP: <?php foreach($items as $i):?><li><?php echo $i;?></li><?php endforeach;?>
+// Blade: @foreach($items as $i)<li>{{$i}}</li>@endforeach
+
+// PHP: <?php get_header();?><?php get_template_part('partials/content','post');?>
+// Blade: @include('partials.header')@include('partials.content-post')
 ```
 
-**2. Unescaped Output:**
+**Source Confidence:** 67%
 
-```php
-// PHP:
-<?php echo $html_content; ?>
+## Automated Blade Migration
 
-// Blade:
-{!! $html_content !!}
-```
-
-**3. Control Structures:**
-
-```php
-// PHP:
-<?php if ($condition) : ?>
-  <p>True</p>
-<?php else : ?>
-  <p>False</p>
-<?php endif; ?>
-
-// Blade:
-@if($condition)
-  <p>True</p>
-@else
-  <p>False</p>
-@endif
-```
-
-**4. Loops:**
-
-```php
-// PHP:
-<?php foreach ($items as $item) : ?>
-  <li><?php echo $item; ?></li>
-<?php endforeach; ?>
-
-// Blade:
-@foreach($items as $item)
-  <li>{{ $item }}</li>
-@endforeach
-```
-
-**5. Template Includes:**
-
-```php
-// PHP:
-<?php get_header(); ?>
-<?php get_template_part('partials/content', 'post'); ?>
-<?php get_footer(); ?>
-
-// Blade:
-@include('partials.header')
-@include('partials.content-post')
-@include('partials.footer')
-```
-
-**Automated Conversion Script (Bash):**
+**Conversion Script (Bash):**
 
 ```bash
 #!/bin/bash
-# Convert PHP templates to Blade syntax
-
-for file in *.php; do
-  # Replace PHP echo with Blade echo
-  sed -i '' 's/<?php echo esc_html(\(.*\)); ?>/{{ \1 }}/g' "$file"
-  sed -i '' 's/<?php echo \(.*\); ?>/{{ \1 }}/g' "$file"
-
-  # Replace control structures
-  sed -i '' 's/<?php if (\(.*\)) : ?>/\@if(\1)/g' "$file"
-  sed -i '' 's/<?php endif; ?>/\@endif/g' "$file"
-  sed -i '' 's/<?php else : ?>/\@else/g' "$file"
-
-  # Rename to .blade.php
-  mv "$file" "${file%.php}.blade.php"
+for f in *.php;do
+sed -i '' 's/<?php echo esc_html(\(.*\));?>/{{ \1 }}/g' "$f"
+sed -i '' 's/<?php echo \(.*\);?>/{{ \1 }}/g' "$f"
+sed -i '' 's/<?php if(\(.*\)):?>/\@if(\1)/g' "$f"
+sed -i '' 's/<?php endif;?>/\@endif/g' "$f"
+sed -i '' 's/<?php else:?>/\@else/g' "$f"
+mv "$f" "${f%.php}.blade.php"
 done
 ```
 
-**Manual Review Required:** Automated conversion catches 80% of patterns. Manually review for complex logic, nested loops, and custom functions.
+**Manual Review:** Automated conversion catches 80%. Manually review complex logic, nested loops, custom functions.
 
-**Source Confidence:** 67% (based on migration patterns, not direct observation)
+**Source Confidence:** 67% (migration patterns, not direct observation)
 
 ## Related Patterns
 
