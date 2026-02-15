@@ -12,15 +12,13 @@ source_confidence: "0%"
 last_updated: "2026-02-11"
 ---
 
-## Recommended Testing Stack for Next.js 14/15
+## Testing Stack Overview
 
 Next.js applications require three testing layers: unit tests for utilities and hooks, integration tests for components and API routes, and end-to-end tests for user flows. The recommended stack combines Vitest for speed, Testing Library for DOM testing, and Playwright for E2E automation. Modern alternatives like Vitest provide better Next.js App Router support than Jest while maintaining familiar APIs.
 
-### Unit & Integration Testing: Vitest
+## Unit & Integration Testing with Vitest
 
 Vitest serves as the primary test runner for unit and integration tests in Next.js applications. Vitest provides 5-10x faster test execution than Jest due to ESM-native architecture and Vite's transformer. Next.js 15 App Router patterns (async server components, route handlers) work seamlessly with Vitest's native ESM support. Configuration integrates with existing `tsconfig.json` path aliases via `vite-tsconfig-paths`. Install with: `npm install -D vitest @vitejs/plugin-react`. Source confidence: 0% (none of the analyzed codebases use Vitest or Jest).
-
-#### Vitest Configuration for Next.js
 
 ```typescript
 // vitest.config.ts
@@ -45,11 +43,9 @@ export default defineConfig({
 
 Vitest configuration requires `environment: 'jsdom'` for React component testing, `globals: true` to avoid importing `describe`/`it` in every file, and `setupFiles` for global test setup. Path alias resolution via `tsconfigPaths()` ensures `@/components` imports work identically to the application. Coverage thresholds enforce minimum quality standards in CI/CD pipelines.
 
-### Component Testing: @testing-library/react
+## Component Testing with Testing Library
 
 Testing Library provides user-centric component testing focused on behavior rather than implementation details. Queries like `getByRole`, `getByLabelText`, and `getByText` encourage accessible component design and resilient tests. Install with: `npm install -D @testing-library/react @testing-library/jest-dom @testing-library/user-event`. The `userEvent` API simulates realistic user interactions (clicks, typing, form submissions) rather than synthetic events. Source confidence: 0% (no component testing exists in analyzed codebases).
-
-#### Testing Library Best Practices
 
 ```typescript
 // Button.test.tsx
@@ -59,23 +55,19 @@ import { Button } from './Button'
 
 describe('Button', () => {
   it('calls onClick handler when clicked', async () => {
-    const handleClick = vi.fn()
-    render(<Button onClick={handleClick}>Click me</Button>)
-
+    const h = vi.fn()
+    render(<Button onClick={h}>Click me</Button>)
     await userEvent.click(screen.getByRole('button', { name: /click me/i }))
-
-    expect(handleClick).toHaveBeenCalledTimes(1)
+    expect(h).toHaveBeenCalledTimes(1)
   })
 })
 ```
 
 Testing Library emphasizes semantic queries (`getByRole`, `getByLabelText`) over implementation-dependent queries (`getByTestId`, `getByClassName`). Tests using `getByRole('button')` remain valid when Button implementation changes from `<button>` to `<a role="button">`. Async `userEvent` API (not `fireEvent`) simulates real browser interactions including focus, hover, and keyboard navigation.
 
-### API Mocking: Mock Service Worker (MSW)
+## API Mocking with Mock Service Worker
 
 Mock Service Worker intercepts HTTP requests at the network level, enabling realistic API testing without modifying application code. MSW works in both Node.js tests (Vitest) and browser environments (development, Storybook). Install with: `npm install -D msw`. MSW mocks replicate production API behavior including response delays, error states, and pagination. Source confidence: 0% (no API mocking infrastructure exists).
-
-#### MSW Configuration for API Route Testing
 
 ```typescript
 // mocks/handlers.ts
@@ -98,11 +90,9 @@ export const handlers = [
 
 MSW handlers define request matching patterns and response generation logic. Path parameters (`/api/phrases/:locale`) and request bodies are accessible for response customization. MSW setup file (`vitest.setup.ts`) initializes handlers before all tests: `beforeAll(() => server.listen())`, `afterEach(() => server.resetHandlers())`, `afterAll(() => server.close())`. This ensures test isolation and predictable API state.
 
-### E2E Testing: Playwright
+## E2E Testing with Playwright
 
 Playwright provides cross-browser end-to-end testing for Next.js applications with excellent App Router support. Playwright runs tests in real browsers (Chromium, Firefox, WebKit) and simulates user interactions at the application level. Install with: `npm install -D @playwright/test`. Playwright's auto-waiting mechanism reduces flaky tests compared to Selenium or Cypress. Next.js documentation officially recommends Playwright over Cypress for App Router applications. Source confidence: 0% (no E2E testing infrastructure exists).
-
-#### Playwright Configuration for Next.js
 
 ```typescript
 // playwright.config.ts
@@ -115,33 +105,26 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
   reporter: 'html',
-  use: {
-    baseURL: 'http://localhost:3000',
-    trace: 'on-first-retry',
-  },
+  use: { baseURL: 'http://localhost:3000', trace: 'on-first-retry' },
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
     { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
   ],
-  webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
-  },
+  webServer: { command: 'npm run dev', url: 'http://localhost:3000', reuseExistingServer: !process.env.CI },
 })
 ```
 
-Playwright configuration defines test directory (`./e2e`), parallelization strategy, retry logic for CI environments, and automatic Next.js dev server startup via `webServer`. Tests run in multiple browsers (`chromium`, `firefox`) to catch browser-specific bugs. Traces captured on first retry provide debugging artifacts for flaky tests.
+Playwright configuration defines test directory (`./e2e`), parallelization, retry logic for CI, and automatic Next.js dev server startup via `webServer`. Tests run in multiple browsers to catch browser-specific bugs. Traces captured on first retry provide debugging artifacts for flaky tests.
 
-### Type-Safe Matchers: @testing-library/jest-dom
+## Type-Safe DOM Matchers
 
 Testing Library's `jest-dom` matchers extend Vitest's assertion API with DOM-specific matchers. Matchers like `toBeInTheDocument()`, `toHaveAttribute()`, `toBeVisible()`, and `toBeDisabled()` improve test readability. Install with: `npm install -D @testing-library/jest-dom`. Import in setup file: `import '@testing-library/jest-dom'`. TypeScript types are automatically recognized in Vitest environments. Source confidence: 0% (no DOM testing utilities exist).
 
-### Coverage Tooling: Vitest's V8 Provider
+## Coverage Reporting with Vitest
 
 Vitest's built-in coverage tool (V8 provider) generates code coverage reports without additional configuration. Run with: `vitest --coverage`. Reports show line coverage, branch coverage, function coverage, and statement coverage. HTML reports visualize untested lines with red highlighting. Coverage thresholds in `vitest.config.ts` enforce minimum quality: `coverage: { lines: 80, branches: 75, functions: 80 }`. CI/CD pipelines fail builds when coverage drops below thresholds.
 
-### Alternative Stack: Jest + Testing Library + Cypress
+## Alternative Stack Comparison
 
 Jest (traditional test runner) + Testing Library + Cypress (E2E framework) represents the legacy testing stack for Next.js. Jest has larger ecosystem (more plugins, wider adoption) but slower performance than Vitest. Cypress has better debugging UI than Playwright but weaker multi-browser support. Choose Jest + Cypress when maintaining existing test suites or prioritizing ecosystem size over performance. Choose Vitest + Playwright for new projects prioritizing speed and App Router compatibility.
 
