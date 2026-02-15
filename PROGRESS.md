@@ -301,6 +301,32 @@
 
 **Cumulative:** 131 violations fixed across 8 complete waves (46+16+14+7+2+21+14+11)
 
+### Wave 9: php-wordpress mixed domains ⏳ NEXT
+
+| File | Status | Violations | Domain |
+|------|--------|------------|--------|
+| laravel-blade-templating-wordpress.md | 📋 Next | 10→? | theme-structure |
+| cpt-label-conventions.md | 📋 Pending | 4→? | custom-post-types-taxonomies |
+| hierarchical-taxonomies-pattern.md | 📋 Pending | 2→? | custom-post-types-taxonomies |
+| vip-redirect-patterns.md | 📋 Pending | 2→? | vip-patterns |
+| rewrite-slug-best-practices.md | 📋 Pending | 1→? | custom-post-types-taxonomies |
+| rest-api-configuration.md | 📋 Pending | 1→? | custom-post-types-taxonomies |
+
+**Wave 9 Progress:** ⏳ 0% complete (0 of 6 files, 0 violations fixed, 20 total violations)
+
+**Priority order:** Start with laravel-blade-templating-wordpress.md (10 violations - highest count)
+
+**To Resume Wave 9:**
+```bash
+cd /Users/oppodeldoc/code/aleph-code-mine
+python3 tooling/validate-docs/section-analyzer.py docs/php-wordpress/theme-structure/laravel-blade-templating-wordpress.md
+# Start with file 1 of 6
+```
+
+**Remaining after Wave 8:** 44 section_length violations total
+
+**Cumulative:** 131 violations fixed across 8 complete waves (46+16+14+7+2+21+14+11)
+
 ---
 
 ## 📊 Mining Progress (Original Content Generation)
