@@ -106,7 +106,6 @@ def parse_and_chunk(md_path: Path, docs_root: Path) -> list[dict[str, Any]]:
     # Stage 1: split on markdown headings
     header_splitter = MarkdownHeaderTextSplitter(
         headers_to_split_on=HEADER_SPLITS,
-        strip_whitespace=True,
     )
     header_docs = header_splitter.split_text(body)
 
