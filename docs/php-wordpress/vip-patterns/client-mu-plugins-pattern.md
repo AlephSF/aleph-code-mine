@@ -101,7 +101,7 @@ client-mu-plugins/
 
 ## Client MU-Plugins for Security Layers
 
-WordPress VIP deployments use client MU-plugins for non-bypassable security features like GraphQL DoS protection, rate limiting, authentication middleware, and input sanitization. Security MU-plugins run before regular plugins, preventing attack vectors from third-party code.
+WordPress VIP uses client MU-plugins for non-bypassable security: GraphQL DoS protection, rate limiting, authentication middleware, and input sanitization. Security MU-plugins run before regular plugins, preventing third-party attack vectors.
 
 ### GraphQL DoS Protection
 

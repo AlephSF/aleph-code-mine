@@ -203,7 +203,7 @@ class GraphQLBatcher {
 }
 ```
 
-30s timeout, exponential backoff (1s→2s→4s), GraphQL/network error handling.
+Implements retry with 30s timeout and exponential backoff (1s→2s→4s).
 
 
 ## Transparent Batching API

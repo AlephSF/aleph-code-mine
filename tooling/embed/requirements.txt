@@ -1,0 +1,5 @@
+sentence-transformers>=2.2.0
+qdrant-client>=1.7.0
+langchain-text-splitters>=0.0.1
+python-frontmatter>=1.0.0
+openai>=1.0.0
